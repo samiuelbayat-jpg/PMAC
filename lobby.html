@@ -77,6 +77,7 @@ td{padding:10px 12px;vertical-align:middle;}
 </style>
 </head>
 <body>
+<div style="background:#ff4444;color:#fff;padding:8px 12px;font-family:monospace;font-size:12px;display:none;" id="js-error-banner"></div>
 <div class="wrap">
 
 <div class="hdr">
@@ -194,6 +195,11 @@ td{padding:10px 12px;vertical-align:middle;}
 <div class="toast" id="toast"></div>
 
 <script>
+window.onerror = function(msg, src, line) {
+  var b = document.getElementById("js-error-banner");
+  if (b) { b.style.display = "block"; b.textContent = "JS Error: " + msg + " (line " + line + ")"; }
+};
+
 var FB_CFG = {
   apiKey: "AIzaSyD-RFu-40Igcoqhm8QBbu_PgdFxV6aUIQA",
   authDomain: "pubg-mobile-afghanistan.firebaseapp.com",
@@ -203,7 +209,12 @@ var FB_CFG = {
   messagingSenderId: "279105805502",
   appId: "1:279105805502:web:8def653069d0b3d73bd2ef"
 };
-firebase.initializeApp(FB_CFG);
+try {
+  firebase.initializeApp(FB_CFG);
+} catch(e) {
+  var b = document.getElementById("js-error-banner");
+  if (b) { b.style.display = "block"; b.textContent = "Firebase init error: " + e.message; }
+}
 var db = firebase.database();
 var storage = firebase.storage();
 
