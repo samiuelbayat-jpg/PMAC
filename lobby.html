@@ -283,7 +283,7 @@ document.getElementById("import-btn").onclick = function() {
     var newOnes = toImport.filter(function(r) { return r.name && existing.indexOf(r.name) === -1; });
     var skipped = toImport.length - newOnes.length;
     if (newOnes.length === 0) { toast("All teams already in lobby" + (skipped > 0 ? " (" + skipped + " skipped)" : ""), false); return; }
-    if (!confirm("Import " + newOnes.length + " new teams?" + (skipped > 0 ? "\n" + skipped + " duplicate(s) will be skipped." : ""))) return;
+    if (!confirm("Import " + newOnes.length + " new teams? " + (skipped > 0 ? skipped + " duplicate(s) will be skipped." : ""))) return;
     var promises = newOnes.map(function(r) {
       var key = "t" + Date.now() + Math.floor(Math.random() * 9999);
       var code = genCode();
@@ -405,7 +405,7 @@ function render() {
     var key = entry[0];
     var t = entry[1];
     var logoHtml = t.logo
-      ? '<img src="' + t.logo + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display='none'">'
+      ? '<img src="' + t.logo + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display=&quot;none&quot;">'
       : (t.name || "?").substring(0, 2);
 
     // Both public and admin can edit/remove
