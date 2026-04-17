@@ -119,7 +119,7 @@ td.c{text-align:center;}
     <div class="panel-lbl">Admin Access</div>
     <div class="pw-row" id="pw-row">
       <input class="pw-inp" type="password" id="admin-pw" placeholder="password">
-      <button class="btn btn-gold" style="padding:6px 14px;" onclick="(function(){var p=document.getElementById('admin-pw').value;if(p==='pmac2024'){sessionStorage.setItem('lobby_adm','1');document.getElementById('pw-row').style.display='none';document.getElementById('admin-active').style.display='flex';isAdmin=true;render();}else{document.getElementById('pw-err').textContent='Wrong password';}})()">Login</button>
+      <button class="btn btn-gold" style="padding:6px 14px;" id="login-btn-direct">Login</button>
       <span class="pw-err" id="pw-err"></span>
     </div>
     <div class="admin-active" id="admin-active">
@@ -257,7 +257,17 @@ db.ref("pmac/lobby_teams").on("value", function(snap) {
 });
 
 // ── ADMIN ──
-document.getElementById("login-btn").onclick = function() {
+document.getElementById("login-btn-direct").onclick = function() {
+  var pw = document.getElementById("admin-pw").value;
+  if (pw !== "pmac2024") { document.getElementById("pw-err").textContent = "Wrong password"; return; }
+  sessionStorage.setItem("lobby_adm", "1");
+  document.getElementById("pw-row").style.display = "none";
+  document.getElementById("admin-active").style.display = "flex";
+  isAdmin = true;
+  render();
+};
+// legacy
+var lb = document.getElementById("login-btn"); if(lb) lb.onclick = function() {
   var pw = document.getElementById("admin-pw").value;
   if (pw !== "pmac2024") { document.getElementById("pw-err").textContent = "Wrong password"; return; }
   sessionStorage.setItem("lobby_adm", "1");
@@ -409,7 +419,7 @@ function render() {
     var key = entry[0];
     var t = entry[1];
     var logoHtml = t.logo
-      ? '<img src="' + t.logo + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display=&quot;none&quot;">'
+      ? "<img src='" + t.logo + "' style='width:100%;height:100%;object-fit:cover;border-radius:50%;'>" 
       : (t.name || "?").substring(0, 2);
 
     // Both public and admin can edit/remove
