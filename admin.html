@@ -209,6 +209,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         </div>
         <input type="file" id="csv-file" accept=".csv,.txt" style="display:none" onchange="importCSV(this)">
         <button class="btn" onclick="document.getElementById('csv-file').click()">&#128196; Import CSV</button>
+        <button class="btn btn-primary" onclick="importFromRegistration()" style="white-space:nowrap;">&#128203; Import from Registration</button>
       </div>
     </div>
     <div class="mgmt-title" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;">
@@ -611,6 +612,62 @@ function closeNavFrame() {
   document.getElementById("nav-frame").src = "";
   navHistory = [];
   navIndex = -1;
+}
+
+function importFromRegistration() {
+  db.ref("pmac/registrations").once("value").then(function(snap) {
+    var regs = snap.val();
+    if (!regs || Object.keys(regs).length === 0) {
+      showToast("No registrations found", false);
+      return;
+    }
+
+    var regList = Object.values(regs);
+    // Filter approved teams only, or all if none approved
+    var approved = regList.filter(function(r) { return r.status === "approved"; });
+    var toImport = approved.length > 0 ? approved : regList;
+
+    var label = approved.length > 0 ? "approved" : "all";
+    if (!confirm("Import " + toImport.length + " " + label + " teams from registration?\n\nThis will add them to today's tournament teams.")) return;
+
+    var newTeams = teams.slice();
+    var added = 0;
+    var skipped = 0;
+
+    toImport.forEach(function(reg) {
+      if (!reg.name) return;
+      var exists = false;
+      for (var i = 0; i < newTeams.length; i++) {
+        if (newTeams[i].name === reg.name) { exists = true; break; }
+      }
+      if (exists) { skipped++; return; }
+      newTeams.push({ name: reg.name, logo: reg.logo || "" });
+      added++;
+    });
+
+    if (added === 0) {
+      showToast("All teams already added (" + skipped + " skipped)", false);
+      return;
+    }
+
+    // Init scores for new teams
+    toImport.forEach(function(reg) {
+      if (!reg.name) return;
+      if (!scores[reg.name]) {
+        scores[reg.name] = Array(10).fill(null).map(function() { return {rank:null, kills:null}; });
+      }
+    });
+
+    dbTeamsRef.set(newTeams).then(function() {
+      return dbScoresRef.set(scores);
+    }).then(function() {
+      showToast(added + " teams imported!" + (skipped > 0 ? " (" + skipped + " skipped)" : ""), true);
+    }).catch(function(e) {
+      showToast("Error: " + e.message, false);
+    });
+  }).catch(function(e) {
+    showToast("Error reading registrations: " + e.message, false);
+  });
 }
 
 function showToast(msg, ok) {
