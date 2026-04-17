@@ -379,8 +379,9 @@ function addTeam() {
 
 function pushTeam(name, logoUrl) {
   const newTeams = [...teams, {name, logo: logoUrl}];
+  var safeKey = sanitizeKey(name);
   dbTeamsRef.set(newTeams).then(() => {
-    if (!scores[name]) { scores[name] = Array(10).fill(null).map(() => ({rank:null,kills:null})); dbScoresRef.set(scores); }
+    if (!scores[safeKey]) { scores[safeKey] = Array(10).fill(null).map(() => ({rank:null,kills:null})); dbScoresRef.set(scores); }
     showToast("Team added!", true);
   }).catch(e => showToast("Error: " + e.message, false));
 }
@@ -402,7 +403,8 @@ function importCSV(input) {
     names.forEach(name => {
       if (!newTeams.find(t => t.name === name)) {
         newTeams.push({name, logo: ""});
-        if (!scores[name]) scores[name] = Array(10).fill(null).map(() => ({rank:null,kills:null}));
+        var safeKey = sanitizeKey(name);
+        if (!scores[safeKey]) scores[safeKey] = Array(10).fill(null).map(() => ({rank:null,kills:null}));
         added++;
       }
     });
@@ -440,8 +442,9 @@ function saveAll() {
     const re = document.getElementById("rank_" + t.name + "_" + currentMatch);
     const ke = document.getElementById("kills_" + t.name + "_" + currentMatch);
     if (re && ke) {
-      if (!scores[t.name]) scores[t.name] = Array(10).fill(null).map(() => ({rank:null,kills:null}));
-      scores[t.name][currentMatch] = {
+      var safeKey = sanitizeKey(t.name);
+      if (!scores[safeKey]) scores[safeKey] = Array(10).fill(null).map(() => ({rank:null,kills:null}));
+      scores[safeKey][currentMatch] = {
         rank: re.value !== "" ? parseInt(re.value) : null,
         kills: ke.value !== "" ? parseInt(ke.value) : null
       };
@@ -456,8 +459,9 @@ function saveAll() {
 function autoSave(teamName) {
   const re = document.getElementById("rank_" + teamName + "_" + currentMatch);
   const ke = document.getElementById("kills_" + teamName + "_" + currentMatch);
-  if (!scores[teamName]) scores[teamName] = Array(10).fill(null).map(() => ({rank:null,kills:null}));
-  scores[teamName][currentMatch] = {
+  var safeKey = sanitizeKey(teamName);
+  if (!scores[safeKey]) scores[safeKey] = Array(10).fill(null).map(() => ({rank:null,kills:null}));
+  scores[safeKey][currentMatch] = {
     rank: re && re.value !== "" ? parseInt(re.value) : null,
     kills: ke && ke.value !== "" ? parseInt(ke.value) : null
   };
@@ -496,7 +500,8 @@ function renderScoreGrid() {
   }
   grid.innerHTML = "";
   teams.forEach(t => {
-    const m = (scores[t.name] && scores[t.name][currentMatch]) || {rank:null,kills:null};
+    var safeKey = sanitizeKey(t.name);
+    const m = (scores[safeKey] && scores[safeKey][currentMatch]) || {rank:null,kills:null};
     const hasData = m.rank !== null && m.kills !== null;
     const rv = m.rank !== null ? m.rank : "";
     const kv = m.kills !== null ? m.kills : "";
@@ -614,6 +619,10 @@ function closeNavFrame() {
   navIndex = -1;
 }
 
+function sanitizeKey(name) {
+  return name.replace(/[\.\#\$\/\[\]]/g, "_");
+}
+
 function importFromRegistration() {
   db.ref("pmac/registrations").once("value").then(function(snap) {
     var regs = snap.val();
@@ -653,8 +662,9 @@ function importFromRegistration() {
     // Init scores for new teams
     toImport.forEach(function(reg) {
       if (!reg.name) return;
-      if (!scores[reg.name]) {
-        scores[reg.name] = Array(10).fill(null).map(function() { return {rank:null, kills:null}; });
+      var safeKey = sanitizeKey(reg.name);
+      if (!scores[safeKey]) {
+        scores[safeKey] = Array(10).fill(null).map(function() { return {rank:null, kills:null}; });
       }
     });
 
