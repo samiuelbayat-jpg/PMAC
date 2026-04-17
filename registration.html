@@ -472,9 +472,7 @@ function renderTeams() {
     var t = regs[key];
     var st = t.status || "pending";
     var bc = st === "approved" ? "b-approved" : st === "rejected" ? "b-rejected" : "b-pending";
-  var logoHtml = t.logo
-  ? '<img src="' + t.logo + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display=\'none\'">'
-  : (t.name || "?").substring(0, 2);
+    var logoHtml = t.logo ? '<img src="' + t.logo + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display=\'none\'">' : (t.name || "?").substring(0, 2);
     var adminBtns = "";
     if (isAdmin) {
       if (st !== "approved") adminBtns += '<button class="ta ta-ok" data-key="' + key + '" data-status="approved">&#10003;</button>';
