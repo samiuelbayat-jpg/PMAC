@@ -231,6 +231,8 @@ if (sessionStorage.getItem("lby_adm") === "1") {
 }
 
 // listen
+document.addEventListener("DOMContentLoaded", function() {
+
 db.ref("pmac/lobby_teams").on("value", function(s) {
   teams = s.val() || {};
   render();
@@ -521,6 +523,7 @@ function toast(msg, ok) {
   t.className = "toast show " + (ok ? "tok" : "terr");
   setTimeout(function() { t.classList.remove("show"); }, 3000);
 }
-</script>
+
+});</script>
 </body>
 </html>
