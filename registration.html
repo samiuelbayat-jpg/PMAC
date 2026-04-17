@@ -159,8 +159,10 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <span class="admin-lbl">&#9679; Admin active</span>
       <button class="btn" id="logout-btn" style="padding:4px 10px;font-size:11px;">Logout</button>
       <button class="btn" id="edit-btn" style="padding:4px 10px;font-size:11px;">&#9998; Edit Event</button>
-      <button class="btn" id="toggle-btn" style="padding:4px 10px;font-size:11px;">&#9679; Toggle Registration</button>
-      <button class="btn" id="reset-btn" style="padding:4px 10px;font-size:11px;background:rgba(255,68,68,0.1);border-color:rgba(255,68,68,0.3);color:#ff4444;">&#128190; Save &amp; Reset</button>
+      <div id="admin-only-btns" style="display:none;gap:8px;align-items:center;flex-wrap:wrap;display:none;">
+        <button class="btn" id="toggle-btn" style="padding:4px 10px;font-size:11px;">&#9679; Toggle Registration</button>
+        <button class="btn" id="reset-btn" style="padding:4px 10px;font-size:11px;background:rgba(255,68,68,0.1);border-color:rgba(255,68,68,0.3);color:#ff4444;">&#128190; Save &amp; Reset</button>
+      </div>
     </div>
     <div class="event-edit-wrap" id="event-edit">
       <div class="eg">
@@ -181,7 +183,10 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   </div>
 
   <!-- REGISTER FORM -->
-  <div id="reg-wrap">
+  <div id="pub-reg-btn-wrap" style="margin-bottom:1rem;">
+  <button class="btn btn-gold" style="font-size:15px;padding:10px 24px;" onclick="document.getElementById('reg-wrap').style.display='block';document.getElementById('pub-reg-btn-wrap').style.display='none';">+ Register Your Team</button>
+</div>
+<div id="reg-wrap" style="display:none;">
     <div class="reg-box">
       <div class="reg-title">Register Your Team</div>
       <div class="reg-sub">Fill in all fields and click Register</div>
@@ -398,6 +403,8 @@ document.getElementById("reg-btn").onclick = function() {
   if (!name) { msg.textContent = "Enter team name"; msg.style.color = "#ff4444"; return; }
   if (!tag) { msg.textContent = "Enter team tag"; msg.style.color = "#ff4444"; return; }
   if (!manager) { msg.textContent = "Enter team manager name"; msg.style.color = "#ff4444"; return; }
+  var mgrPhone = document.getElementById("reg-mgr-phone").value.trim();
+  if (!mgrPhone) { msg.textContent = "Enter manager phone number"; msg.style.color = "#ff4444"; return; }
   var keys = Object.keys(regs);
   for (var i = 0; i < keys.length; i++) {
     if (regs[keys[i]].name === name) { msg.textContent = "Team already registered"; msg.style.color = "#ff4444"; return; }
@@ -413,13 +420,14 @@ document.getElementById("reg-btn").onclick = function() {
 
   function doSave(logoUrl) {
     db.ref("pmac/registrations/r" + Date.now()).set({
-      name: name, tag: tag, manager: manager,
+      name: name, tag: tag, manager: manager, managerPhone: mgrPhone,
       logo: logoUrl, status: "pending",
       registeredAt: Date.now(), deleteCode: code
     }).then(function() {
       document.getElementById("reg-name").value = "";
       document.getElementById("reg-tag").value = "";
       document.getElementById("reg-manager").value = "";
+      document.getElementById("reg-mgr-phone").value = "";
       document.getElementById("logo-file").value = "";
       document.getElementById("logo-prev").style.display = "none";
       document.getElementById("logo-fname").textContent = "";
