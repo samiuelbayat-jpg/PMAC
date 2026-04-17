@@ -159,7 +159,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <span class="admin-lbl">&#9679; Admin active</span>
       <button class="btn" id="logout-btn" style="padding:4px 10px;font-size:11px;">Logout</button>
       <button class="btn" id="edit-btn" style="padding:4px 10px;font-size:11px;">&#9998; Edit Event</button>
-      <div id="admin-only-btns" style="display:none;gap:8px;align-items:center;flex-wrap:wrap;display:none;">
+      <div id="admin-only-btns" style="display:none;gap:8px;align-items:center;flex-wrap:wrap;">
         <button class="btn" id="toggle-btn" style="padding:4px 10px;font-size:11px;">&#9679; Toggle Registration</button>
         <button class="btn" id="reset-btn" style="padding:4px 10px;font-size:11px;background:rgba(255,68,68,0.1);border-color:rgba(255,68,68,0.3);color:#ff4444;">&#128190; Save &amp; Reset</button>
       </div>
@@ -267,7 +267,10 @@ var logoFile = null;
 var editEvStatus = "open";
 
 // restore session
-if (sessionStorage.getItem("reg_adm") === "1") { setAdmin(true); }
+if (sessionStorage.getItem("reg_adm") === "1") {
+  setAdmin(true);
+  document.getElementById("admin-only-btns").style.display = "flex";
+}
 
 // Firebase listeners
 db.ref("pmac/event").on("value", function(snap) {
@@ -316,7 +319,13 @@ function setAdmin(on) {
   isAdmin = on;
   document.getElementById("pw-row").style.display = on ? "none" : "flex";
   document.getElementById("admin-active").style.display = on ? "flex" : "none";
+  document.getElementById("admin-only-btns").style.display = on ? "flex" : "none";
   document.getElementById("pw-err").textContent = "";
+  if (on) {
+    document.getElementById("reg-wrap").style.display = "block";
+    var pbw = document.getElementById("pub-reg-btn-wrap");
+    if (pbw) pbw.style.display = "none";
+  }
   renderTeams();
 }
 
