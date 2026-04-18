@@ -196,6 +196,7 @@ function loadEvent() {
 function loadTeams() {
   db.ref("pmac/teams").on("value", function(s){
     var v = s.val() || [];
+    teamsData = v || {};
     teams = Array.isArray(v) ? v.filter(Boolean) : Object.values(v || {}).filter(Boolean);
     teamsReady = true;
     document.getElementById("status").textContent = "Teams: " + teams.length + " loaded. Waiting for scores...";
@@ -214,6 +215,16 @@ function loadScores() {
   }, function(e) {
     document.getElementById("status").textContent = "Scores error: " + e.message;
     toast("Scores error: " + e.message, false);
+  });
+}
+
+
+function loadRegistrations() {
+  db.ref("pmac/registrations").on("value", function(s){
+    registrationsData = s.val() || {};
+    if (teamsReady && scoresReady) build();
+  }, function(e) {
+    toast("Registrations error: " + e.message, false);
   });
 }
 
@@ -255,6 +266,7 @@ document.getElementById("inp-event").oninput = build;
 function getStandings() {
   return teams.map(function(team) {
     var teamName = safeText(team && team.name, "Unnamed Team");
+    var teamTag = safeText(team && team.tag, "");
     var key = sanitizeFirebaseKey(teamName);
     var matchData = scores[key] || [];
     var totalKills = 0;
@@ -272,9 +284,14 @@ function getStandings() {
       }
     }
 
+    var directLogo = safeText(team && team.logo, "");
+    var mergedTeam = { name: teamName, tag: teamTag, logo: directLogo };
+    var resolvedLogo = directLogo || findLogoForTeam(mergedTeam);
+
     return {
       name: teamName,
-      logo: safeText(team && team.logo, ""),
+      tag: teamTag,
+      logo: resolvedLogo,
       kills: totalKills,
       pts: totalPoints
     };
@@ -351,6 +368,7 @@ function createLogoCell(team) {
     img.onerror = function() {
       wrap.textContent = initials;
     };
+    img.referrerPolicy = "no-referrer";
   }
 
   return wrap;
