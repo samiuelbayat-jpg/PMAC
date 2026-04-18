@@ -223,6 +223,13 @@ var lobbyList = [];
 var lobbyIdx = 0;
 var lobbyLoaded = false;
 
+// Session restore — MUST be before Firebase listeners
+var _savedAdm = sessionStorage.getItem("reg_adm");
+if (_savedAdm === "1" || _savedAdm === "super") {
+  isAdmin = true;
+  isSuperAdmin = _savedAdm === "super";
+}
+
 // Firebase listeners
 db.ref("pmac/event").on("value", function(s) {
   eventInfo = s.val() || {};
@@ -236,13 +243,6 @@ db.ref("pmac/registrations").on("value", function(s) {
   renderTeams();
   checkTeamStatus();
 });
-
-// Session restore
-var _savedAdm = sessionStorage.getItem("reg_adm");
-if (_savedAdm === "1" || _savedAdm === "super") {
-  isAdmin = true;
-  isSuperAdmin = _savedAdm === "super";
-}
 
 // TABS
 function showTab(tab) {
@@ -284,6 +284,13 @@ function updateEventCard() {
   document.getElementById("closed-wrap").style.display = (!isAdmin && !canReg) ? "block" : "none";
   if (!canReg && !isAdmin) {
     document.getElementById("closed-msg").textContent = isFull ? "Registration is full." : "Registration is currently closed.";
+  }
+  // Always re-apply admin UI state after Firebase updates
+  if (isAdmin) {
+    document.getElementById("hdr-login-row").style.display = "none";
+    document.getElementById("hdr-admin-row").style.display = "flex";
+    document.getElementById("admin-controls").style.display = "block";
+    document.getElementById("admin-only").style.display = isSuperAdmin ? "flex" : "none";
   }
 }
 
