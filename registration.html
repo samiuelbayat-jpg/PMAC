@@ -924,11 +924,21 @@ function toast(msg,ok) {
 <div class="toast" id="toast"></div>
 
 <script>
-// Init admin UI from session after DOM is ready
-var _adm = sessionStorage.getItem("reg_adm");
-if (_adm === "1" || _adm === "super") {
-  showAdminUI();
-}
+// Init admin UI from session - direct DOM manipulation, no function calls
+(function() {
+  var _adm = sessionStorage.getItem("reg_adm");
+  if (_adm === "1" || _adm === "super") {
+    var isSA = _adm === "super";
+    document.getElementById("hdr-login-row").style.display = "none";
+    document.getElementById("hdr-admin-row").style.display = "flex";
+    document.getElementById("hdr-admin-lbl").textContent = isSA ? "● Super Admin" : "● Admin";
+    document.getElementById("admin-controls").style.display = "block";
+    document.getElementById("admin-only").style.display = isSA ? "flex" : "none";
+    document.getElementById("reg-box").style.display = "block";
+    document.getElementById("reg-btn-wrap").style.display = "none";
+    document.getElementById("closed-wrap").style.display = "none";
+  }
+})();
 </script>
 </body>
 </html>
