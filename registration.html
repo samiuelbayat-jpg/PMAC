@@ -285,13 +285,8 @@ function updateEventCard() {
   if (!canReg && !isAdmin) {
     document.getElementById("closed-msg").textContent = isFull ? "Registration is full." : "Registration is currently closed.";
   }
-  // Always re-apply admin UI state after Firebase updates
-  if (isAdmin) {
-    document.getElementById("hdr-login-row").style.display = "none";
-    document.getElementById("hdr-admin-row").style.display = "flex";
-    document.getElementById("admin-controls").style.display = "block";
-    document.getElementById("admin-only").style.display = isSuperAdmin ? "flex" : "none";
-  }
+  // Re-apply admin UI after every Firebase update
+  if (isAdmin) showAdminUI();
 }
 
 // ADMIN
@@ -306,13 +301,20 @@ function doAdminLogin() {
   } else {
     document.getElementById("pw-err").textContent = "Wrong password"; return;
   }
+  document.getElementById("pw-err").textContent = "";
+  showAdminUI();
+  updateEventCard();
+}
+
+function showAdminUI() {
   document.getElementById("hdr-login-row").style.display = "none";
   document.getElementById("hdr-admin-row").style.display = "flex";
   document.getElementById("hdr-admin-lbl").textContent = isSuperAdmin ? "● Super Admin" : "● Admin";
   document.getElementById("admin-controls").style.display = "block";
   document.getElementById("admin-only").style.display = isSuperAdmin ? "flex" : "none";
-  document.getElementById("pw-err").textContent = "";
-  updateEventCard();
+  document.getElementById("reg-box").style.display = "block";
+  document.getElementById("reg-btn-wrap").style.display = "none";
+  document.getElementById("closed-wrap").style.display = "none";
 }
 function doAdminLogout() {
   sessionStorage.removeItem("reg_adm");
@@ -925,11 +927,7 @@ function toast(msg,ok) {
 // Init admin UI from session after DOM is ready
 var _adm = sessionStorage.getItem("reg_adm");
 if (_adm === "1" || _adm === "super") {
-  document.getElementById("hdr-login-row").style.display = "none";
-  document.getElementById("hdr-admin-row").style.display = "flex";
-  document.getElementById("hdr-admin-lbl").textContent = _adm === "super" ? "● Super Admin" : "● Admin";
-  document.getElementById("admin-controls").style.display = "block";
-  document.getElementById("admin-only").style.display = _adm === "super" ? "flex" : "none";
+  showAdminUI();
 }
 </script>
 </body>
