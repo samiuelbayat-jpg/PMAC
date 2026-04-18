@@ -127,6 +127,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .ta-no{color:#ff4444;}.ta-no:hover{background:rgba(255,68,68,0.1);border-color:rgba(255,68,68,0.3);}
 .ta-del:hover{color:#ff4444;border-color:rgba(255,68,68,0.3);}
 .ta-rem{color:#606878;font-size:10px;}.ta-rem:hover{color:#ff4444;border-color:rgba(255,68,68,0.3);}
+.ta-wa{color:#25d366;font-size:11px;}.ta-wa:hover{background:rgba(37,211,102,0.1);border-color:rgba(37,211,102,0.3);}
 
 /* CONFIRM */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999;display:none;align-items:center;justify-content:center;padding:1rem;}
@@ -176,9 +177,18 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .lobby-row-meta{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;margin-top:2px;}
 .lobby-empty{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;text-align:center;padding:2.5rem;letter-spacing:.06em;}
 
-.toast{position:fixed;bottom:2rem;right:2rem;z-index:2000;font-weight:700;font-size:14px;padding:10px 20px;border-radius:4px;transform:translateY(20px);opacity:0;transition:all .25s;pointer-events:none;font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em;}
+.toast{position:fixed;bottom:2rem;right:2rem;z-index:2000;font-weight:700;font-size:14px;padding:10px 20px;border-radius:20px;transform:translateY(20px);opacity:0;transition:all .25s;pointer-events:none;font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em;}
 .toast.show{transform:translateY(0);opacity:1;}
 .tok{background:#e8b800;color:#000;}.terr{background:#ff4444;color:#fff;}
+.notif-banner{border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:none;align-items:center;gap:12px;flex-wrap:wrap;}
+.notif-approved{background:linear-gradient(135deg,rgba(0,201,122,0.15),rgba(0,201,122,0.08));border:1px solid rgba(0,201,122,0.4);}
+.notif-rejected{background:linear-gradient(135deg,rgba(255,68,68,0.15),rgba(255,68,68,0.08));border:1px solid rgba(255,68,68,0.4);}
+.notif-icon{font-size:28px;flex-shrink:0;}
+.notif-text{flex:1;}
+.notif-title{font-weight:900;font-size:16px;letter-spacing:.04em;text-transform:uppercase;}
+.notif-sub{font-family:'Share Tech Mono',monospace;font-size:10px;margin-top:3px;color:#8a96a8;}
+.notif-close{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;cursor:pointer;padding:4px 8px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:none;}
+.notif-close:hover{color:#eef0f5;}
 ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:#0a0b0d;}::-webkit-scrollbar-thumb{background:#161a1f;border-radius:3px;}
 </style>
 </head>
@@ -223,6 +233,7 @@ db.ref("pmac/registrations").on("value", function(s) {
   regs = s.val() || {};
   updateEventCard();
   renderTeams();
+  checkTeamStatus();
 });
 
 // Session
@@ -411,9 +422,12 @@ function doRegister() {
       document.getElementById("reg-logo-prev").style.display = "none";
       regLogoFile = null;
       btn.textContent = "Register"; btn.disabled = false;
+      // Save code to localStorage so we can show status notifications
+      localStorage.setItem("pmac_reg_code", code);
+      localStorage.setItem("pmac_reg_name", name);
       msg.innerHTML = "<b style='color:#00c97a'>&#10003; " + name + " registered!</b><br>" +
         "Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>" + code + "</b><br>" +
-        "<span style='color:#ff4444;font-size:9px;'>SAVE THIS CODE to remove your registration</span>";
+        "<span style='color:#ff4444;font-size:9px;'>SAVE THIS CODE to remove your registration. Status updates will appear on this page automatically.</span>";
     }).catch(function(e) {
       btn.textContent = "Register"; btn.disabled = false;
       msg.textContent = "Error: " + e.message; msg.style.color = "#ff4444";
@@ -465,6 +479,8 @@ function renderTeams() {
     if (isAdmin) {
       if (st !== "approved") adminBtns += '<button class="ta ta-ok" data-key="'+key+'" data-status="approved">&#10003;</button>';
       if (st !== "rejected") adminBtns += '<button class="ta ta-no" data-key="'+key+'" data-status="rejected">&#10005;</button>';
+      if (st === "approved") adminBtns += '<button class="ta ta-wa" data-key="'+key+'" data-status="approved" title="Copy WhatsApp message">&#128172;&#10003;</button>';
+      if (st === "rejected") adminBtns += '<button class="ta ta-wa" data-key="'+key+'" data-status="rejected" title="Copy WhatsApp message">&#128172;&#10005;</button>';
       adminBtns += '<button class="ta ta-del" data-key="'+key+'">&#128465;</button>';
     }
     var selfBtn = !isAdmin ? '<button class="ta ta-rem" data-key="'+key+'">Remove</button>' : "";
@@ -483,8 +499,12 @@ function renderTeams() {
   });
   list.querySelectorAll(".ta-ok,.ta-no").forEach(function(btn) {
     btn.onclick = function() {
-      db.ref("pmac/registrations/"+this.dataset.key+"/status").set(this.dataset.status)
-        .then(function(){toast("Updated!",true);}).catch(function(e){toast("Error: "+e.message,false);});
+      var key = this.dataset.key;
+      var status = this.dataset.status;
+      db.ref("pmac/registrations/"+key+"/status").set(status)
+        .then(function(){
+          toast("Updated! Click &#128172; to copy WhatsApp message.", true);
+        }).catch(function(e){toast("Error: "+e.message,false);});
     };
   });
   list.querySelectorAll(".ta-del").forEach(function(btn) {
@@ -492,6 +512,35 @@ function renderTeams() {
       if (!confirm("Delete this registration?")) return;
       db.ref("pmac/registrations/"+this.dataset.key).remove()
         .then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});
+    };
+  });
+  list.querySelectorAll(".ta-wa").forEach(function(btn) {
+    btn.onclick = function() {
+      var key = this.dataset.key;
+      var status = this.dataset.status;
+      var t = regs[key];
+      if (!t) return;
+      var evName = eventInfo.name || "PMAC Tournament";
+      var phone = (t.managerPhone || "").replace(/[^0-9+]/g, "");
+      var msg = "";
+      if (status === "approved") {
+        msg = "✅ Congratulations " + t.name + "!\n\n" +
+          "Your team has been APPROVED for " + evName + " 🎮\n\n" +
+          "Manager: " + (t.manager||"—") + "\n" +
+          "Please stay tuned for further updates.\n\n" +
+          "— PMAC Afghanistan";
+      } else {
+        msg = "❌ " + t.name + "\n\n" +
+          "We regret to inform you that your team registration for " + evName + " has been REJECTED.\n\n" +
+          "Manager: " + (t.manager||"—") + "\n" +
+          "If you have questions please contact the admin.\n\n" +
+          "— PMAC Afghanistan";
+      }
+      var encoded = encodeURIComponent(msg);
+      var waUrl = phone
+        ? "https://wa.me/" + phone.replace("+","") + "?text=" + encoded
+        : "https://wa.me/?text=" + encoded;
+      window.open(waUrl, "_blank");
     };
   });
   list.querySelectorAll(".ta-rem").forEach(function(btn) {
@@ -608,6 +657,49 @@ function renderLobbyCard() {
   });
 }
 
+function checkTeamStatus() {
+  // Check if user has a saved delete code matching any registration
+  var savedCode = localStorage.getItem("pmac_reg_code");
+  var savedName = localStorage.getItem("pmac_reg_name");
+  if (!savedCode || !savedName) return;
+
+  var keys = Object.keys(regs);
+  for (var i = 0; i < keys.length; i++) {
+    var t = regs[keys[i]];
+    if (t.deleteCode === savedCode && t.name === savedName) {
+      var banner = document.getElementById("notif-banner");
+      var evName = eventInfo.name || "PMAC Tournament";
+      if (t.status === "approved") {
+        banner.className = "notif-banner notif-approved";
+        banner.style.display = "flex";
+        document.getElementById("notif-icon").textContent = "✅";
+        document.getElementById("notif-title").textContent = "Congratulations! " + t.name + " is Approved";
+        document.getElementById("notif-sub").textContent = "Your team has been approved for " + evName + ". Stay tuned for further updates.";
+      } else if (t.status === "rejected") {
+        banner.className = "notif-banner notif-rejected";
+        banner.style.display = "flex";
+        document.getElementById("notif-icon").textContent = "❌";
+        document.getElementById("notif-title").textContent = t.name + " — Registration Rejected";
+        document.getElementById("notif-sub").textContent = "Unfortunately your team was not approved for " + evName + ". Contact admin for more info.";
+      } else {
+        banner.style.display = "none";
+      }
+      return;
+    }
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.cssText = "position:fixed;top:-9999px;left:-9999px;";
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand("copy"); toast("WhatsApp message copied! Paste it in WhatsApp.", true); }
+  catch(e) { toast("Could not copy. Please copy manually.", false); }
+  document.body.removeChild(ta);
+}
+
 function toast(msg,ok) {
   var t=document.getElementById("toast");
   t.innerHTML=msg; t.className="toast show "+(ok?"tok":"terr");
@@ -651,6 +743,16 @@ function toast(msg,ok) {
 
 <!-- REGISTRATION SECTION -->
 <div class="section show" id="sec-reg">
+
+  <!-- STATUS NOTIFICATION BANNER -->
+  <div class="notif-banner" id="notif-banner">
+    <div class="notif-icon" id="notif-icon"></div>
+    <div class="notif-text">
+      <div class="notif-title" id="notif-title"></div>
+      <div class="notif-sub" id="notif-sub"></div>
+    </div>
+    <button class="notif-close" onclick="document.getElementById('notif-banner').style.display='none'">Dismiss</button>
+  </div>
 
   <!-- EVENT CARD -->
   <div class="event-card">
