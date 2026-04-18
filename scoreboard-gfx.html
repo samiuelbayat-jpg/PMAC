@@ -28,7 +28,7 @@ body{background:#0a0b0d;color:#eef0f5;font-family:'Barlow Condensed',sans-serif;
 .ci:focus{border-color:#e8b800;}
 .status{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;margin-bottom:1rem;padding:.5rem 0;}
 #gfx-wrap{overflow-x:auto;margin-bottom:1.5rem;}
-#gfx{width:1080px;height:1080px;position:relative;overflow:hidden;font-family:'Barlow Condensed',sans-serif;background:#060810;flex-shrink:0;}
+#gfx{width:1080px;position:relative;overflow:hidden;font-family:'Barlow Condensed',sans-serif;background:#060810;flex-shrink:0;}
 .g-bg-radial{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(232,184,0,0.07) 0%,transparent 70%),linear-gradient(180deg,#080b12 0%,#060810 50%,#080b12 100%);}
 .g-bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(232,184,0,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(232,184,0,0.025) 1px,transparent 1px);background-size:54px 54px;}
 .g-center-line{position:absolute;top:0;bottom:0;left:50%;width:1px;background:linear-gradient(180deg,transparent,rgba(232,184,0,0.4) 20%,rgba(232,184,0,0.6) 50%,rgba(232,184,0,0.4) 80%,transparent);transform:translateX(-50%);}
@@ -265,6 +265,12 @@ function build(){
     '<div class="g-ftxt">#1=10 #2=6 #3=5 #4=4 #5=3 #6=2 #7-8=1 +1/kill</div>'+
     '<div class="g-ftxt">'+today+'</div>';
   gfx.appendChild(foot);
+
+  // Set height to fit content
+  var rowHeight = 56;
+  var half = Math.ceil(Math.min(st.length,24)/2);
+  var totalHeight = 170 + (half * rowHeight) + 40;
+  gfx.style.height = totalHeight + "px";
 }
 
 function toast(msg,ok){
