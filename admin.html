@@ -211,7 +211,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         </div>
         <input type="file" id="csv-file" accept=".csv,.txt" style="display:none" onchange="importCSV(this)">
         <button class="btn" onclick="document.getElementById('csv-file').click()">&#128196; Import CSV</button>
-        <button class="btn btn-primary" onclick="importFromRegistration()" style="white-space:nowrap;">&#128203; Import from Registration</button>
+        <button class="btn btn-primary" onclick="if(!isSuperAdmin){showToast('Super Admin access required',false);return;}importFromRegistration()" style="white-space:nowrap;">&#128203; Import from Registration</button>
       </div>
     </div>
     <div class="mgmt-title" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;">
@@ -276,6 +276,8 @@ const storage = firebase.storage();
 
 
 const ADMIN_PASSWORD = "pmac2024";
+const SUPER_ADMIN_PASSWORD = "pmac@super2024";
+let isSuperAdmin = false;
 let currentMatch = 0;
 let teams = [];
 let scores = {};
@@ -315,12 +317,17 @@ function previewScore(teamName) {
 
 function doLogin() {
   const pw = document.getElementById("pw-input").value;
-  if (pw !== ADMIN_PASSWORD) {
+  if (pw === SUPER_ADMIN_PASSWORD) {
+    isSuperAdmin = true;
+    sessionStorage.setItem("pmac_admin_auth", "super");
+  } else if (pw === ADMIN_PASSWORD) {
+    isSuperAdmin = false;
+    sessionStorage.setItem("pmac_admin_auth", "true");
+  } else {
     document.getElementById("login-err").textContent = "Wrong password";
     document.getElementById("pw-input").value = "";
     return;
   }
-  sessionStorage.setItem("pmac_admin_auth", "true");
   showMainPage();
 }
 
@@ -427,7 +434,7 @@ function renderTeamsMgmt() {
     const row = document.createElement("div"); row.className = "team-mgmt-row";
     row.innerHTML = '<img class="team-mgmt-logo" src="'+(t.logo||'')+'" alt="" onerror="this.style.opacity=0.2">' +
       '<div class="team-mgmt-name">'+t.name+'</div>' +
-      '<span class="team-mgmt-del" onclick="removeTeam(\'' + t.name.replace(/'/g,"\'") + '\')">&#10005; Remove</span>';
+      (isSuperAdmin ? '<span class="team-mgmt-del" onclick="removeTeam(\'' + t.name.replace(/\'/, "\'") + '\')" >&#10005; Remove</span>' : '');
     list.appendChild(row);
   });
 }
@@ -557,7 +564,9 @@ function confirmArchive() {
 
 
 // Auto-login if already authenticated in this session
-if (sessionStorage.getItem("pmac_admin_auth") === "true") {
+var _admSession = sessionStorage.getItem("pmac_admin_auth");
+if (_admSession === "super") { isSuperAdmin = true; }
+if (_admSession === "true" || _admSession === "super") {
   showMainPage();
   const fbStatus = document.getElementById("fb-status");
   dbTeamsRef.on("value", (snap) => {
