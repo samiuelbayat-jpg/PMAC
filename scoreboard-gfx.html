@@ -145,7 +145,7 @@ function tryBuild(){ ready++; if(ready>=2) build(); }
 
 db.ref("pmac/event").once("value").then(function(s){
   eventInfo=s.val()||{};
-  if(eventInfo.name) document.getElementById("inp-event").value = eventInfo.name;
+  // event name loaded - will be used in build()
 });
 db.ref("pmac/teams").on("value",function(s){
   var v=s.val()||[]; teams=Array.isArray(v)?v:Object.values(v);
