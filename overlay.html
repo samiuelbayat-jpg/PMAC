@@ -9,7 +9,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{width:1920px;height:1080px;overflow:hidden;background:transparent;font-family:'Barlow Condensed',sans-serif;}
-.panel{position:absolute;right:0;bottom:0;width:350px;background:rgba(10,11,13,0.96);border-left:3px solid #e8b800;border-top:3px solid #e8b800;display:flex;flex-direction:column;}
+.panel{position:absolute;right:0;bottom:0;width:260px;background:rgba(10,11,13,0.96);border-left:3px solid #e8b800;border-top:3px solid #e8b800;display:flex;flex-direction:column;}
 .panel-top{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(10,11,13,0.99);border-bottom:2px solid rgba(232,184,0,0.4);flex-shrink:0;}
 .panel-logo{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid #e8b800;flex-shrink:0;}
 .panel-title-text{font-weight:900;font-size:14px;letter-spacing:0.1em;text-transform:uppercase;color:#e8b800;flex:1;}
@@ -18,17 +18,17 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:transparent;font
 .live-dot{width:5px;height:5px;border-radius:50%;background:#ff4444;animation:pulse 1.4s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.35;transform:scale(0.75)}}
 .match-count{font-family:'Share Tech Mono',monospace;font-size:8px;color:#606878;letter-spacing:0.08em;}
-.col-headers{display:grid;grid-template-columns:26px 28px minmax(0,1fr) 38px 44px 44px;padding:4px 10px;background:rgba(22,26,31,0.95);border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;}
+.col-headers{display:grid;grid-template-columns:22px 24px minmax(0,1fr) 32px 36px 36px;padding:4px 6px;background:rgba(22,26,31,0.95);border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;}
 .col-h{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#606878;text-align:center;}
 .col-h.L{text-align:left;}
 .col-h.acc{color:#e8b800;}
 .teams-list{display:flex;flex-direction:column;}
-.team-row{display:grid;grid-template-columns:26px 28px minmax(0,1fr) 38px 44px 44px;align-items:center;padding:3px 10px;border-bottom:1px solid rgba(255,255,255,0.04);border-left:3px solid transparent;}
+.team-row{display:grid;grid-template-columns:22px 24px minmax(0,1fr) 32px 36px 36px;align-items:center;padding:3px 6px;border-bottom:1px solid rgba(255,255,255,0.04);border-left:3px solid transparent;}
 .team-row.gold{background:rgba(245,200,66,0.08);border-left-color:#f5c842;}
 .team-row.silver{background:rgba(168,184,200,0.06);border-left-color:#a8b8c8;}
 .team-row.bronze{background:rgba(212,131,90,0.06);border-left-color:#d4835a;}
 .pos{font-weight:900;font-size:12px;text-align:center;}
-.pos.g{color:#f5c842;}.pos.s{color:#a8b8c8;}.pos.b{color:#d4835a;}.pos.x{color:#606878;font-size:11px;}
+.pos.g{color:#f5c842;}.pos.s{color:#a8b8c8;}.pos.b{color:#d4835a;}.pos.x{color:#606878;font-size:10px;}
 .t-logo{width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid rgba(232,184,0,0.25);background:rgba(255,255,255,0.05);}
 .t-info{min-width:0;}
 .t-name{font-weight:800;font-size:11px;letter-spacing:0.04em;text-transform:uppercase;color:#eef0f5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -36,7 +36,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:transparent;font
 .t-kills{font-weight:700;font-size:13px;color:#8a96a8;text-align:center;}
 .t-place{font-weight:700;font-size:12px;color:#8a96a8;text-align:center;}
 .t-pts{font-weight:900;font-size:15px;color:#e8b800;text-align:center;}
-.ticker{position:absolute;bottom:0;left:0;right:350px;height:44px;background:rgba(10,11,13,0.96);border-top:3px solid #e8b800;display:flex;align-items:center;overflow:hidden;}
+.ticker{position:absolute;bottom:0;left:0;right:260px;height:44px;background:rgba(10,11,13,0.96);border-top:3px solid #e8b800;display:flex;align-items:center;overflow:hidden;}
 .ticker-label{background:#e8b800;color:#000;font-weight:900;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;padding:0 14px;height:100%;display:flex;align-items:center;flex-shrink:0;}
 .ticker-track{flex:1;overflow:hidden;height:100%;}
 .ticker-inner{display:flex;align-items:center;height:100%;white-space:nowrap;animation:tick 50s linear infinite;}
