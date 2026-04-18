@@ -392,6 +392,63 @@ function createFooter(gfx, today) {
   gfx.appendChild(foot);
 }
 
+
+function normName(v) {
+  return String(v || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function normTag(v) {
+  return String(v || "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "")
+    .trim();
+}
+
+function findLogoForTeam(team) {
+  if (!team) return "";
+  var teamName = normName(team.name);
+  var teamTag = normTag(team.tag);
+
+  var candidates = [];
+
+  Object.keys(teamsData || {}).forEach(function(k) {
+    var item = teamsData[k] || {};
+    candidates.push(item);
+  });
+
+  Object.keys(registrationsData || {}).forEach(function(k) {
+    var item = registrationsData[k] || {};
+    candidates.push(item);
+  });
+
+  if (teamTag) {
+    for (var i = 0; i < candidates.length; i++) {
+      var c = candidates[i] || {};
+      if (normTag(c.tag) === teamTag && c.logo) return c.logo;
+    }
+  }
+
+  if (teamName) {
+    for (var j = 0; j < candidates.length; j++) {
+      var c2 = candidates[j] || {};
+      if (normName(c2.name) === teamName && c2.logo) return c2.logo;
+    }
+  }
+
+  if (teamName) {
+    for (var m = 0; m < candidates.length; m++) {
+      var c3 = candidates[m] || {};
+      var cn = normName(c3.name);
+      if (cn && (cn.indexOf(teamName) !== -1 || teamName.indexOf(cn) !== -1) && c3.logo) return c3.logo;
+    }
+  }
+
+  return "";
+}
+
 function build() {
   if (!teamsReady || !scoresReady) return;
 
