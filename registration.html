@@ -111,7 +111,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .team-row{display:flex;align-items:center;gap:10px;background:#0f1115;border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:10px 14px;margin-bottom:8px;border-left:3px solid transparent;}
 .team-row.pending{border-left-color:rgba(232,184,0,0.5);}
 .team-row.approved{border-left-color:rgba(0,201,122,0.6);}
-.team-row.rejected{border-left-color:rgba(255,68,68,0.5);opacity:.5;}
+.team-row.rejected{border-left-color:rgba(255,68,68,0.5);opacity:.75;}
 .tr-num{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;min-width:26px;text-align:right;flex-shrink:0;}
 .tr-logo{width:34px;height:34px;border-radius:50%;border:1px solid rgba(232,184,0,0.2);background:#161a1f;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#e8b800;overflow:hidden;}
 .tr-info{flex:1;min-width:0;}
@@ -208,6 +208,7 @@ var db = firebase.database();
 var storage = firebase.storage();
 
 var isAdmin = false;
+var isSuperAdmin = false;
 var evStatus = "open";
 var evMax = 24;
 var eventInfo = {};
@@ -287,19 +288,26 @@ function updateEventCard() {
 // ADMIN
 function doAdminLogin() {
   var pw = document.getElementById("admin-pw").value;
-  if (pw !== "pmac2024") { document.getElementById("pw-err").textContent = "Wrong password"; return; }
-  sessionStorage.setItem("reg_adm", "1");
-  isAdmin = true;
+  if (pw === "pmac@super2024") {
+    sessionStorage.setItem("reg_adm", "super");
+    isAdmin = true; isSuperAdmin = true;
+  } else if (pw === "pmac2024") {
+    sessionStorage.setItem("reg_adm", "1");
+    isAdmin = true; isSuperAdmin = false;
+  } else {
+    document.getElementById("pw-err").textContent = "Wrong password"; return;
+  }
   document.getElementById("hdr-login-row").style.display = "none";
   document.getElementById("hdr-admin-row").style.display = "flex";
+  document.getElementById("hdr-admin-lbl").textContent = isSuperAdmin ? "● Super Admin" : "● Admin";
   document.getElementById("admin-controls").style.display = "block";
-  document.getElementById("admin-only").style.display = "flex";
+  document.getElementById("admin-only").style.display = isSuperAdmin ? "flex" : "none";
   document.getElementById("pw-err").textContent = "";
   updateEventCard();
 }
 function doAdminLogout() {
   sessionStorage.removeItem("reg_adm");
-  isAdmin = false;
+  isAdmin = false; isSuperAdmin = false;
   document.getElementById("hdr-login-row").style.display = "flex";
   document.getElementById("hdr-admin-row").style.display = "none";
   document.getElementById("admin-controls").style.display = "none";
@@ -444,7 +452,7 @@ function doRegister() {
 // FILTER TEAMS
 function setFilter(f) {
   filterMode = f;
-  ["all","pending","approved"].forEach(function(m) {
+  ["all","pending","approved","rejected"].forEach(function(m) {
     document.getElementById("f-" + m).className = "fbtn" + (m === f ? " on" : "");
   });
   renderTeams();
@@ -479,8 +487,8 @@ function renderTeams() {
     if (isAdmin) {
       if (st !== "approved") adminBtns += '<button class="ta ta-ok" data-key="'+key+'" data-status="approved">&#10003;</button>';
       if (st !== "rejected") adminBtns += '<button class="ta ta-no" data-key="'+key+'" data-status="rejected">&#10005;</button>';
-      if (st === "approved") adminBtns += '<button class="ta ta-wa" data-key="'+key+'" data-status="approved" title="Copy WhatsApp message">&#128172;&#10003;</button>';
-      if (st === "rejected") adminBtns += '<button class="ta ta-wa" data-key="'+key+'" data-status="rejected" title="Copy WhatsApp message">&#128172;&#10005;</button>';
+      if (st === "approved") adminBtns += '<button class="ta ta-wa" data-key="'+key+'" data-status="approved" title="WhatsApp">&#128172;&#10003;</button>';
+      if (st === "rejected") adminBtns += '<button class="ta ta-wa" data-key="'+key+'" data-status="rejected" title="WhatsApp">&#128172;&#10005;</button>';
       adminBtns += '<button class="ta ta-del" data-key="'+key+'">&#128465;</button>';
     }
     var selfBtn = !isAdmin ? '<button class="ta ta-rem" data-key="'+key+'">Remove</button>' : "";
@@ -772,12 +780,13 @@ function toast(msg,ok) {
   <!-- ADMIN CONTROLS (shown after login) -->
   <div id="admin-controls" style="display:none;margin-bottom:1.25rem;">
     <div class="box">
-      <div class="row" id="admin-row">
+      <div class="row" id="admin-row" style="flex-wrap:wrap;">
+        <!-- Admin can: toggle reg, edit event, save & reset -->
+        <button class="btn" id="toggle-reg-btn" onclick="doToggleReg()" style="padding:6px 16px;font-size:12px;">&#9679; Toggle Registration</button>
         <button class="btn" onclick="toggleEditEvent()" style="padding:6px 16px;font-size:12px;">&#9998; Edit Event</button>
-        <div class="admin-only" id="admin-only" style="display:none;gap:8px;align-items:center;">
-          <button class="btn" onclick="doToggleReg()" style="padding:6px 16px;font-size:12px;">&#9679; Toggle Registration</button>
-          <button class="btn btn-red" onclick="doSaveReset()" style="padding:6px 16px;font-size:12px;">&#128190; Save &amp; Reset</button>
-        </div>
+        <button class="btn btn-red" onclick="doSaveReset()" style="padding:6px 16px;font-size:12px;">&#128190; Save &amp; Reset</button>
+        <!-- Super admin only extras -->
+        <div id="admin-only" style="display:none;gap:8px;align-items:center;flex-wrap:wrap;"></div>
       </div>
     </div>
   </div>
@@ -848,6 +857,7 @@ function toast(msg,ok) {
       <button class="fbtn on" id="f-all" onclick="setFilter('all')">All</button>
       <button class="fbtn" id="f-pending" onclick="setFilter('pending')">Pending</button>
       <button class="fbtn" id="f-approved" onclick="setFilter('approved')">Approved</button>
+      <button class="fbtn" id="f-rejected" onclick="setFilter('rejected')">Rejected</button>
     </div>
   </div>
   <div id="teams-list"></div>
