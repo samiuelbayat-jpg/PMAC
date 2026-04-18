@@ -28,10 +28,10 @@ body{background:#0a0b0d;color:#eef0f5;font-family:'Barlow Condensed',sans-serif;
 .ci:focus{border-color:#e8b800;}
 .status{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;margin-bottom:1rem;padding:.5rem 0;}
 #gfx-wrap{overflow-x:auto;margin-bottom:1.5rem;}
-#gfx{width:1080px;position:relative;overflow:hidden;font-family:'Barlow Condensed',sans-serif;background:#060810;flex-shrink:0;}
+#gfx{width:1920px;position:relative;overflow:hidden;font-family:'Barlow Condensed',sans-serif;background:#060810;flex-shrink:0;}
 .g-bg-radial{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(232,184,0,0.07) 0%,transparent 70%),linear-gradient(180deg,#080b12 0%,#060810 50%,#080b12 100%);}
 .g-bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(232,184,0,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(232,184,0,0.025) 1px,transparent 1px);background-size:54px 54px;}
-.g-center-line{position:absolute;top:0;bottom:0;left:50%;width:1px;background:linear-gradient(180deg,transparent,rgba(232,184,0,0.4) 20%,rgba(232,184,0,0.6) 50%,rgba(232,184,0,0.4) 80%,transparent);transform:translateX(-50%);}
+.g-center-line{position:absolute;top:0;bottom:0;left:960px;width:1px;background:linear-gradient(180deg,transparent,rgba(232,184,0,0.4) 20%,rgba(232,184,0,0.6) 50%,rgba(232,184,0,0.4) 80%,transparent);}
 .g-top-bar{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#e8b800 30%,#f0c000 50%,#e8b800 70%,transparent);}
 .g-bot-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#e8b800 30%,#f0c000 50%,#e8b800 70%,transparent);}
 .g-header{position:absolute;top:0;left:0;right:0;height:140px;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding-top:8px;}
@@ -41,8 +41,8 @@ body{background:#0a0b0d;color:#eef0f5;font-family:'Barlow Condensed',sans-serif;
 .g-date-pill{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:4px 18px;font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;letter-spacing:.1em;}
 .g-hdiv{position:absolute;top:140px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(232,184,0,0.5) 30%,rgba(232,184,0,0.8) 50%,rgba(232,184,0,0.5) 70%,transparent);z-index:2;}
 .g-col-hdr{position:absolute;top:148px;z-index:3;display:flex;align-items:center;padding:0 14px;}
-.g-col-hdr-l{left:0;width:535px;}
-.g-col-hdr-r{left:545px;right:0;}
+.g-col-hdr-l{left:0;width:955px;}
+.g-col-hdr-r{left:965px;right:0;}
 .g-ch{font-family:'Share Tech Mono',monospace;font-size:8px;color:#606878;letter-spacing:.12em;text-transform:uppercase;}
 .g-ch-rk{width:44px;text-align:center;}
 .g-ch-lg{width:40px;}
@@ -50,8 +50,8 @@ body{background:#0a0b0d;color:#eef0f5;font-family:'Barlow Condensed',sans-serif;
 .g-ch-kl{width:46px;text-align:center;}
 .g-ch-pt{width:50px;text-align:center;}
 .g-ch-tot{width:56px;text-align:center;color:#e8b800;}
-.g-teams-l{position:absolute;top:170px;left:0;width:535px;z-index:2;}
-.g-teams-r{position:absolute;top:170px;left:545px;right:0;z-index:2;}
+.g-teams-l{position:absolute;top:170px;left:0;width:955px;z-index:2;}
+.g-teams-r{position:absolute;top:170px;left:965px;right:0;z-index:2;}
 .g-row{display:flex;align-items:center;height:56px;padding:0 14px;border-bottom:1px solid rgba(255,255,255,0.04);position:relative;}
 .g-row:nth-child(even){background:rgba(255,255,255,0.018);}
 .g-r1{background:linear-gradient(90deg,rgba(255,200,0,0.14),rgba(255,200,0,0.03),transparent) !important;}
@@ -150,17 +150,36 @@ document.getElementById("dl-btn").onclick = function() {
   var btn = this;
   btn.textContent = "Generating..."; btn.disabled = true;
   var gfx = document.getElementById("gfx");
+  var gfxH = parseInt(gfx.style.height)||720;
   html2canvas(gfx, {
-    scale:2, useCORS:true, allowTaint:true,
-    backgroundColor:"#060810", width:1080, height:1080, logging:false
+    scale: Math.max(1920/1080, 1080/gfxH),
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: "#060810",
+    width: 1080,
+    height: gfxH,
+    logging: false,
+    imageTimeout: 0,
+    removeContainer: true
   }).then(function(canvas){
+    // Resize to exactly 1920x1080
+    var out = document.createElement("canvas");
+    out.width = 1920; out.height = 1080;
+    var ctx = out.getContext("2d");
+    ctx.fillStyle = "#060810";
+    ctx.fillRect(0,0,1920,1080);
+    // Scale and center
+    var scale = Math.min(1920/canvas.width, 1080/canvas.height);
+    var w = canvas.width*scale, h = canvas.height*scale;
+    var x = (1920-w)/2, y = (1080-h)/2;
+    ctx.drawImage(canvas, x, y, w, h);
     var a = document.createElement("a");
     var evName = (document.getElementById("inp-event").value||"PMAC").replace(/ /g,"_");
-    a.download = "PMAC_GFX_"+evName+".png";
-    a.href = canvas.toDataURL("image/png");
+    a.download = "PMAC_GFX_"+evName+"_1920x1080.png";
+    a.href = out.toDataURL("image/png");
     a.click();
     btn.textContent = "Download PNG"; btn.disabled = false;
-    toast("Downloaded!", true);
+    toast("Downloaded 1920x1080!", true);
   }).catch(function(e){
     btn.textContent = "Download PNG"; btn.disabled = false;
     toast("Error: "+e.message, false);
@@ -238,7 +257,7 @@ function build(){
     var rank = i+1;
     var rcls = rank===1?"g-r1":rank===2?"g-r2":rank===3?"g-r3":"";
     var logoHtml = t.logo
-      ? '<img src="'+t.logo+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">'
+      ? '<img src="'+t.logo+'" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display=&quot;none&quot;">'
       : t.name.substring(0,2);
     var row = document.createElement("div");
     row.className = "g-row "+rcls;
@@ -266,11 +285,14 @@ function build(){
     '<div class="g-ftxt">'+today+'</div>';
   gfx.appendChild(foot);
 
-  // Set height to fit content
-  var rowHeight = 56;
+  // Fix to exactly 1080px height
+  gfx.style.height = "1080px";
+  // Adjust row height to fill space
   var half = Math.ceil(Math.min(st.length,24)/2);
-  var totalHeight = 170 + (half * rowHeight) + 40;
-  gfx.style.height = totalHeight + "px";
+  var availH = 1080 - 170 - 40;
+  var rowH = Math.floor(availH / half);
+  var rows = gfx.querySelectorAll(".g-row");
+  rows.forEach(function(r){ r.style.height = rowH+"px"; });
 }
 
 function toast(msg,ok){
