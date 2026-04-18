@@ -29,13 +29,14 @@ body{background:#0a0b0d;color:#eef0f5;font-family:'Barlow Condensed',sans-serif;
 
 /* EVENT CARD */
 .event-card{border:1px solid rgba(232,184,0,0.25);border-radius:10px;overflow:hidden;margin-bottom:1.5rem;position:relative;background:#0f1115;}
-.event-banner{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.25;display:none;}
+.event-banner{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.15;display:none;}
 .event-inner{position:relative;z-index:1;padding:1.5rem;}
-.ev-name{font-weight:900;font-size:26px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.5rem;}
-.ev-meta{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem;}
+.ev-name{font-weight:900;font-size:26px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.5rem;display:inline-block;background:rgba(10,11,13,0.75);padding:4px 10px;border-radius:6px;}
+
+.ev-meta{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem;background:rgba(10,11,13,0.7);padding:6px 10px;border-radius:6px;display:inline-flex;}
 .em{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;letter-spacing:.06em;}
 .em b{color:#e8b800;font-weight:400;}
-.ev-desc{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;line-height:1.6;margin-bottom:1rem;}
+.ev-desc{font-family:'Share Tech Mono',monospace;font-size:10px;color:#aab0bc;line-height:1.6;margin-bottom:1rem;background:rgba(10,11,13,0.7);padding:6px 10px;border-radius:6px;display:inline-block;}
 .status-badge{display:inline-block;font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 12px;border-radius:20px;letter-spacing:.1em;text-transform:uppercase;border:1px solid;}
 .s-open{background:rgba(0,201,122,0.1);color:#00c97a;border-color:rgba(0,201,122,0.3);}
 .s-closed{background:rgba(255,68,68,0.1);color:#ff4444;border-color:rgba(255,68,68,0.3);}
@@ -159,19 +160,17 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .gfx-empty{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;text-align:center;padding:2.5rem;letter-spacing:.06em;}
 
 /* LOBBY */
-.lobby-card{background:#161a1f;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:1.25rem;display:flex;align-items:center;gap:16px;margin-bottom:1rem;}
-.lobby-logo{width:70px;height:70px;border-radius:50%;border:2px solid rgba(232,184,0,0.3);background:#0f1115;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:#e8b800;overflow:hidden;}
-.lobby-logo img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.lobby-tname{font-weight:900;font-size:22px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
-.lobby-tag{font-family:'Share Tech Mono',monospace;font-size:11px;color:#e8b800;letter-spacing:.1em;margin-bottom:6px;}
-.lobby-mgr{font-weight:700;font-size:14px;color:#8a96a8;}
-.lobby-phone{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;margin-top:2px;}
 .lobby-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;}
 .lobby-title{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:.15em;text-transform:uppercase;}
 .lobby-cnt{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;letter-spacing:.08em;}
-.lobby-dots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:.5rem;}
-.lobby-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.1);cursor:pointer;transition:background .15s;}
-.lobby-dot.on{background:#e8b800;}
+.lobby-row{display:flex;align-items:center;gap:12px;background:#0f1115;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:10px 14px;margin-bottom:8px;border-left:3px solid rgba(232,184,0,0.4);}
+.lobby-row:hover{background:#161a1f;}
+.lobby-row-num{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;min-width:26px;text-align:right;flex-shrink:0;}
+.lobby-logo-sm{width:38px;height:38px;border-radius:50%;border:1px solid rgba(232,184,0,0.3);background:#161a1f;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#e8b800;overflow:hidden;}
+.lobby-logo-sm img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.lobby-row-info{flex:1;min-width:0;}
+.lobby-tname-sm{font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.04em;}
+.lobby-row-meta{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;margin-top:2px;}
 .lobby-empty{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;text-align:center;padding:2.5rem;letter-spacing:.06em;}
 
 .toast{position:fixed;bottom:2rem;right:2rem;z-index:2000;font-weight:700;font-size:14px;padding:10px 20px;border-radius:4px;transform:translateY(20px);opacity:0;transition:all .25s;pointer-events:none;font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em;}
@@ -575,46 +574,34 @@ function loadLobby() {
 function renderLobbyCard() {
   var wrap = document.getElementById("lobby-card-wrap");
   var cnt = document.getElementById("lobby-cnt");
-  var dots = document.getElementById("lobby-dots");
-  var prev = document.getElementById("lobby-prev");
-  var next = document.getElementById("lobby-next");
   if (!lobbyList.length) {
     wrap.innerHTML = '<div class="lobby-empty">No teams in lobby yet.</div>';
-    cnt.textContent = "0 / 0"; dots.innerHTML = "";
-    prev.disabled = true; next.disabled = true; return;
+    cnt.textContent = "0 teams"; return;
   }
-  var t = lobbyList[lobbyIdx];
-  cnt.textContent = (lobbyIdx+1)+" / "+lobbyList.length;
-  prev.disabled = lobbyIdx === 0;
-  next.disabled = lobbyIdx === lobbyList.length-1;
-  var logoDiv = document.createElement("div");
-  logoDiv.className = "lobby-logo";
-  if (t.logo) {
-    var img = document.createElement("img");
-    img.src = t.logo;
-    img.onerror = function(){this.style.display="none";};
-    logoDiv.appendChild(img);
-  } else { logoDiv.textContent = (t.name||"?").substring(0,2); }
-  var card = document.createElement("div");
-  card.className = "lobby-card";
-  card.innerHTML = '<div class="lobby-logo"></div>' +
-    '<div><div class="lobby-tname">'+(t.name||"")+'</div>' +
-    '<div class="lobby-tag">['+(t.tag||"")+']</div>' +
-    '<div class="lobby-mgr">Manager: '+(t.manager||"—")+'</div>' +
-    (t.phone?'<div class="lobby-phone">&#128222; '+t.phone+'</div>':"")+
-    '</div>';
-  card.querySelector(".lobby-logo").replaceWith(logoDiv);
+  cnt.textContent = lobbyList.length + " team" + (lobbyList.length !== 1 ? "s" : "");
   wrap.innerHTML = "";
-  wrap.appendChild(card);
-  dots.innerHTML = "";
-  lobbyList.forEach(function(_,i) {
-    var dot = document.createElement("div");
-    dot.className = "lobby-dot"+(i===lobbyIdx?" on":"");
-    dot.onclick = (function(idx){return function(){lobbyIdx=idx;renderLobbyCard();};})(i);
-    dots.appendChild(dot);
+  lobbyList.forEach(function(t, idx) {
+    var row = document.createElement("div");
+    row.className = "lobby-row";
+    var logoDiv = document.createElement("div");
+    logoDiv.className = "lobby-logo-sm";
+    if (t.logo) {
+      var img = document.createElement("img");
+      img.src = t.logo;
+      img.onerror = function(){this.style.display="none";};
+      logoDiv.appendChild(img);
+    } else { logoDiv.textContent = (t.name||"?").substring(0,2); }
+    row.innerHTML =
+      '<div class="lobby-row-num">'+(idx+1)+'</div>' +
+      '<div class="lobby-logo-sm"></div>' +
+      '<div class="lobby-row-info">' +
+        '<div class="lobby-tname-sm">'+(t.name||"")+'</div>' +
+        '<div class="lobby-row-meta">['+(t.tag||"")+'] &middot; '+(t.manager||"—")+(t.phone?" &middot; &#128222; "+t.phone:"")+'</div>' +
+      '</div>';
+    row.querySelector(".lobby-logo-sm").replaceWith(logoDiv);
+    wrap.appendChild(row);
   });
 }
-function lobbyNav(dir) { lobbyIdx=Math.max(0,Math.min(lobbyList.length-1,lobbyIdx+dir)); renderLobbyCard(); }
 
 function toast(msg,ok) {
   var t=document.getElementById("toast");
@@ -781,14 +768,9 @@ function toast(msg,ok) {
 <div class="section" id="sec-lobby">
   <div class="lobby-hdr">
     <div class="lobby-title">&#127942; Best Teams Lobby AFG</div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <span class="lobby-cnt" id="lobby-cnt">0 / 0</span>
-      <button class="arr-btn" id="lobby-prev" onclick="lobbyNav(-1)">&#8592;</button>
-      <button class="arr-btn" id="lobby-next" onclick="lobbyNav(1)">&#8594;</button>
-    </div>
+    <span class="lobby-cnt" id="lobby-cnt">0 teams</span>
   </div>
   <div id="lobby-card-wrap"><div class="lobby-empty">Loading...</div></div>
-  <div class="lobby-dots" id="lobby-dots"></div>
 </div>
 
 </div><!-- end wrap -->
