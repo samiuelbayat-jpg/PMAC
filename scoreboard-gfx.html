@@ -74,7 +74,8 @@ select.ci{cursor:pointer;}
 .g-ch-logo{width:42px;}
 .g-ch-name{flex:1;font-family:'Share Tech Mono',monospace;font-size:8px;color:#606878;letter-spacing:.12em;text-transform:uppercase;}
 .g-ch-kills{width:48px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:8px;color:#606878;letter-spacing:.1em;text-transform:uppercase;}
-.g-ch-pts{width:58px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:8px;color:#606878;letter-spacing:.1em;text-transform:uppercase;}
+.g-ch-pts{width:52px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:8px;color:#606878;letter-spacing:.1em;text-transform:uppercase;}
+.g-ch-total{width:58px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:8px;color:#e8b800;letter-spacing:.1em;text-transform:uppercase;}
 
 /* TEAM ROWS */
 .g-teams-left{position:absolute;top:192px;left:0;right:545px;z-index:2;}
@@ -98,8 +99,11 @@ select.ci{cursor:pointer;}
 .g-logo-c img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .g-team-name{flex:1;font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.03em;color:#eef0f5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .g-kills{width:48px;text-align:center;font-weight:700;font-size:13px;color:#ff7040;flex-shrink:0;}
-.g-pts{width:58px;text-align:center;flex-shrink:0;}
-.g-pts-num{font-weight:900;font-size:20px;color:#eef0f5;line-height:1;}
+.g-pts{width:52px;text-align:center;flex-shrink:0;}
+.g-total{width:58px;text-align:center;flex-shrink:0;}
+.g-total-num{font-weight:900;font-size:22px;color:#e8b800;line-height:1;}
+.r1 .g-total-num{color:#ffd700;font-size:24px;}
+.g-pts-num{font-weight:900;font-size:16px;color:#eef0f5;line-height:1;}
 .r1 .g-pts-num{color:#ffd700;}
 
 /* CENTER TROPHY */
@@ -158,13 +162,13 @@ function standings() {
 function build() {
   if(!teams.length) return;
   var st = standings();
-  var match = document.getElementById("sel-match").value;
+  var match = 10;
   var evName = document.getElementById("inp-event").value || eventInfo.name || "PMAC TOURNAMENT";
   var evSub = document.getElementById("inp-sub").value || "PUBG MOBILE AFGHANISTAN";
   var today = new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
 
   document.getElementById("status").textContent =
-    st.length+" teams loaded | "+Object.keys(scores).length+" with score data | Match "+match;
+    st.length+" teams loaded | "+Object.keys(scores).length+" teams with score data";
 
   var gfx = document.getElementById("gfx");
   gfx.innerHTML = "";
@@ -187,23 +191,19 @@ function build() {
         '<div class="g-title">'+evName+'</div>'+
         '<img class="g-logo" src="'+LOGO+'" alt="PMAC">'+
       '</div>'+
-      '<div class="g-subtitle">'+evSub+'</div>'+
       '<div class="g-match-row">'+
-        '<div class="g-match-pill">Match Day '+match+'</div>'+
         '<div class="g-date-pill">'+today+'</div>'+
       '</div>'+
     '</div>'+
     '<div class="g-hdiv"></div>';
 
   // COL HEADERS
-  var chHtml = '<div class="g-ch-rank">Rank</div><div class="g-ch-logo"></div><div class="g-ch-name">Team</div><div class="g-ch-kills">Kills</div><div class="g-ch-pts">Pts</div>';
+  var chHtml = '<div class="g-ch-rank">Rank</div><div class="g-ch-logo"></div><div class="g-ch-name">Team</div><div class="g-ch-kills">Kills</div><div class="g-ch-pts">Pts</div><div class="g-ch-total">Total</div>';
   gfx.innerHTML +=
     '<div class="g-col-hdr g-col-hdr-left">'+chHtml+'</div>'+
     '<div class="g-col-hdr g-col-hdr-right">'+chHtml+'</div>';
 
-  // CENTER TROPHY
-  gfx.innerHTML +=
-    '<div class="g-center-trophy"><div class="g-trophy-circle">&#127942;</div></div>';
+
 
   // TEAMS — split into left (1-12 odd, top half) and right (even positions)
   var leftEl = document.createElement("div");
@@ -228,7 +228,8 @@ function build() {
       '<div class="g-team-logo"><div class="g-logo-c">'+logoHtml+'</div></div>'+
       '<div class="g-team-name">'+t.name+'</div>'+
       '<div class="g-kills">'+t.kills+'</div>'+
-      '<div class="g-pts"><div class="g-pts-num">'+t.pts+'</div></div>';
+      '<div class="g-pts"><div class="g-pts-num">'+t.pts+'</div></div>'+
+      '<div class="g-total"><div class="g-total-num">'+t.pts+'</div></div>';
     return div;
   }
 
@@ -259,9 +260,9 @@ function doDownload() {
     backgroundColor: "#060810", width: 1080, height: 1080, logging: false
   }).then(function(canvas) {
     var link = document.createElement("a");
-    var match = document.getElementById("sel-match").value;
+    var match = 10;
     var evName = (document.getElementById("inp-event").value || eventInfo.name || "PMAC").replace(/ /g,"_");
-    link.download = "PMAC_GFX_M"+match+"_"+evName+".png";
+    link.download = "PMAC_GFX_"+evName+".png";
     link.href = canvas.toDataURL("image/png");
     link.click();
     btn.textContent = "Download PNG"; btn.disabled = false;
@@ -293,16 +294,8 @@ function toast(msg,ok){
 
 <div class="controls">
   <div class="cf"><div class="cl">Event Name</div><input class="ci" type="text" id="inp-event" placeholder="PMAC CUP SEASON 1" oninput="build()" style="width:260px;"></div>
-  <div class="cf"><div class="cl">Sub Title</div><input class="ci" type="text" id="inp-sub" placeholder="PUBG MOBILE AFGHANISTAN" oninput="build()" style="width:240px;"></div>
-  <div class="cf"><div class="cl">Match Day</div>
-    <select class="ci" id="sel-match" onchange="build()">
-      <option value="1">Match 1</option><option value="2">Match 2</option>
-      <option value="3">Match 3</option><option value="4">Match 4</option>
-      <option value="5">Match 5</option><option value="6">Match 6</option>
-      <option value="7">Match 7</option><option value="8">Match 8</option>
-      <option value="9">Match 9</option><option value="10" selected>Match 10 — Final</option>
-    </select>
-  </div>
+
+
   <button class="btn" onclick="build()" style="align-self:flex-end;">&#8635; Refresh</button>
 </div>
 
