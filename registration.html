@@ -118,6 +118,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .empty{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;text-align:center;padding:2rem;letter-spacing:.08em;}
 .toast{position:fixed;bottom:2rem;right:2rem;z-index:2000;font-weight:700;font-size:14px;padding:10px 20px;border-radius:4px;transform:translateY(20px);opacity:0;transition:all .25s;pointer-events:none;font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em;}
 .toast.show{transform:translateY(0);opacity:1;}
+
 .tok{background:#e8b800;color:#000;}.terr{background:#ff4444;color:#fff;}
 ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:#0a0b0d;}::-webkit-scrollbar-thumb{background:#161a1f;border-radius:3px;}
 </style>
@@ -134,6 +135,15 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     </div>
     <span id="hdr-count" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;"></span>
   </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" id="tab-reg" onclick="switchTab('reg')">&#128203; Registration</button>
+    <a href="gfx.html" target="_blank" class="tab" style="text-decoration:none;">&#128444; GFX Results &#8599;</a>
+  </div>
+
+  <!-- REGISTRATION TAB -->
+  <div id="tc-reg">
 
   <!-- EVENT CARD -->
   <div class="event-card">
@@ -241,6 +251,8 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     </div>
   </div>
 </div>
+
+  
 
 <div class="toast" id="toast"></div>
 
