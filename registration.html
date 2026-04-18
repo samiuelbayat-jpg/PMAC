@@ -279,8 +279,9 @@ function doAdminLogin() {
   if (pw !== "pmac2024") { document.getElementById("pw-err").textContent = "Wrong password"; return; }
   sessionStorage.setItem("reg_adm", "1");
   isAdmin = true;
-  document.getElementById("login-row").style.display = "none";
-  document.getElementById("admin-row").style.display = "flex";
+  document.getElementById("hdr-login-row").style.display = "none";
+  document.getElementById("hdr-admin-row").style.display = "flex";
+  document.getElementById("admin-controls").style.display = "block";
   document.getElementById("admin-only").style.display = "flex";
   document.getElementById("pw-err").textContent = "";
   updateEventCard();
@@ -288,8 +289,9 @@ function doAdminLogin() {
 function doAdminLogout() {
   sessionStorage.removeItem("reg_adm");
   isAdmin = false;
-  document.getElementById("login-row").style.display = "flex";
-  document.getElementById("admin-row").style.display = "none";
+  document.getElementById("hdr-login-row").style.display = "flex";
+  document.getElementById("hdr-admin-row").style.display = "none";
+  document.getElementById("admin-controls").style.display = "none";
   document.getElementById("admin-only").style.display = "none";
   document.getElementById("edit-ev-wrap").style.display = "none";
   updateEventCard();
@@ -623,6 +625,15 @@ function toast(msg,ok) {
     </div>
   </div>
   <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;" id="hdr-count">0 registered</span>
+  <div id="hdr-login-row" style="display:flex;align-items:center;gap:8px;">
+    <input class="pw-inp" type="password" id="admin-pw" placeholder="Admin password" onkeydown="if(event.key==='Enter')doAdminLogin()">
+    <button class="btn btn-gold" onclick="doAdminLogin()" style="padding:6px 16px;">Login</button>
+    <span class="pw-err" id="pw-err"></span>
+  </div>
+  <div id="hdr-admin-row" style="display:none;align-items:center;gap:8px;">
+    <span class="admin-lbl">&#9679; Admin</span>
+    <button class="btn" onclick="doAdminLogout()" style="padding:5px 14px;font-size:12px;">Logout</button>
+  </div>
 </div>
 
 <!-- TABS -->
@@ -656,24 +667,19 @@ function toast(msg,ok) {
     </div>
   </div>
 
-  <!-- ADMIN PANEL -->
-  <div class="box">
-    <div class="box-title">Admin Access</div>
-    <div class="row" id="login-row">
-      <input class="pw-inp" type="password" id="admin-pw" placeholder="password" onkeydown="if(event.key==='Enter')doAdminLogin()">
-      <button class="btn btn-gold" onclick="doAdminLogin()" style="padding:6px 14px;">Login</button>
-      <span class="pw-err" id="pw-err"></span>
-    </div>
-    <div class="row" id="admin-row" style="display:none;">
-      <span class="admin-lbl">&#9679; Admin active</span>
-      <button class="btn" onclick="doAdminLogout()" style="padding:4px 10px;font-size:11px;">Logout</button>
-      <button class="btn" onclick="toggleEditEvent()" style="padding:4px 10px;font-size:11px;">&#9998; Edit Event</button>
-      <div class="admin-only" id="admin-only" style="display:none;">
-        <button class="btn" onclick="doToggleReg()" style="padding:4px 10px;font-size:11px;">&#9679; Toggle Registration</button>
-        <button class="btn btn-red" onclick="doSaveReset()" style="padding:4px 10px;font-size:11px;">&#128190; Save &amp; Reset</button>
+  <!-- ADMIN CONTROLS (shown after login) -->
+  <div id="admin-controls" style="display:none;margin-bottom:1.25rem;">
+    <div class="box">
+      <div class="row" id="admin-row">
+        <button class="btn" onclick="toggleEditEvent()" style="padding:6px 16px;font-size:12px;">&#9998; Edit Event</button>
+        <div class="admin-only" id="admin-only" style="display:none;gap:8px;align-items:center;">
+          <button class="btn" onclick="doToggleReg()" style="padding:6px 16px;font-size:12px;">&#9679; Toggle Registration</button>
+          <button class="btn btn-red" onclick="doSaveReset()" style="padding:6px 16px;font-size:12px;">&#128190; Save &amp; Reset</button>
+        </div>
       </div>
     </div>
-    <div class="edit-ev-wrap" id="edit-ev-wrap">
+  </div>
+  <div class="edit-ev-wrap" id="edit-ev-wrap">
       <div class="eg">
         <div class="ef"><div class="el">Event Name</div><input class="ei" type="text" id="ei-name" placeholder="PMAC Cup"></div>
         <div class="ef"><div class="el">Date</div><input class="ei" type="date" id="ei-date"></div>
@@ -697,7 +703,6 @@ function toast(msg,ok) {
         <button class="stbtn" id="stbtn-closed" onclick="setEvStatus('closed')">&#9632; Closed</button>
       </div>
       <button class="btn btn-gold" onclick="doSaveEvent()">Save Event</button>
-    </div>
   </div>
 
   <!-- PUBLIC REGISTER BUTTON -->
@@ -798,8 +803,9 @@ function toast(msg,ok) {
 <script>
 // Init admin UI from session
 if (sessionStorage.getItem("reg_adm") === "1") {
-  document.getElementById("login-row").style.display = "none";
-  document.getElementById("admin-row").style.display = "flex";
+  document.getElementById("hdr-login-row").style.display = "none";
+  document.getElementById("hdr-admin-row").style.display = "flex";
+  document.getElementById("admin-controls").style.display = "block";
   document.getElementById("admin-only").style.display = "flex";
 }
 </script>
