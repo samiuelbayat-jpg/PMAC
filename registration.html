@@ -25,7 +25,10 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .btn-red{background:rgba(255,68,68,0.1);border-color:rgba(255,68,68,0.3);color:#ff4444;}
 
 /* EVENT CARD */
-.event-card{background:#0f1115;border:1px solid rgba(232,184,0,0.25);border-radius:10px;padding:1.5rem;margin-bottom:1.5rem;}
+.event-card{background:#0f1115;border:1px solid rgba(232,184,0,0.25);border-radius:10px;overflow:hidden;margin-bottom:1.5rem;position:relative;}
+.event-card-banner{width:100%;height:200px;object-fit:cover;display:block;opacity:0.35;position:absolute;inset:0;height:100%;z-index:0;}
+.event-card-content{position:relative;z-index:1;padding:1.5rem;background:linear-gradient(to right, rgba(10,11,13,0.95) 40%, rgba(10,11,13,0.6));}
+.event-card.has-banner .event-card-content{background:linear-gradient(to right, rgba(10,11,13,0.97) 35%, rgba(10,11,13,0.75));}
 .ev-name{font-weight:900;font-size:26px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.5rem;}
 .ev-meta{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem;}
 .em{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;letter-spacing:.06em;}
@@ -121,6 +124,32 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 
 .tok{background:#e8b800;color:#000;}.terr{background:#ff4444;color:#fff;}
 ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:#0a0b0d;}::-webkit-scrollbar-thumb{background:#161a1f;border-radius:3px;}
+
+.tab-gfx-section{display:none;background:#0f1115;border:1px solid rgba(232,184,0,0.2);border-radius:10px;padding:1.5rem;margin-bottom:1.5rem;}
+.tab-gfx-section.show{display:block;}
+.gfx-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;}
+.gfx-title{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:.15em;text-transform:uppercase;}
+.gfx-counter{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;letter-spacing:.08em;}
+.gfx-viewer{border-radius:8px;overflow:hidden;background:#0a0b0d;border:1px solid rgba(255,255,255,0.08);margin-bottom:.75rem;}
+.gfx-img-area{width:100%;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative;}
+.gfx-img-area img{width:100%;height:100%;object-fit:contain;}
+.gfx-info{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:#0f1115;border-top:1px solid rgba(255,255,255,0.08);flex-wrap:wrap;gap:.5rem;}
+.gfx-info-left{flex:1;}
+.gfx-item-label{font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.04em;}
+.gfx-item-date{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;margin-top:2px;}
+.gfx-arrows{display:flex;align-items:center;gap:8px;}
+.arrow-btn{width:38px;height:38px;border-radius:50%;background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#8a96a8;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .15s;}
+.arrow-btn:hover{background:#e8b800;border-color:#e8b800;color:#000;}
+.arrow-btn:disabled{opacity:.25;cursor:not-allowed;}
+.arrow-btn:disabled:hover{background:#161a1f;border-color:rgba(255,255,255,0.12);color:#8a96a8;}
+.gfx-dl{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:rgba(232,184,0,0.1);border:1px solid rgba(232,184,0,0.3);color:#e8b800;border-radius:4px;padding:5px 12px;cursor:pointer;text-decoration:none;}
+.gfx-dl:hover{background:#e8b800;color:#000;}
+.gfx-thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;}
+.gfx-thumb{border-radius:4px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:border-color .15s;position:relative;}
+.gfx-thumb.on{border-color:#e8b800;}
+.gfx-thumb img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;}
+.gfx-thumb-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:#606878;padding:3px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#0f1115;}
+.gfx-empty{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;text-align:center;padding:2.5rem;letter-spacing:.06em;}
 </style>
 </head>
 <body>
@@ -139,14 +168,41 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <!-- TABS -->
   <div class="tabs">
     <button class="tab active" id="tab-reg" onclick="switchTab('reg')">&#128203; Registration</button>
-    <a href="gfx.html" target="_blank" class="tab" style="text-decoration:none;">&#128444; GFX Results &#8599;</a>
+    <button class="tab" id="tab-gfx" onclick="toggleGFX()">&#128444; GFX Results</button>
   </div>
 
   <!-- REGISTRATION TAB -->
-  <div id="tc-reg">
+  <!-- GFX SECTION -->
+<div class="tab-gfx-section" id="gfx-section">
+  <div class="gfx-hdr">
+    <div class="gfx-title">&#128444; GFX Scoreboard Results</div>
+    <span class="gfx-counter" id="gfx-counter">Loading...</span>
+  </div>
+  <div class="gfx-viewer">
+    <div class="gfx-img-area" id="gfx-img-area">
+      <div class="gfx-empty">Loading images...</div>
+    </div>
+    <div class="gfx-info">
+      <div class="gfx-info-left">
+        <div class="gfx-item-label" id="gfx-item-label"></div>
+        <div class="gfx-item-date" id="gfx-item-date"></div>
+      </div>
+      <div class="gfx-arrows">
+        <button class="arrow-btn" id="gfx-prev" onclick="gfxNav(-1)" title="Previous">&#8592;</button>
+        <button class="arrow-btn" id="gfx-next" onclick="gfxNav(1)" title="Next">&#8594;</button>
+        <a class="gfx-dl" id="gfx-dl" href="" download target="_blank">&#8681; Download</a>
+      </div>
+    </div>
+  </div>
+  <div class="gfx-thumbs" id="gfx-thumbs"></div>
+</div>
+
+<div id="tc-reg">
 
   <!-- EVENT CARD -->
-  <div class="event-card">
+  <div class="event-card" id="event-card">
+    <img id="event-banner-img" class="event-card-banner" src="" alt="" style="display:none;">
+    <div class="event-card-content">
     <div class="ev-name" id="ev-name">Loading...</div>
     <div class="ev-meta" id="ev-meta"></div>
     <div class="ev-desc" id="ev-desc"></div>
@@ -155,6 +211,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
       <div class="prog-lbl" id="prog-lbl">0 / 0</div>
     </div>
+    </div><!-- end event-card-content -->
   </div>
 
   <!-- ADMIN PANEL -->
@@ -187,6 +244,15 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
         <span class="slbl">Registration</span>
         <button class="stbtn" id="stbtn-open">&#9679; Open</button>
         <button class="stbtn" id="stbtn-closed">&#9632; Closed</button>
+      </div>
+      <div class="ef" style="margin-bottom:.75rem;">
+        <div class="el">Event Banner Image (optional — shown as background)</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+          <input type="file" id="banner-file" accept="image/*" style="display:none" onchange="previewBanner(this)">
+          <button class="btn" type="button" onclick="document.getElementById('banner-file').click()" style="padding:5px 12px;font-size:11px;">&#128247; Choose Banner</button>
+          <img id="banner-prev" src="" alt="" style="height:36px;border-radius:4px;display:none;border:1px solid rgba(232,184,0,0.3);">
+          <span id="banner-fname" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;"></span>
+        </div>
       </div>
       <button class="btn btn-gold" id="save-event-btn">Save Event</button>
     </div>
@@ -302,6 +368,17 @@ function updateEventCard() {
   document.getElementById("hdr-count").textContent = count + " registered";
   document.getElementById("teams-count").textContent = count;
   document.getElementById("ev-name").textContent = eventInfo.name || "PMAC Tournament";
+  // Banner
+  var bannerImg = document.getElementById("event-banner-img");
+  var card = document.getElementById("event-card");
+  if (eventInfo.banner) {
+    bannerImg.src = eventInfo.banner;
+    bannerImg.style.display = "block";
+    card.classList.add("has-banner");
+  } else {
+    bannerImg.style.display = "none";
+    card.classList.remove("has-banner");
+  }
   var meta = "";
   if (eventInfo.date) meta += '<span class="em">&#128197; <b>' + new Date(eventInfo.date + "T00:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}) + '</b></span>';
   if (eventInfo.prize) meta += '<span class="em">&#127942; Prize: <b>' + eventInfo.prize + '</b></span>';
@@ -393,7 +470,9 @@ function updateStBtns() {
   document.getElementById("stbtn-closed").className = "stbtn" + (editEvStatus === "closed" ? " is-closed" : "");
 }
 document.getElementById("save-event-btn").onclick = function() {
-  db.ref("pmac/event").set({
+  var bannerFile = document.getElementById("banner-file").files[0];
+  function doSaveEvent(bannerUrl) {
+    var data = {
     name: document.getElementById("ei-name").value.trim() || "PMAC Tournament",
     date: document.getElementById("ei-date").value,
     maxTeams: parseInt(document.getElementById("ei-max").value) || 24,
@@ -401,8 +480,19 @@ document.getElementById("save-event-btn").onclick = function() {
     platform: document.getElementById("ei-platform").value.trim(),
     description: document.getElementById("ei-desc").value.trim(),
     regStatus: editEvStatus
-  }).then(function() { document.getElementById("event-edit").style.display = "none"; toast("Saved!", true); })
-  .catch(function(e) { toast("Error: " + e.message, false); });
+    };
+    if (bannerUrl !== undefined) data.banner = bannerUrl;
+    db.ref("pmac/event").set(data)
+      .then(function() { document.getElementById("event-edit").style.display = "none"; toast("Saved!", true); })
+      .catch(function(e) { toast("Error: " + e.message, false); });
+  }
+  if (bannerFile) {
+    storage.ref("pmac/event-banner/" + Date.now() + "_" + bannerFile.name.replace(/ /g,"_"))
+      .put(bannerFile)
+      .then(function(s) { return s.ref.getDownloadURL(); })
+      .then(function(url) { doSaveEvent(url); })
+      .catch(function() { doSaveEvent(undefined); });
+  } else { doSaveEvent(undefined); }
 };
 
 // LOGO PICK
@@ -567,6 +657,87 @@ document.getElementById("confirm-del-btn").onclick = function() {
     });
   }).catch(function(e) { toast("Error: " + e.message, false); });
 };
+
+// ── GFX ──
+var gfxList = [];
+var gfxIdx = 0;
+var gfxOpen = false;
+
+function toggleGFX() {
+  var sec = document.getElementById("gfx-section");
+  var btn = document.getElementById("tab-gfx");
+  gfxOpen = !gfxOpen;
+  sec.className = gfxOpen ? "tab-gfx-section show" : "tab-gfx-section";
+  btn.className = gfxOpen ? "tab active" : "tab";
+  if (gfxOpen && gfxList.length === 0) {
+    db.ref("pmac/gfx").once("value").then(function(snap) {
+      var val = snap.val();
+      gfxList = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
+      gfxList.sort(function(a,b){ return b.uploadedAt - a.uploadedAt; });
+      gfxIdx = 0;
+      renderGFX();
+    });
+  } else {
+    renderGFX();
+  }
+}
+
+function renderGFX() {
+  var area = document.getElementById("gfx-img-area");
+  var counter = document.getElementById("gfx-counter");
+  var label = document.getElementById("gfx-item-label");
+  var dateEl = document.getElementById("gfx-item-date");
+  var thumbs = document.getElementById("gfx-thumbs");
+  var prev = document.getElementById("gfx-prev");
+  var next = document.getElementById("gfx-next");
+  var dl = document.getElementById("gfx-dl");
+
+  if (!gfxList.length) {
+    area.innerHTML = '<div class="gfx-empty">No GFX images uploaded yet.</div>';
+    counter.textContent = "0 images";
+    label.textContent = "";
+    dateEl.textContent = "";
+    thumbs.innerHTML = "";
+    prev.disabled = true;
+    next.disabled = true;
+    dl.style.display = "none";
+    return;
+  }
+
+  var item = gfxList[gfxIdx];
+  area.innerHTML = '<img src="' + item.url + '" alt="' + (item.label||"GFX") + '">';
+  counter.textContent = (gfxIdx+1) + " / " + gfxList.length + " images";
+  label.textContent = item.label || "Scoreboard";
+  dateEl.textContent = item.uploadedAt ? new Date(item.uploadedAt).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}) : "";
+  prev.disabled = gfxIdx === 0;
+  next.disabled = gfxIdx === gfxList.length - 1;
+  dl.href = item.url;
+  dl.style.display = "inline-block";
+
+  thumbs.innerHTML = "";
+  gfxList.forEach(function(g, i) {
+    var div = document.createElement("div");
+    div.className = "gfx-thumb" + (i===gfxIdx?" on":"");
+    div.innerHTML = '<img src="'+g.url+'" alt="'+(g.label||"")+'">' +
+      '<div class="gfx-thumb-lbl">'+(g.label||"Image "+(i+1))+'</div>';
+    div.onclick = (function(idx){ return function(){ gfxIdx=idx; renderGFX(); }; })(i);
+    thumbs.appendChild(div);
+  });
+}
+
+function gfxNav(dir) {
+  gfxIdx = Math.max(0, Math.min(gfxList.length-1, gfxIdx+dir));
+  renderGFX();
+}
+
+function previewBanner(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var prev = document.getElementById("banner-prev");
+  prev.src = URL.createObjectURL(file);
+  prev.style.display = "block";
+  document.getElementById("banner-fname").textContent = file.name.substring(0,20);
+}
 
 function toast(msg, ok) {
   var t = document.getElementById("toast");
