@@ -340,7 +340,10 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 <div class="section" id="sec-lobby">
   <div class="lobby-hdr">
     <div class="lobby-title">🏆 Best Teams Lobby AFG</div>
-    <span class="lobby-cnt" id="lobby-cnt">0 teams</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="lobby-cnt" id="lobby-cnt">0 teams</span>
+      <button class="btn btn-gold" id="lobby-import-btn" onclick="importToLobby()" style="display:none;padding:5px 14px;font-size:12px;">&#128203; Import from Registration</button>
+    </div>
   </div>
   <div id="lobby-list"></div>
 </div>
@@ -421,10 +424,14 @@ function applyAdminUI() {
     document.getElementById("reg-box").style.display = "block";
     document.getElementById("pub-reg-btn-wrap").style.display = "none";
     document.getElementById("closed-msg").style.display = "none";
+    var lib = document.getElementById("lobby-import-btn");
+    if (lib) lib.style.display = "block";
   } else {
     document.getElementById("hdr-login-row").style.display = "flex";
     document.getElementById("hdr-admin-row").style.display = "none";
     document.getElementById("admin-bar").style.display = "none";
+    var lib = document.getElementById("lobby-import-btn");
+    if (lib) lib.style.display = "none";
   }
 }
 
@@ -700,6 +707,39 @@ function loadLobby(){
       row.innerHTML='<div class="lobby-row-num">#'+(i+1)+"</div>"+'<div class="lobby-logo-sm"></div>'+'<div class="lobby-row-info"><div class="lobby-tname-sm">'+(t.name||"")+"</div>"+'<div class="lobby-row-meta">['+(t.tag||"")+"] · "+(t.manager||"—")+(t.phone?" · "+t.phone:"")+"</div></div>";
       row.querySelector(".lobby-logo-sm").replaceWith(lc);list.appendChild(row);
     });
+  });
+}
+
+function importToLobby() {
+  var regKeys = Object.keys(regs);
+  if (!regKeys.length) { toast("No registrations found", false); return; }
+  var approved = regKeys.filter(function(k){ return regs[k].status === "approved"; });
+  var src = approved.length > 0 ? approved : regKeys;
+  var label = approved.length > 0 ? approved.length + " approved" : regKeys.length + " all";
+  if (!confirm("Import " + src.length + " " + (approved.length > 0 ? "approved" : "") + " teams to Best Teams Lobby?")) return;
+
+  db.ref("pmac/lobby_teams").once("value").then(function(snap) {
+    var existing = snap.val() || {};
+    var existingNames = Object.values(existing).map(function(t){ return t.name; });
+    var toAdd = src.filter(function(k){ return regs[k].name && existingNames.indexOf(regs[k].name) === -1; });
+    var skipped = src.length - toAdd.length;
+    if (!toAdd.length) { toast("All teams already in lobby" + (skipped ? " (" + skipped + " skipped)" : ""), false); return; }
+
+    var promises = toAdd.map(function(k) {
+      var r = regs[k];
+      var key = "t" + Date.now() + Math.floor(Math.random() * 9999);
+      return db.ref("pmac/lobby_teams/" + key).set({
+        name: r.name, tag: r.tag || "", manager: r.manager || "",
+        phone: r.managerPhone || "", logo: r.logo || "",
+        code: (function(){ var c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",r=""; for(var i=0;i<6;i++) r+=c[Math.floor(Math.random()*c.length)]; return r; })(),
+        addedAt: Date.now()
+      });
+    });
+
+    Promise.all(promises).then(function() {
+      toast(toAdd.length + " teams imported to Lobby!" + (skipped ? " " + skipped + " skipped." : ""), true);
+      lobbyLoaded = false; // force reload next time lobby tab is opened
+    }).catch(function(e){ toast("Error: " + e.message, false); });
   });
 }
 
