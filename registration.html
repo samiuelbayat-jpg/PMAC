@@ -1947,7 +1947,7 @@ function scrimCheckStatus(){
 }
 // ===================== END DAILY SCRIM JS =====================
 
-// ── FORUM ────────────────────────────────────────────
+// ── FORUM ─────────────────────────────────────────────
 const FORUM_CATS = [
   {id:'general',   icon:'🎮', name:'General Discussion',     desc:'Talk about anything PUBG related'},
   {id:'strategy',  icon:'🔫', name:'Strategies & Tips',      desc:'Tactics, loadouts, drop spots'},
@@ -1956,12 +1956,16 @@ const FORUM_CATS = [
   {id:'bugreport', icon:'🐛', name:'Bug Reports & Feedback',  desc:'Report issues or suggest features'},
   {id:'offtopic',  icon:'💬', name:'Off Topic',               desc:'Chill zone — anything goes'},
 ];
-let fView='home', fCat=null, fThread=null;
+let fView='home', fCat=null, fThread=null, fShoutRef=null;
 
 function renderForum(){
   const w=document.getElementById('forum-content');
   if(!w)return;
-  if(fView==='home')        _fHome(w);
+  if(fView==='home'){
+    _fHome(w);
+    const saved=localStorage.getItem('pmac_forum_name');
+    if(saved){const el=document.getElementById('f-shout-name');if(el)el.value=saved;}
+  }
   else if(fView==='cat')    _fCat(w);
   else if(fView==='thread') _fThread(w);
 }
@@ -1972,6 +1976,20 @@ function _fHome(w){
       <div class="forum-hdr-title">📋 PMAC Community Forum</div>
       <button class="btn btn-gold" onclick="fOpenNew()">+ New Thread</button>
     </div>
+
+    <div style="background:linear-gradient(135deg,#1a1e24,#161a1f);border:1px solid rgba(232,184,0,0.3);border-radius:12px;padding:18px;margin-bottom:20px;">
+      <div style="font-weight:900;font-size:14px;letter-spacing:.08em;color:#e8b800;margin-bottom:12px;">💬 LIVE SHOUTBOX</div>
+      <div id="f-shout-msgs" style="height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:12px;padding:10px;background:#0f1115;border-radius:8px;border:1px solid rgba(255,255,255,0.08);">
+        <div class="forum-empty">Loading…</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input class="forum-inp" id="f-shout-name" placeholder="Your name / IGN" style="width:140px;flex-shrink:0;">
+        <input class="forum-inp" id="f-shout-msg" placeholder="Type a message…" style="flex:1;min-width:120px;">
+        <button class="btn btn-gold" onclick="fSendShout()">SEND</button>
+      </div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;margin-top:6px;letter-spacing:.06em;" id="f-shout-err"></div>
+    </div>
+
     <div class="forum-cats">
       ${FORUM_CATS.map(c=>`
         <div class="forum-cat" onclick="fGoCat('${c.id}')">
@@ -1984,6 +2002,7 @@ function _fHome(w){
           <div style="color:#8a96a8;font-size:18px;">›</div>
         </div>`).join('')}
     </div>`;
+
   FORUM_CATS.forEach(c=>{
     db.ref('pmac/forum/posts').orderByChild('category').equalTo(c.id)
       .once('value',s=>{
@@ -1991,10 +2010,61 @@ function _fHome(w){
         if(el){const n=s.numChildren();el.textContent=`${n} THREAD${n!==1?'S':''}`;}
       });
   });
+
+  fListenShoutbox();
 }
 
-function fGoCat(id){fView='cat';fCat=id;renderForum();}
-function fGoHome(){fView='home';fCat=null;fThread=null;renderForum();}
+function fListenShoutbox(){
+  if(fShoutRef) fShoutRef.off();
+  fShoutRef=db.ref('pmac/forum/shoutbox').orderByChild('timestamp').limitToLast(60);
+  fShoutRef.on('value',function(snap){
+    const box=document.getElementById('f-shout-msgs');
+    if(!box)return;
+    const msgs=[];
+    snap.forEach(s=>msgs.push({id:s.key,...s.val()}));
+    if(!msgs.length){box.innerHTML='<div class="forum-empty">No messages yet — say hi!</div>';return;}
+    box.innerHTML=msgs.map(m=>`
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+        <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#e8b800,#f0c000);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:#000;flex-shrink:0;">${(m.author||'?')[0].toUpperCase()}</div>
+        <div style="flex:1;">
+          <span style="font-weight:800;font-size:12px;color:#e8b800;">${fEsc(m.author)}</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;margin-left:6px;">${fAgo(m.timestamp)}</span>
+          <div style="font-size:13px;color:#c8ccd4;margin-top:2px;">${fEsc(m.message)}</div>
+        </div>
+      </div>`).join('');
+    box.scrollTop=box.scrollHeight;
+  });
+}
+
+function fSendShout(){
+  const name=(document.getElementById('f-shout-name').value||'').trim();
+  const msg=(document.getElementById('f-shout-msg').value||'').trim();
+  const err=document.getElementById('f-shout-err');
+  if(!name){err.textContent='Enter your name';err.style.color='#ff4444';return;}
+  if(!msg){err.textContent='Type a message';err.style.color='#ff4444';return;}
+  if(msg.length>300){err.textContent='Max 300 characters';err.style.color='#ff4444';return;}
+  err.textContent='';
+  db.ref('pmac/forum/shoutbox').push()
+    .set({author:name,message:msg,timestamp:Date.now()})
+    .then(()=>{
+      document.getElementById('f-shout-msg').value='';
+      localStorage.setItem('pmac_forum_name',name);
+      db.ref('pmac/forum/shoutbox').orderByChild('timestamp').limitToFirst(1)
+        .once('value',s=>{s.forEach(c=>{db.ref('pmac/forum/shoutbox').once('value',all=>{if(all.numChildren()>100)c.ref.remove();});});});
+    })
+    .catch(e=>{err.textContent='Error: '+e.message;err.style.color='#ff4444';});
+}
+
+function fGoCat(id){
+  if(fShoutRef){fShoutRef.off();fShoutRef=null;}
+  fView='cat';fCat=id;renderForum();
+}
+
+function fGoHome(){
+  if(fShoutRef){fShoutRef.off();fShoutRef=null;}
+  fView='home';fCat=null;fThread=null;renderForum();
+}
+
 function fGoThread(id){
   fView='thread';fThread=id;
   db.ref(`pmac/forum/posts/${id}/views`).transaction(v=>(v||0)+1);
@@ -2084,7 +2154,7 @@ function _fThread(w){
 
 function fLoadReplies(){
   db.ref(`pmac/forum/replies/${fThread}`).orderByChild('timestamp')
-    .once('value',snap=>{
+    .on('value',snap=>{
       const el=document.getElementById('f-replies');
       if(!el)return;
       const rs=[];
@@ -2118,7 +2188,6 @@ function fSubmitReply(){
       document.getElementById('f-rep-name').value='';
       document.getElementById('f-rep-body').value='';
       msg.innerHTML="<span style='color:#00c97a'>✓ Posted!</span>";
-      fLoadReplies();
     }).catch(e=>{msg.textContent='Error: '+e.message;msg.style.color='#ff4444';});
 }
 
@@ -2160,13 +2229,13 @@ function fOpenNew(){
 function fCloseNew(){const m=document.getElementById('f-new-modal');if(m)m.remove();}
 
 function fSubmitNew(){
-  const author =(document.getElementById('fnp-author').value||'').trim();
-  const cat    =document.getElementById('fnp-cat').value;
-  const title  =(document.getElementById('fnp-title').value||'').trim();
+  const author=(document.getElementById('fnp-author').value||'').trim();
+  const cat=document.getElementById('fnp-cat').value;
+  const title=(document.getElementById('fnp-title').value||'').trim();
   const content=(document.getElementById('fnp-body').value||'').trim();
-  const msg    =document.getElementById('fnp-msg');
+  const msg=document.getElementById('fnp-msg');
   if(!author){msg.textContent='Enter your name';msg.style.color='#ff4444';return;}
-  if(!title) {msg.textContent='Enter a title';msg.style.color='#ff4444';return;}
+  if(!title){msg.textContent='Enter a title';msg.style.color='#ff4444';return;}
   if(!content){msg.textContent='Write some content';msg.style.color='#ff4444';return;}
   msg.textContent='Posting…';msg.style.color='#e8b800';
   const ref=db.ref('pmac/forum/posts').push();
@@ -2182,7 +2251,3 @@ function fEsc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 function fAgo(ts){const d=Date.now()-ts,s=Math.floor(d/1000),m=Math.floor(s/60),h=Math.floor(m/60),dy=Math.floor(h/24);
   if(dy>0)return dy+'D AGO';if(h>0)return h+'H AGO';if(m>0)return m+'M AGO';return 'JUST NOW';}
 // ── END FORUM ─────────────────────────────────────────
-
-</script>
-</body>
-</html>
