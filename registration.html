@@ -270,6 +270,50 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .ctrl-btn{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#8a96a8;border-radius:20px;padding:5px 14px;cursor:pointer;transition:all .2s;}
 .ctrl-btn:hover{border-color:rgba(232,184,0,0.4);color:#eef0f5;}
 .ctrl-btn.active{background:linear-gradient(135deg,#f0c000,#e8b800);border-color:#e8b800;color:#000;}
+/* ── FORUM ─────────────────────────────── */
+.forum-nav{display:flex;align-items:center;gap:8px;margin-bottom:1.2rem;flex-wrap:wrap;}
+.forum-nav-btn{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:12px;letter-spacing:.08em;}
+.forum-nav-btn:hover{color:#e8b800;}
+.forum-nav-sep{color:#8a96a8;font-size:10px;}
+.forum-nav-cur{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:.08em;}
+.forum-cats{display:grid;grid-template-columns:1fr;gap:10px;}
+.forum-cat{background:linear-gradient(135deg,#1a1e24,#161a1f);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px 20px;cursor:pointer;display:flex;align-items:center;gap:16px;transition:all .2s;}
+.forum-cat:hover{border-color:rgba(232,184,0,0.4);background:linear-gradient(135deg,rgba(232,184,0,0.06),#161a1f);}
+.forum-cat-icon{font-size:26px;width:40px;text-align:center;flex-shrink:0;}
+.forum-cat-info{flex:1;}
+.forum-cat-name{font-weight:800;font-size:16px;letter-spacing:.04em;margin-bottom:3px;}
+.forum-cat-desc{font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;letter-spacing:.08em;}
+.forum-cat-stats{font-family:'Share Tech Mono',monospace;font-size:9px;color:#e8b800;margin-top:4px;letter-spacing:.06em;}
+.forum-threads{display:flex;flex-direction:column;gap:8px;}
+.forum-thread-row{background:linear-gradient(135deg,#1a1e24,#161a1f);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .2s;}
+.forum-thread-row:hover{border-color:rgba(232,184,0,0.35);background:linear-gradient(135deg,rgba(232,184,0,0.05),#161a1f);}
+.forum-thread-icon{font-size:18px;flex-shrink:0;}
+.forum-thread-info{flex:1;min-width:0;}
+.forum-thread-title{font-weight:700;font-size:15px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.forum-thread-meta{font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;margin-top:3px;letter-spacing:.06em;}
+.forum-thread-stats{display:flex;gap:12px;font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;flex-shrink:0;}
+.forum-post{background:linear-gradient(135deg,#1a1e24,#161a1f);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:18px;margin-bottom:10px;}
+.forum-post-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.forum-post-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#e8b800,#f0c000);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#000;flex-shrink:0;}
+.forum-post-author-info{flex:1;}
+.forum-post-author{font-weight:800;font-size:14px;letter-spacing:.04em;}
+.forum-post-time{font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;letter-spacing:.06em;}
+.forum-post-content{font-size:14px;line-height:1.75;color:#c8ccd4;white-space:pre-wrap;}
+.forum-op-badge{font-family:'Share Tech Mono',monospace;font-size:8px;background:rgba(232,184,0,0.18);border:1px solid rgba(232,184,0,0.4);color:#e8b800;padding:2px 8px;border-radius:10px;letter-spacing:.08em;}
+.forum-reply-form{background:linear-gradient(135deg,#1a1e24,#161a1f);border:1px solid rgba(232,184,0,0.25);border-radius:12px;padding:18px;margin-top:14px;}
+.forum-reply-title{font-weight:800;font-size:14px;letter-spacing:.05em;margin-bottom:12px;color:#e8b800;}
+.forum-inp{width:100%;background:#0f1115;border:1px solid rgba(255,255,255,0.12);color:#eef0f5;font-family:'Barlow Condensed',sans-serif;font-size:14px;padding:10px 14px;border-radius:8px;outline:none;box-sizing:border-box;transition:border-color .2s;}
+.forum-inp:focus{border-color:rgba(232,184,0,0.5);}
+.forum-ta{resize:vertical;min-height:90px;}
+.forum-msg{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.06em;}
+.forum-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:8px;}
+.forum-hdr-title{font-weight:900;font-size:18px;letter-spacing:.05em;}
+.forum-empty{text-align:center;padding:40px 20px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#8a96a8;letter-spacing:.08em;}
+.forum-pinned{border-color:rgba(232,184,0,0.3)!important;background:linear-gradient(135deg,rgba(232,184,0,0.06),#161a1f)!important;}
+.forum-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem;box-sizing:border-box;}
+.forum-modal-box{background:#1a1e24;border:1px solid rgba(232,184,0,0.35);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+.forum-modal-box h3{font-weight:900;font-size:18px;letter-spacing:.05em;color:#e8b800;margin-bottom:16px;}
+.forum-field-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;letter-spacing:.1em;display:block;margin-bottom:5px;}
 /* STREAMERS */
 .streamers-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;flex-wrap:wrap;gap:8px;}
 .streamers-title{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:.15em;text-transform:uppercase;}
@@ -345,6 +389,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <button class="tab" id="tab-lobby" onclick="showTab('lobby')"><span>🏆</span><span>Top Teams Lobby</span></button>
   <button class="tab" id="tab-scores" onclick="showTab('scores')"><span>📊</span><span>Scoreboard</span></button>
   <button class="tab" id="tab-archive" onclick="showTab('archive')"><span>🗄</span><span>Archive</span></button>
+  <button class="tab" id="tab-forum" onclick="showTab('forum')"><span>💬</span><span>Forum</span></button>
   <button class="tab" id="tab-events" onclick="window.location.href='promotions.html'"><span>📣</span><span>Events</span></button>
   <button class="tab" id="tab-streamers" onclick="showTab('streamers')"><span>🔴</span><span>Live Streamers</span></button>
 </div>
@@ -1058,7 +1103,7 @@ function checkStatus(){
 
 // TABS
 function showTab(tab){
-  ["reg","scrim","gfx","lobby","scores","archive","streamers"].forEach(function(t){
+  ["reg","scrim","gfx","lobby","scores","archive","streamers","forum"].forEach(function(t){
     var tb=document.getElementById("tab-"+t); var sc=document.getElementById("sec-"+t);
     if(tb) tb.className="tab"+(t===tab?" active":"");
     if(sc) sc.className="section"+(t===tab?" show":"");
@@ -1068,6 +1113,7 @@ function showTab(tab){
   if(tab==="scores"&&!scoresLoaded) loadScoreboard();
   if(tab==="archive"&&!archiveLoaded) loadPubArchive();
   if(tab==="streamers"&&!streamersLoaded) loadStreamers();
+  if(tab==="forum") renderForum();
 }
 
 // GFX
@@ -1718,9 +1764,7 @@ function scrimUpdateCard() {
   document.getElementById("scrim-prog-fill").style.width = pct+"%";
   document.getElementById("scrim-prog-lbl").textContent = count+" / "+scrimMax+" teams";
   var canReg = scrimStatus==="open" && !isFull;
-  // Admin bar - only visible to admin
   document.getElementById("scrim-admin-bar").style.display = isAdmin ? "flex" : "none";
-  // Register form
   if (isAdmin) {
     document.getElementById("scrim-pub-reg-btn-wrap").style.display = "none";
     document.getElementById("scrim-reg-box").style.display = "block";
@@ -1902,6 +1946,243 @@ function scrimCheckStatus(){
   }
 }
 // ===================== END DAILY SCRIM JS =====================
+
+// ── FORUM ────────────────────────────────────────────
+const FORUM_CATS = [
+  {id:'general',   icon:'🎮', name:'General Discussion',     desc:'Talk about anything PUBG related'},
+  {id:'strategy',  icon:'🔫', name:'Strategies & Tips',      desc:'Tactics, loadouts, drop spots'},
+  {id:'recruit',   icon:'👥', name:'Team Recruitment',        desc:'Find teammates or build your squad'},
+  {id:'tourney',   icon:'🏆', name:'Tournament Talk',         desc:'PMAC events, brackets and results'},
+  {id:'bugreport', icon:'🐛', name:'Bug Reports & Feedback',  desc:'Report issues or suggest features'},
+  {id:'offtopic',  icon:'💬', name:'Off Topic',               desc:'Chill zone — anything goes'},
+];
+let fView='home', fCat=null, fThread=null;
+
+function renderForum(){
+  const w=document.getElementById('forum-content');
+  if(!w)return;
+  if(fView==='home')        _fHome(w);
+  else if(fView==='cat')    _fCat(w);
+  else if(fView==='thread') _fThread(w);
+}
+
+function _fHome(w){
+  w.innerHTML=`
+    <div class="forum-hdr">
+      <div class="forum-hdr-title">📋 PMAC Community Forum</div>
+      <button class="btn btn-gold" onclick="fOpenNew()">+ New Thread</button>
+    </div>
+    <div class="forum-cats">
+      ${FORUM_CATS.map(c=>`
+        <div class="forum-cat" onclick="fGoCat('${c.id}')">
+          <div class="forum-cat-icon">${c.icon}</div>
+          <div class="forum-cat-info">
+            <div class="forum-cat-name">${c.name}</div>
+            <div class="forum-cat-desc">${c.desc}</div>
+            <div class="forum-cat-stats" id="fcc-${c.id}">LOADING…</div>
+          </div>
+          <div style="color:#8a96a8;font-size:18px;">›</div>
+        </div>`).join('')}
+    </div>`;
+  FORUM_CATS.forEach(c=>{
+    db.ref('pmac/forum/posts').orderByChild('category').equalTo(c.id)
+      .once('value',s=>{
+        const el=document.getElementById(`fcc-${c.id}`);
+        if(el){const n=s.numChildren();el.textContent=`${n} THREAD${n!==1?'S':''}`;}
+      });
+  });
+}
+
+function fGoCat(id){fView='cat';fCat=id;renderForum();}
+function fGoHome(){fView='home';fCat=null;fThread=null;renderForum();}
+function fGoThread(id){
+  fView='thread';fThread=id;
+  db.ref(`pmac/forum/posts/${id}/views`).transaction(v=>(v||0)+1);
+  renderForum();
+}
+
+function _fCat(w){
+  const cat=FORUM_CATS.find(c=>c.id===fCat)||{icon:'',name:''};
+  w.innerHTML=`
+    <div class="forum-nav">
+      <button class="forum-nav-btn" onclick="fGoHome()">Forum</button>
+      <span class="forum-nav-sep">›</span>
+      <span class="forum-nav-cur">${cat.icon} ${cat.name}</span>
+    </div>
+    <div class="forum-hdr">
+      <div class="forum-hdr-title">${cat.icon} ${cat.name}</div>
+      <button class="btn btn-gold" onclick="fOpenNew()">+ New Thread</button>
+    </div>
+    <div class="forum-threads" id="f-thread-list">
+      <div class="forum-empty">LOADING…</div>
+    </div>`;
+  db.ref('pmac/forum/posts').orderByChild('category').equalTo(fCat)
+    .once('value',snap=>{
+      const el=document.getElementById('f-thread-list');
+      if(!el)return;
+      const posts=[];
+      snap.forEach(s=>posts.push({id:s.key,...s.val()}));
+      posts.sort((a,b)=>((b.pinned?1:0)-(a.pinned?1:0))||(b.timestamp-a.timestamp));
+      if(!posts.length){el.innerHTML='<div class="forum-empty">NO THREADS YET — BE THE FIRST!</div>';return;}
+      el.innerHTML=posts.map(p=>`
+        <div class="forum-thread-row ${p.pinned?'forum-pinned':''}" onclick="fGoThread('${p.id}')">
+          <div class="forum-thread-icon">${p.pinned?'📌':'💬'}</div>
+          <div class="forum-thread-info">
+            <div class="forum-thread-title">${fEsc(p.title)}</div>
+            <div class="forum-thread-meta">BY ${fEsc(p.author)} · ${fAgo(p.timestamp)}</div>
+          </div>
+          <div class="forum-thread-stats">
+            <div>💬 ${p.replyCount||0}</div>
+            <div>👁 ${p.views||0}</div>
+          </div>
+        </div>`).join('');
+    });
+}
+
+function _fThread(w){
+  const cat=FORUM_CATS.find(c=>c.id===fCat)||{icon:'',name:'Forum',id:''};
+  w.innerHTML=`
+    <div class="forum-nav">
+      <button class="forum-nav-btn" onclick="fGoHome()">Forum</button>
+      <span class="forum-nav-sep">›</span>
+      <button class="forum-nav-btn" onclick="fGoCat('${cat.id}')">${cat.icon} ${cat.name}</button>
+      <span class="forum-nav-sep">›</span>
+      <span class="forum-nav-cur" id="f-thread-nav">…</span>
+    </div>
+    <div id="f-thread-body"><div class="forum-empty">LOADING…</div></div>`;
+  db.ref(`pmac/forum/posts/${fThread}`).once('value',snap=>{
+    const p=snap.val();
+    const body=document.getElementById('f-thread-body');
+    if(!p||!body){body.innerHTML='<div class="forum-empty">THREAD NOT FOUND</div>';return;}
+    const nav=document.getElementById('f-thread-nav');
+    if(nav)nav.textContent=p.title.length>32?p.title.slice(0,32)+'…':p.title;
+    body.innerHTML=`
+      <div class="forum-post">
+        <div class="forum-post-header">
+          <div class="forum-post-avatar">${(p.author||'?')[0].toUpperCase()}</div>
+          <div class="forum-post-author-info">
+            <div class="forum-post-author">${fEsc(p.author)} <span class="forum-op-badge">OP</span></div>
+            <div class="forum-post-time">${fAgo(p.timestamp)}</div>
+          </div>
+        </div>
+        <div class="forum-post-content">${fEsc(p.content)}</div>
+      </div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;letter-spacing:.1em;margin:14px 0 8px;">— REPLIES (${p.replyCount||0}) —</div>
+      <div id="f-replies"><div class="forum-empty">LOADING REPLIES…</div></div>
+      <div class="forum-reply-form">
+        <div class="forum-reply-title">💬 Post a Reply</div>
+        <input class="forum-inp" id="f-rep-name" placeholder="YOUR NAME / IGN" style="margin-bottom:8px;">
+        <textarea class="forum-inp forum-ta" id="f-rep-body" placeholder="Write your reply…"></textarea>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+          <button class="btn btn-gold" onclick="fSubmitReply()">SEND REPLY</button>
+          <span class="forum-msg" id="f-rep-msg"></span>
+        </div>
+      </div>`;
+    fLoadReplies();
+  });
+}
+
+function fLoadReplies(){
+  db.ref(`pmac/forum/replies/${fThread}`).orderByChild('timestamp')
+    .once('value',snap=>{
+      const el=document.getElementById('f-replies');
+      if(!el)return;
+      const rs=[];
+      snap.forEach(s=>rs.push({id:s.key,...s.val()}));
+      if(!rs.length){el.innerHTML='<div class="forum-empty">NO REPLIES YET</div>';return;}
+      el.innerHTML=rs.map(r=>`
+        <div class="forum-post">
+          <div class="forum-post-header">
+            <div class="forum-post-avatar" style="background:linear-gradient(135deg,#2a3a4a,#1e2a36);">${(r.author||'?')[0].toUpperCase()}</div>
+            <div class="forum-post-author-info">
+              <div class="forum-post-author">${fEsc(r.author)}</div>
+              <div class="forum-post-time">${fAgo(r.timestamp)}</div>
+            </div>
+          </div>
+          <div class="forum-post-content">${fEsc(r.content)}</div>
+        </div>`).join('');
+    });
+}
+
+function fSubmitReply(){
+  const name=(document.getElementById('f-rep-name').value||'').trim();
+  const body=(document.getElementById('f-rep-body').value||'').trim();
+  const msg=document.getElementById('f-rep-msg');
+  if(!name){msg.textContent='Enter your name';msg.style.color='#ff4444';return;}
+  if(!body){msg.textContent='Write something first';msg.style.color='#ff4444';return;}
+  msg.textContent='Posting…';msg.style.color='#e8b800';
+  db.ref(`pmac/forum/replies/${fThread}`).push()
+    .set({author:name,content:body,timestamp:Date.now()})
+    .then(()=>{
+      db.ref(`pmac/forum/posts/${fThread}/replyCount`).transaction(v=>(v||0)+1);
+      document.getElementById('f-rep-name').value='';
+      document.getElementById('f-rep-body').value='';
+      msg.innerHTML="<span style='color:#00c97a'>✓ Posted!</span>";
+      fLoadReplies();
+    }).catch(e=>{msg.textContent='Error: '+e.message;msg.style.color='#ff4444';});
+}
+
+function fOpenNew(){
+  if(document.getElementById('f-new-modal'))return;
+  const m=document.createElement('div');
+  m.className='forum-modal';m.id='f-new-modal';
+  m.innerHTML=`
+    <div class="forum-modal-box">
+      <h3>✏️ CREATE NEW THREAD</h3>
+      <div style="margin-bottom:10px;">
+        <label class="forum-field-lbl">YOUR NAME / IGN</label>
+        <input class="forum-inp" id="fnp-author" placeholder="Username or IGN">
+      </div>
+      <div style="margin-bottom:10px;">
+        <label class="forum-field-lbl">CATEGORY</label>
+        <select class="forum-inp" id="fnp-cat">
+          ${FORUM_CATS.map(c=>`<option value="${c.id}" ${c.id===fCat?'selected':''}>${c.icon} ${c.name}</option>`).join('')}
+        </select>
+      </div>
+      <div style="margin-bottom:10px;">
+        <label class="forum-field-lbl">THREAD TITLE</label>
+        <input class="forum-inp" id="fnp-title" placeholder="Clear and descriptive title">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label class="forum-field-lbl">CONTENT</label>
+        <textarea class="forum-inp forum-ta" id="fnp-body" placeholder="Write your post…" style="min-height:120px;"></textarea>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-gold" onclick="fSubmitNew()">POST THREAD</button>
+        <button class="btn" onclick="fCloseNew()">CANCEL</button>
+        <span class="forum-msg" id="fnp-msg"></span>
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+  m.addEventListener('click',e=>{if(e.target===m)fCloseNew();});
+}
+
+function fCloseNew(){const m=document.getElementById('f-new-modal');if(m)m.remove();}
+
+function fSubmitNew(){
+  const author =(document.getElementById('fnp-author').value||'').trim();
+  const cat    =document.getElementById('fnp-cat').value;
+  const title  =(document.getElementById('fnp-title').value||'').trim();
+  const content=(document.getElementById('fnp-body').value||'').trim();
+  const msg    =document.getElementById('fnp-msg');
+  if(!author){msg.textContent='Enter your name';msg.style.color='#ff4444';return;}
+  if(!title) {msg.textContent='Enter a title';msg.style.color='#ff4444';return;}
+  if(!content){msg.textContent='Write some content';msg.style.color='#ff4444';return;}
+  msg.textContent='Posting…';msg.style.color='#e8b800';
+  const ref=db.ref('pmac/forum/posts').push();
+  ref.set({author,category:cat,title,content,timestamp:Date.now(),views:0,replyCount:0})
+    .then(()=>{
+      fCloseNew();
+      fCat=cat;fThread=ref.key;fView='thread';
+      renderForum();
+    }).catch(e=>{msg.textContent='Error: '+e.message;msg.style.color='#ff4444';});
+}
+
+function fEsc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fAgo(ts){const d=Date.now()-ts,s=Math.floor(d/1000),m=Math.floor(s/60),h=Math.floor(m/60),dy=Math.floor(h/24);
+  if(dy>0)return dy+'D AGO';if(h>0)return h+'H AGO';if(m>0)return m+'M AGO';return 'JUST NOW';}
+// ── END FORUM ─────────────────────────────────────────
+
 </script>
 </body>
 </html>
