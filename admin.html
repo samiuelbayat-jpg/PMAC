@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PMAC Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0a0b0d;color:#eef0f5;font-family:'Barlow Condensed',sans-serif;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(232,184,0,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(232,184,0,0.02) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+#login-screen{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:#0a0b0d;}
+.login-box{background:#0f1115;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:2.5rem 2rem;width:340px;text-align:center;}
+.login-logo{width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0 auto 1rem;display:block;border:2px solid #e8b800;}
+.login-title{font-weight:900;font-size:20px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;}
+.login-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;letter-spacing:0.1em;margin-bottom:1.5rem;}
+.login-input{width:100%;background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#eef0f5;font-family:'Share Tech Mono',monospace;font-size:15px;padding:10px 14px;border-radius:5px;margin-bottom:12px;outline:none;text-align:center;letter-spacing:0.3em;}
+.login-input:focus{border-color:#e8b800;}
+.login-btn{width:100%;background:#e8b800;color:#000;font-weight:900;font-size:15px;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:5px;padding:12px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;}
+.login-err{color:#ff4444;font-size:12px;font-family:'Share Tech Mono',monospace;margin-top:8px;min-height:18px;}
+.page{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:1.5rem 1.5rem 4rem;display:none;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.12);gap:1rem;flex-wrap:wrap;}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.topbar-logo{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid #e8b800;}
+.topbar-title{font-weight:900;font-size:20px;text-transform:uppercase;letter-spacing:0.04em;}
+.topbar-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:#e8b800;letter-spacing:0.1em;text-transform:uppercase;margin-top:2px;}
+.topbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.badge-live{display:flex;align-items:center;gap:6px;background:rgba(255,68,68,0.12);border:1px solid rgba(255,68,68,0.3);border-radius:4px;padding:5px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#ff4444;letter-spacing:0.1em;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#ff4444;animation:pulse 1.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
+.btn{font-weight:700;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:7px 14px;cursor:pointer;background:#161a1f;color:#8a96a8;font-family:'Barlow Condensed',sans-serif;transition:all 0.15s;white-space:nowrap;}
+.btn:hover{border-color:rgba(232,184,0,0.4);color:#eef0f5;}
+.btn-primary{background:#e8b800;border-color:#e8b800;color:#000;}
+.btn-primary:hover{background:#c99d00;}
+.btn-danger{background:rgba(255,68,68,0.1);border-color:rgba(255,68,68,0.3);color:#ff4444;}
+.btn-archive{background:rgba(138,150,168,0.15);border-color:rgba(138,150,168,0.3);color:#a8b8c8;}
+.fb-badge{font-family:'Share Tech Mono',monospace;font-size:11px;padding:5px 12px;border-radius:4px;letter-spacing:0.08em;border:1px solid;}
+.fb-connecting{background:rgba(232,184,0,0.15);color:#e8b800;border-color:rgba(232,184,0,0.3);}
+.fb-ok{background:rgba(0,201,122,0.15);color:#00c97a;border-color:rgba(0,201,122,0.3);}
+.fb-err{background:rgba(255,68,68,0.15);color:#ff4444;border-color:rgba(255,68,68,0.3);}
+.section-tabs{display:flex;gap:6px;margin-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:0;}
+.stab{font-weight:700;font-size:14px;letter-spacing:0.06em;text-transform:uppercase;padding:8px 20px;cursor:pointer;color:#606878;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:'Barlow Condensed',sans-serif;background:none;border-top:none;border-left:none;border-right:none;}
+.stab.active{color:#e8b800;border-bottom-color:#e8b800;}
+.pts-info{background:#0f1115;border:1px solid rgba(232,184,0,0.2);border-radius:6px;padding:10px 14px;margin-bottom:1.25rem;display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.pts-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;letter-spacing:0.1em;text-transform:uppercase;margin-right:4px;}
+.pts-pill{font-family:'Share Tech Mono',monospace;font-size:10px;padding:2px 7px;border-radius:3px;background:#161a1f;border:1px solid rgba(255,255,255,0.08);color:#8a96a8;}
+.pts-pill.hi{color:#e8b800;border-color:rgba(232,184,0,0.3);background:rgba(232,184,0,0.08);}
+.teams-mgmt{background:#0f1115;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1.25rem;margin-bottom:1.5rem;}
+.mgmt-title{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:1rem;}
+.add-team-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:1rem;flex-wrap:wrap;}
+.inp-wrap{display:flex;flex-direction:column;gap:4px;}
+.inp-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;letter-spacing:0.1em;text-transform:uppercase;}
+.text-inp{background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#eef0f5;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;padding:8px 12px;border-radius:4px;outline:none;min-width:220px;}
+.text-inp:focus{border-color:#e8b800;}
+.logo-inp-btn{background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#8a96a8;font-family:'Share Tech Mono',monospace;font-size:10px;padding:8px 14px;border-radius:4px;cursor:pointer;white-space:nowrap;}
+.logo-preview{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid rgba(232,184,0,0.3);display:none;}
+.csv-row{display:flex;gap:8px;align-items:center;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;}
+.csv-note{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;letter-spacing:0.06em;}
+.teams-list-mgmt{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;}
+.team-mgmt-row{display:flex;align-items:center;gap:10px;background:#161a1f;border-radius:4px;padding:8px 12px;border:1px solid rgba(255,255,255,0.06);}
+.team-mgmt-logo{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid rgba(232,184,0,0.3);background:#0f1115;flex-shrink:0;}
+.team-mgmt-name{font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:0.03em;flex:1;}
+.team-mgmt-del{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;cursor:pointer;padding:2px 6px;border-radius:3px;border:1px solid transparent;}
+.team-mgmt-del:hover{color:#ff4444;border-color:rgba(255,68,68,0.3);}
+.no-teams{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;text-align:center;padding:1.5rem;letter-spacing:0.08em;}
+
+/* ── MOBILE RESPONSIVE ── */
+@media(max-width:600px){
+  .page{padding:.75rem .75rem 5rem;}
+  .topbar{gap:.5rem;margin-bottom:1rem;padding-bottom:.75rem;}
+  .topbar-left{gap:8px;}
+  .topbar-logo{width:36px;height:36px;}
+  .topbar-title{font-size:15px;}
+  .topbar-sub{font-size:8px;}
+  .topbar-right{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;}
+  .topbar-right .btn{font-size:10px;padding:6px 4px;text-align:center;border-radius:8px;}
+  .fb-badge{font-size:9px;padding:4px 6px;}
+  .badge-live{font-size:9px;padding:4px 6px;}
+  .section-tabs{gap:4px;margin-bottom:1rem;}
+  .stab{font-size:12px;padding:6px 12px;}
+  .teams-mgmt{padding:.875rem;}
+  .add-team-row{flex-direction:column;align-items:stretch;gap:8px;}
+  .add-team-row .inp-wrap{width:100%;}
+  .add-team-row .text-inp{width:100%;min-width:unset;}
+  .add-team-row .btn{width:100%;text-align:center;}
+  .logo-inp-wrap{width:100%;}
+  .uploading-badge{display:block;margin-top:4px;}
+  .csv-row{flex-direction:column;align-items:stretch;gap:8px;}
+  .csv-row .btn{width:100%;text-align:center;}
+  .match-tabs{gap:4px;margin-bottom:1rem;}
+  .match-tab{font-size:11px;padding:5px 10px;}
+  .team-grid{grid-template-columns:1fr 1fr;gap:8px;}
+  .team-card{padding:10px 10px;}
+  .card-name{font-size:11px;}
+  .inp{font-size:16px;padding:6px 6px;}
+  .save-bar{padding:.75rem;flex-direction:column;gap:8px;align-items:stretch;}
+  .save-bar .save-status{font-size:10px;text-align:center;}
+  .save-bar>div{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .save-bar .btn{text-align:center;font-size:11px;}
+  /* Nav buttons horizontal scroll */
+  .topbar-right[style*="flex-wrap"]{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
+}
+@media(max-width:380px){
+  .team-grid{grid-template-columns:1fr;}
+}
+.match-tabs{display:flex;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center;}
+.mtab-lbl{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;letter-spacing:0.1em;text-transform:uppercase;margin-right:4px;}
+.match-tab{font-weight:700;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#8a96a8;padding:7px 18px;border-radius:4px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;}
+.match-tab.active{background:#e8b800;border-color:#e8b800;color:#000;}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;}
+.team-card{background:#0f1115;border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:14px 16px;}
+.team-card.has-data{border-color:rgba(232,184,0,0.4);background:rgba(232,184,0,0.03);}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.card-logo{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid rgba(232,184,0,0.3);background:#161a1f;flex-shrink:0;}
+.card-name{font-weight:800;font-size:14px;letter-spacing:0.04em;text-transform:uppercase;flex:1;}
+.card-clear{font-size:11px;color:#606878;cursor:pointer;font-family:'Share Tech Mono',monospace;padding:2px 6px;border-radius:3px;border:1px solid transparent;}
+.card-clear:hover{color:#ff4444;border-color:rgba(255,68,68,0.3);}
+.card-inputs{display:flex;gap:10px;}
+.inp-group{flex:1;}
+.inp-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:5px;}
+.inp{width:100%;background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#eef0f5;font-weight:700;font-size:20px;padding:8px 10px;border-radius:4px;outline:none;text-align:center;-moz-appearance:textfield;font-family:'Barlow Condensed',sans-serif;}
+.inp::-webkit-inner-spin-button,.inp::-webkit-outer-spin-button{-webkit-appearance:none;}
+.rank-sel{cursor:pointer;font-size:18px;padding:6px 4px;-webkit-appearance:auto;appearance:auto;}
+.rank-sel option:disabled{color:#404855;background:#0f1115;}
+.inp:focus{border-color:#e8b800;}
+.card-pts-preview{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;margin-top:6px;text-align:center;}
+.card-pts-preview span{color:#e8b800;}
+.card-saved{font-family:'Share Tech Mono',monospace;font-size:10px;color:#00c97a;letter-spacing:0.08em;margin-top:6px;opacity:0;transition:opacity 0.3s;}
+.card-saved.show{opacity:1;}
+.save-bar{position:sticky;bottom:0;z-index:10;background:#0f1115;border-top:1px solid rgba(255,255,255,0.12);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:2rem;}
+.save-status{font-family:'Share Tech Mono',monospace;font-size:12px;color:#606878;letter-spacing:0.06em;}
+.save-status span{color:#e8b800;}
+.toast{position:fixed;bottom:80px;right:24px;z-index:200;font-weight:700;font-size:14px;letter-spacing:0.06em;padding:10px 20px;border-radius:4px;transform:translateY(20px);opacity:0;transition:all 0.25s;pointer-events:none;font-family:'Barlow Condensed',sans-serif;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast-ok{background:#e8b800;color:#000;}
+.toast-err{background:#ff4444;color:#fff;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:none;align-items:center;justify-content:center;}
+.modal-bg.show{display:flex;}
+.modal{background:#0f1115;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:2rem;width:420px;}
+.modal-title{font-weight:900;font-size:18px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;color:#e8b800;}
+.modal-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;letter-spacing:0.08em;margin-bottom:1.5rem;}
+.modal-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
+.modal-input{width:100%;background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#eef0f5;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;padding:10px 14px;border-radius:5px;margin-bottom:1rem;outline:none;}
+.modal-input:focus{border-color:#e8b800;}
+.modal-warn{font-family:'Share Tech Mono',monospace;font-size:10px;color:#f07830;background:rgba(240,120,48,0.1);border:1px solid rgba(240,120,48,0.2);border-radius:4px;padding:8px 12px;margin-bottom:1rem;line-height:1.5;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.uploading-badge{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:0.08em;display:none;}
+
+/* ── FORUM / LIVE CHAT ── */
+#section-forum{display:none;}
+.forum-wrap{background:#0f1115;border:1px solid rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;height:520px;}
+.forum-header{background:#161a1f;border-bottom:1px solid rgba(255,255,255,0.08);padding:10px 16px;display:flex;align-items:center;gap:10px;}
+.forum-header-title{font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:0.06em;flex:1;}
+.forum-live-dot{width:7px;height:7px;border-radius:50%;background:#00c97a;animation:pulse 1.4s ease-in-out infinite;flex-shrink:0;}
+.forum-user-badge{font-family:'Share Tech Mono',monospace;font-size:9px;color:#e8b800;background:rgba(232,184,0,0.1);border:1px solid rgba(232,184,0,0.25);padding:3px 8px;border-radius:3px;letter-spacing:0.08em;}
+.chat-messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth;}
+.chat-messages::-webkit-scrollbar{width:4px;}
+.chat-messages::-webkit-scrollbar-track{background:transparent;}
+.chat-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+.chat-msg{display:flex;flex-direction:column;gap:3px;max-width:80%;}
+.chat-msg.mine{align-self:flex-end;align-items:flex-end;}
+.chat-msg.other{align-self:flex-start;align-items:flex-start;}
+.chat-bubble{padding:8px 12px;border-radius:8px;font-size:14px;font-weight:600;line-height:1.4;word-break:break-word;}
+.chat-msg.mine .chat-bubble{background:#e8b800;color:#000;border-bottom-right-radius:2px;}
+.chat-msg.other .chat-bubble{background:#1e232b;color:#eef0f5;border:1px solid rgba(255,255,255,0.07);border-bottom-left-radius:2px;}
+.chat-meta{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;letter-spacing:0.05em;}
+.chat-meta.mine{color:#a89000;}
+.chat-system{align-self:center;font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);padding:3px 10px;border-radius:10px;letter-spacing:0.06em;}
+.chat-input-row{border-top:1px solid rgba(255,255,255,0.08);background:#161a1f;padding:10px 14px;display:flex;gap:8px;align-items:center;}
+.chat-nick-row{border-top:1px solid rgba(255,255,255,0.06);background:#0f1115;padding:8px 14px;display:flex;align-items:center;gap:8px;}
+.chat-nick-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;letter-spacing:0.08em;white-space:nowrap;}
+.chat-nick-inp{background:#161a1f;border:1px solid rgba(255,255,255,0.1);color:#eef0f5;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;padding:5px 10px;border-radius:4px;outline:none;width:160px;}
+.chat-nick-inp:focus{border-color:#e8b800;}
+.chat-text-inp{flex:1;background:#0f1115;border:1px solid rgba(255,255,255,0.12);color:#eef0f5;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;padding:8px 12px;border-radius:6px;outline:none;resize:none;}
+.chat-text-inp:focus{border-color:#e8b800;}
+.chat-send-btn{background:#e8b800;border:none;color:#000;font-weight:900;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;border-radius:6px;padding:8px 16px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;white-space:nowrap;}
+.chat-send-btn:hover{background:#c99d00;}
+.chat-send-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#606878;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:0.08em;}
+.forum-admin-bar{background:rgba(232,184,0,0.06);border-bottom:1px solid rgba(232,184,0,0.12);padding:6px 16px;display:flex;align-items:center;gap:8px;}
+.forum-admin-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;color:#e8b800;letter-spacing:0.1em;flex:1;}
+.chat-clear-btn{font-family:'Share Tech Mono',monospace;font-size:9px;color:#ff4444;background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.2);padding:3px 8px;border-radius:3px;cursor:pointer;}
+.chat-clear-btn:hover{background:rgba(255,68,68,0.2);}
+@media(max-width:600px){
+  .forum-wrap{height:420px;}
+  .chat-msg{max-width:92%;}
+  .chat-nick-row{flex-wrap:wrap;}
+}
+
+/* ── OBS OVERLAY SETTINGS ── */
+#section-overlay{display:none;}
+.overlay-wrap{display:flex;flex-direction:column;gap:1.25rem;}
+.overlay-card{background:#0f1115;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1.25rem 1.5rem;}
+.overlay-card-title{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+.overlay-streamer-row{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+.overlay-logo-col{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.overlay-logo-preview{width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid rgba(232,184,0,0.4);background:#161a1f;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+.overlay-logo-preview img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.overlay-logo-placeholder{font-size:28px;color:#404855;}
+.overlay-logo-btn{font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;background:#161a1f;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:5px 10px;cursor:pointer;white-space:nowrap;text-align:center;}
+.overlay-logo-btn:hover{border-color:rgba(232,184,0,0.4);color:#e8b800;}
+.overlay-fields-col{display:flex;flex-direction:column;gap:12px;flex:1;min-width:220px;}
+.overlay-field-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;}
+.overlay-text-inp{width:100%;background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#eef0f5;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;padding:9px 13px;border-radius:4px;outline:none;}
+.overlay-text-inp:focus{border-color:#e8b800;}
+.overlay-save-row{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap;}
+.overlay-saved-badge{font-family:'Share Tech Mono',monospace;font-size:10px;color:#00c97a;letter-spacing:0.08em;opacity:0;transition:opacity 0.3s;}
+.overlay-saved-badge.show{opacity:1;}
+.overlay-uploading{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:0.08em;display:none;}
+.overlay-streamers-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;margin-top:8px;}
+.overlay-streamer-item{display:flex;align-items:center;gap:10px;background:#161a1f;border:1px solid rgba(255,255,255,0.06);border-radius:4px;padding:8px 12px;}
+.overlay-streamer-item.active-streamer{border-color:rgba(232,184,0,0.4);background:rgba(232,184,0,0.05);}
+.overlay-streamer-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid rgba(232,184,0,0.3);background:#0f1115;flex-shrink:0;}
+.overlay-streamer-name{font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:0.03em;flex:1;}
+.overlay-streamer-badge{font-family:'Share Tech Mono',monospace;font-size:8px;color:#e8b800;background:rgba(232,184,0,0.12);border:1px solid rgba(232,184,0,0.25);padding:2px 6px;border-radius:2px;letter-spacing:0.08em;}
+.overlay-streamer-set{font-family:'Share Tech Mono',monospace;font-size:9px;color:#00c97a;cursor:pointer;padding:3px 8px;border-radius:3px;border:1px solid rgba(0,201,122,0.3);background:rgba(0,201,122,0.08);}
+.overlay-streamer-set:hover{background:rgba(0,201,122,0.18);}
+.overlay-streamer-del{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;cursor:pointer;padding:3px 6px;border-radius:3px;border:1px solid transparent;margin-left:4px;}
+.overlay-streamer-del:hover{color:#ff4444;border-color:rgba(255,68,68,0.3);}
+.overlay-active-card{background:rgba(232,184,0,0.06);border:1px solid rgba(232,184,0,0.2);border-radius:8px;padding:1rem 1.25rem;display:flex;align-items:center;gap:14px;}
+.overlay-active-avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #e8b800;background:#161a1f;flex-shrink:0;}
+.overlay-active-info{flex:1;}
+.overlay-active-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;color:#e8b800;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:3px;}
+.overlay-active-name{font-weight:900;font-size:20px;letter-spacing:0.04em;text-transform:uppercase;}
+.overlay-active-none{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;letter-spacing:0.08em;}
+@media(max-width:600px){
+  .overlay-streamer-row{flex-direction:column;}
+  .overlay-logo-col{flex-direction:row;align-items:center;}
+}
+</style>
+</head>
+<body>
+<div id="login-screen">
+  <div class="login-box">
+    <img class="login-logo" src="data:image/jpeg;base64,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" alt="PMAC">
+    <div class="login-title">PUBG Mobile Afghanistan</div>
+    <div class="login-sub">Admin Panel</div>
+    <input class="login-input" type="password" id="pw-input" placeholder="password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Enter</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="archive-modal">
+  <div class="modal">
+    <div class="modal-title">&#128190; Archive Tournament</div>
+    <div class="modal-sub">&#9888; Only do this when the tournament is fully finished. This saves all results to the archive then clears everything for the next tournament.</div>
+    <div class="modal-label">Tournament Name</div>
+    <input class="modal-input" type="text" id="archive-name" placeholder="e.g. PMAC Cup — January 2025">
+    <div class="modal-label">Date</div>
+    <input class="modal-input" type="date" id="archive-date">
+    <div class="modal-warn">&#9888; WARNING: After clicking "Archive &amp; Reset", ALL current teams and scores will be permanently cleared. Only do this when the tournament is 100% finished!</div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeArchiveModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmArchive()">Archive &amp; Reset</button>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="main-page">
+  <div class="topbar">
+    <div class="topbar-left">
+      <img class="topbar-logo" src="data:image/jpeg;base64,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" alt="PMAC">
+      <div>
+        <div class="topbar-title">PUBG Mobile Afghanistan</div>
+        <div class="topbar-sub">Admin — Live Data Entry</div>
+      </div>
+    </div>
+    <div class="topbar-right" style="flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;">
+      <span class="fb-badge fb-connecting" id="fb-status">&#9679; Connecting...</span>
+      <div class="badge-live"><div class="live-dot"></div>LIVE</div>
+      <button class="btn" onclick="window.open('archive.html','_blank')">&#128196; View Archive</button>
+      <button class="btn btn-archive" onclick="openArchiveModal()">&#128190; Archive</button>
+      <button class="btn btn-danger" onclick="confirmReset()">&#9888; Full Reset</button>
+      <button class="btn btn-primary" onclick="saveAll()">Save All</button>
+    </div>
+  </div>
+
+
+  <!-- Navigation Bar -->
+  <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;">
+    <button class="btn" onclick="navTo('scoreboard.html')" style="font-size:12px;">&#127942; Scoreboard</button>
+    <button class="btn" onclick="navTo('overlay.html')" style="font-size:12px;">&#127916; OBS Overlay</button>
+    <button class="btn" onclick="navTo('archive.html')" style="font-size:12px;">&#128190; Archive</button>
+    <button class="btn" onclick="window.open('registration.html','_blank')" style="font-size:12px;">&#128203; PMAF Community</button>
+    <button class="btn" onclick="navTo('lobby.html')" style="font-size:12px;">&#127942; Top Teams Lobby</button>
+    <button class="btn" onclick="navTo('gfx.html')" style="font-size:12px;">&#128444; GFX Board</button>
+    <button class="btn" onclick="window.open('https://samiuelbayat-jpg.github.io/PMAC/screenshot-reader.html','_blank')" style="font-size:12px;">&#128248; Score Reader</button>
+    <button class="btn" onclick="window.open('https://samiuelbayat-jpg.github.io/PMAC/promotions.html','_blank')" style="font-size:12px;">&#128226; Promotions</button>
+    <button class="btn" onclick="window.open('https://samiuelbayat-jpg.github.io/PMAC/scoreboard-gfx.html','_blank')" style="font-size:12px;">&#127775; GFX Board</button>
+    <button class="btn" onclick="showSection('forum')" style="font-size:12px;background:linear-gradient(135deg,rgba(232,184,0,0.18),rgba(232,184,0,0.08));border-color:rgba(232,184,0,0.4);color:#e8b800;">&#128172; Forum</button>
+  </div>
+  <!-- Inline Page Viewer -->
+  <div id="nav-frame-wrap" style="display:none;margin-bottom:1.5rem;border:1px solid rgba(255,255,255,0.12);border-radius:8px;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;background:#0f1115;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.1);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button onclick="navBack()" style="background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#8a96a8;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:16px;" title="Back">&#8592;</button>
+        <button onclick="navForward()" style="background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#8a96a8;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:16px;" title="Forward">&#8594;</button>
+        <span id="nav-current-lbl" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:0.1em;"></span>
+      </div>
+      <button onclick="closeNavFrame()" style="background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:#ff4444;border-radius:4px;padding:4px 12px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:10px;">&#10005; Close</button>
+    </div>
+    <iframe id="nav-frame" src="" style="width:100%;height:80vh;border:none;background:#0a0b0d;"></iframe>
+  </div>
+  <div class="section-tabs">
+    <button class="stab active" onclick="showSection('teams')">&#128101; Manage Teams</button>
+    <button class="stab" onclick="showSection('scores')">&#127942; Enter Scores</button>
+    <button class="stab" onclick="showSection('forum')">&#128172; Forum</button>
+    <button class="stab" onclick="showSection('overlay')">&#127916; OBS Overlay</button>
+  </div>
+
+  <div id="section-teams">
+    <div class="teams-mgmt">
+      <div class="mgmt-title">Add Team</div>
+      <div class="add-team-row">
+        <div class="inp-wrap">
+          <div class="inp-lbl">Team Name</div>
+          <input class="text-inp" type="text" id="new-team-name" placeholder="e.g. BLACK ZONE" onkeydown="if(event.key==='Enter')addTeam()">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div class="inp-lbl">Team Logo (PNG/JPG)</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="file" id="new-team-logo" accept="image/*" style="display:none" onchange="previewLogo(this)">
+            <button class="logo-inp-btn" onclick="document.getElementById('new-team-logo').click()">&#128247; Choose Logo</button>
+            <img id="logo-preview" class="logo-preview" src="" alt="">
+            <span id="logo-name" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;"></span>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addTeam()" style="align-self:flex-end;">+ Add Team</button>
+        <span class="uploading-badge" id="uploading-badge">Uploading...</span>
+      </div>
+      <div class="csv-row">
+        <div>
+          <div class="inp-lbl" style="margin-bottom:4px;">Import from CSV</div>
+          <div class="csv-note">One team name per line or comma separated. Add logos after import.</div>
+        </div>
+        <input type="file" id="csv-file" accept=".csv,.txt" style="display:none" onchange="importCSV(this)">
+        <button class="btn" onclick="document.getElementById('csv-file').click()">&#128196; Import CSV</button>
+        <button class="btn" onclick="fixAllLogos()" id="fix-logos-btn" style="background:linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.1));border-color:rgba(0,255,136,0.4);color:#00ff88;">&#128247; Fix All Logos</button>
+        <button class="btn btn-primary" onclick="if(!isSuperAdmin){showToast('Super Admin access required',false);return;}importFromRegistration()" style="white-space:nowrap;">&#128203; Import from Registration</button>
+      </div>
+    </div>
+    <div class="mgmt-title" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;">
+      Current Teams (<span id="team-count">0</span>)
+    </div>
+    <div class="teams-list-mgmt" id="teams-list-mgmt">
+      <div class="no-teams">No teams yet. Add teams above.</div>
+    </div>
+  </div>
+
+  <div id="section-scores" style="display:none;">
+    <div class="pts-info">
+      <span class="pts-lbl">Points system</span>
+      <span class="pts-pill hi">#1=10</span><span class="pts-pill hi">#2=6</span><span class="pts-pill hi">#3=5</span>
+      <span class="pts-pill hi">#4=4</span><span class="pts-pill hi">#5=3</span><span class="pts-pill hi">#6=2</span>
+      <span class="pts-pill hi">#7=1</span><span class="pts-pill hi">#8=1</span><span class="pts-pill">#9+=0</span>
+      <span class="pts-pill">+1/kill</span>
+    </div>
+    <div class="match-tabs">
+      <span class="mtab-lbl">Match</span>
+      <button class="match-tab active" onclick="switchMatch(0)">M1</button>
+      <button class="match-tab" onclick="switchMatch(1)">M2</button>
+      <button class="match-tab" onclick="switchMatch(2)">M3</button>
+      <button class="match-tab" onclick="switchMatch(3)">M4</button>
+      <button class="match-tab" onclick="switchMatch(4)">M5</button>
+      <button class="match-tab" onclick="switchMatch(5)">M6</button>
+      <button class="match-tab" onclick="switchMatch(6)">M7</button>
+      <button class="match-tab" onclick="switchMatch(7)">M8</button>
+      <button class="match-tab" onclick="switchMatch(8)">M9</button>
+      <button class="match-tab" onclick="switchMatch(9)">M10</button>
+    </div>
+    <div class="team-grid" id="team-grid">
+      <div class="no-teams" style="grid-column:1/-1;">Go to "Manage Teams" tab to add teams first.</div>
+    </div>
+  </div>
+
+  <!-- ── FORUM / LIVE CHAT SECTION ── -->
+  <div id="section-forum">
+    <div class="forum-wrap">
+      <div class="forum-header">
+        <div class="forum-live-dot"></div>
+        <div class="forum-header-title">&#128172; PMAC Live Forum</div>
+        <span class="forum-user-badge" id="forum-user-badge">ADMIN</span>
+      </div>
+      <div class="forum-admin-bar">
+        <span class="forum-admin-lbl">&#9881; Admin Controls</span>
+        <span class="chat-clear-btn" onclick="clearAllChat()">&#128465; Clear All Messages</span>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-empty" id="chat-empty">
+          <span style="font-size:28px;">&#128172;</span>
+          <span>No messages yet. Start the conversation!</span>
+        </div>
+      </div>
+      <div class="chat-nick-row">
+        <span class="chat-nick-lbl">Send as:</span>
+        <input class="chat-nick-inp" type="text" id="chat-nick" placeholder="Your name / role" maxlength="30" value="Admin">
+        <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;margin-left:auto;">Messages are public & live</span>
+      </div>
+      <div class="chat-input-row">
+        <textarea class="chat-text-inp" id="chat-text" placeholder="Type a message..." rows="1" maxlength="500"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}
+          this.style.height='auto';this.style.height=Math.min(this.scrollHeight,96)+'px';"></textarea>
+        <button class="chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()">&#9654; Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OBS OVERLAY SECTION ── -->
+  <div id="section-overlay">
+    <div class="overlay-wrap">
+
+      <!-- Currently Active Streamer -->
+      <div class="overlay-card">
+        <div class="overlay-card-title">&#127916; Currently Live on Overlay</div>
+        <div class="overlay-active-card" id="overlay-active-card">
+          <div class="overlay-active-none" id="overlay-active-none">No streamer set yet. Add one below and click "Set Live".</div>
+          <img class="overlay-active-avatar" id="overlay-active-avatar" src="" alt="" style="display:none;">
+          <div class="overlay-active-info" id="overlay-active-info" style="display:none;">
+            <div class="overlay-active-lbl">&#128308; LIVE ON OVERLAY</div>
+            <div class="overlay-active-name" id="overlay-active-name">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add New Streamer -->
+      <div class="overlay-card">
+        <div class="overlay-card-title">&#43; Add Streamer</div>
+        <div class="overlay-streamer-row">
+          <div class="overlay-logo-col">
+            <div class="overlay-logo-preview" id="new-streamer-logo-preview">
+              <span class="overlay-logo-placeholder">&#128247;</span>
+            </div>
+            <input type="file" id="new-streamer-logo-file" accept="image/*" style="display:none" onchange="previewStreamerLogo(this)">
+            <button class="overlay-logo-btn" onclick="document.getElementById('new-streamer-logo-file').click()">Choose Logo</button>
+          </div>
+          <div class="overlay-fields-col">
+            <div>
+              <div class="overlay-field-lbl">Streamer Name</div>
+              <input class="overlay-text-inp" type="text" id="new-streamer-name" placeholder="e.g. KHALID GFX" maxlength="40"
+                onkeydown="if(event.key==='Enter')addStreamer()">
+            </div>
+            <div>
+              <div class="overlay-field-lbl">Social / Handle <span style="color:#404855;">(optional)</span></div>
+              <input class="overlay-text-inp" type="text" id="new-streamer-handle" placeholder="e.g. @khalid_gfx" maxlength="40">
+            </div>
+            <div class="overlay-save-row">
+              <button class="btn btn-primary" onclick="addStreamer()">&#43; Add Streamer</button>
+              <span class="overlay-uploading" id="streamer-uploading">Uploading logo...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Streamer Roster -->
+      <div class="overlay-card">
+        <div class="overlay-card-title">&#128100; Streamers Roster</div>
+        <div class="overlay-streamers-list" id="overlay-streamers-list">
+          <div class="no-teams">No streamers added yet.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+    <div class="save-status">Last saved: <span id="last-saved">—</span></div>
+    <div style="display:flex;gap:8px;">
+
+      <button class="btn" onclick="navTo('https://samiuelbayat-jpg.github.io/PMAC/scoreboard-gfx.html')" style="background:linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.1));border-color:rgba(0,255,136,0.4);color:#00ff88;">&#127775; GFX</button>
+      <button class="btn btn-primary" onclick="saveAll()">Save &amp; Publish</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+
+const FB_CONFIG = {
+  apiKey: "AIzaSyD-RFu-40Igcoqhm8QBbu_PgdFxV6aUIQA",
+  authDomain: "pubg-mobile-afghanistan.firebaseapp.com",
+  databaseURL: "https://pubg-mobile-afghanistan-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "pubg-mobile-afghanistan",
+  storageBucket: "pubg-mobile-afghanistan.firebasestorage.app",
+  messagingSenderId: "279105805502",
+  appId: "1:279105805502:web:8def653069d0b3d73bd2ef"
+};
+if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+const db = firebase.database();
+const storage = firebase.storage();
+
+
+const ADMIN_PASSWORD = "pmac2024";
+const SUPER_ADMIN_PASSWORD = "pmac@super2024";
+let isSuperAdmin = false;
+let currentMatch = 0;
+let teams = [];
+let scores = {};
+
+const dbTeamsRef = db.ref("pmac/teams");
+const dbScoresRef = db.ref("pmac/matches");
+
+function placementPts(rank) {
+  if (rank === null || rank === undefined || rank === '') return 0;
+  const r = parseInt(rank);
+  if (r === 1) return 10;
+  if (r === 2) return 6;
+  if (r === 3) return 5;
+  if (r === 4) return 4;
+  if (r === 5) return 3;
+  if (r === 6) return 2;
+  if (r === 7) return 1;
+  if (r === 8) return 1;
+  return 0;
+}
+
+function previewScore(teamName) {
+  const re = document.getElementById("rank_" + teamName + "_" + currentMatch);
+  const ke = document.getElementById("kills_" + teamName + "_" + currentMatch);
+  const prev = document.getElementById("prev_" + teamName);
+  if (!prev) return;
+  const r = re && re.value !== "" ? parseInt(re.value) : null;
+  const k = ke && ke.value !== "" ? parseInt(ke.value) : 0;
+  const pp = placementPts(r);
+  const total = pp + k;
+  if (r !== null || k > 0) {
+    prev.innerHTML = 'Place: <span>'+pp+'</span> + Kills: <span>'+k+'</span> = <span>'+total+' pts</span>';
+  } else {
+    prev.innerHTML = '';
+  }
+}
+
+function doLogin() {
+  const pw = document.getElementById("pw-input").value;
+  if (pw === SUPER_ADMIN_PASSWORD) {
+    isSuperAdmin = true;
+    sessionStorage.setItem("pmac_admin_auth", "super");
+  } else if (pw === ADMIN_PASSWORD) {
+    isSuperAdmin = false;
+    sessionStorage.setItem("pmac_admin_auth", "true");
+  } else {
+    document.getElementById("login-err").textContent = "Wrong password";
+    document.getElementById("pw-input").value = "";
+    return;
+  }
+  showMainPage();
+}
+
+function showMainPage() {
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("main-page").style.display = "block";
+  const fbStatus = document.getElementById("fb-status");
+  dbTeamsRef.on("value", (snap) => {
+    fbStatus.textContent = "\u25CF Connected";
+    fbStatus.className = "fb-badge fb-ok";
+    const val = snap.val();
+    teams = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
+    renderTeamsMgmt();
+    renderScoreGrid();
+  }, () => {
+    fbStatus.textContent = "\u25CF Error";
+    fbStatus.className = "fb-badge fb-err";
+  });
+  dbScoresRef.on("value", (snap) => {
+    scores = snap.val() || {};
+    renderScoreGrid();
+  });
+}
+
+function showSection(sec) {
+  document.getElementById("section-teams").style.display = sec==="teams"?"block":"none";
+  document.getElementById("section-scores").style.display = sec==="scores"?"block":"none";
+  document.getElementById("section-forum").style.display = sec==="forum"?"block":"none";
+  document.getElementById("section-overlay").style.display = sec==="overlay"?"block":"none";
+  document.querySelectorAll(".stab").forEach((b,i) => {
+    b.classList.toggle("active",
+      (i===0&&sec==="teams")||(i===1&&sec==="scores")||(i===2&&sec==="forum")||(i===3&&sec==="overlay")
+    );
+  });
+  if (sec==="scores") renderScoreGrid();
+  if (sec==="forum") { initForum(); scrollChatToBottom(); }
+  if (sec==="overlay") initOverlay();
+}
+
+function previewLogo(input) {
+  const file = input.files[0]; if (!file) return;
+  const prev = document.getElementById("logo-preview");
+  prev.src = URL.createObjectURL(file); prev.style.display = "block";
+  document.getElementById("logo-name").textContent = file.name.substring(0,20);
+}
+
+function addTeam() {
+  const nameInput = document.getElementById("new-team-name");
+  const logoInput = document.getElementById("new-team-logo");
+  const name = nameInput.value.trim().toUpperCase();
+  if (!name) { showToast("Enter a team name", false); return; }
+  if (teams.find(t => t.name === name)) { showToast("Team already exists", false); return; }
+  const file = logoInput.files[0];
+  if (file) {
+    document.getElementById("uploading-badge").style.display = "inline";
+    // Convert to base64 and store directly in Firebase Database (no CORS issues)
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      // Resize to 80x80 to keep size small
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement("canvas");
+        canvas.width = 80; canvas.height = 80;
+        canvas.getContext("2d").drawImage(img, 0, 0, 80, 80);
+        const b64 = canvas.toDataURL("image/jpeg", 0.7);
+        document.getElementById("uploading-badge").style.display = "none";
+        pushTeam(name, b64);
+        nameInput.value = ""; logoInput.value = "";
+        document.getElementById("logo-preview").style.display = "none";
+        document.getElementById("logo-name").textContent = "";
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  } else { pushTeam(name, ""); nameInput.value = ""; }
+}
+
+function pushTeam(name, logoUrl) {
+  const newTeams = [...teams, {name, logo: logoUrl}];
+  var safeKey = sanitizeKey(name);
+  dbTeamsRef.set(newTeams).then(() => {
+    if (!scores[safeKey]) { scores[safeKey] = Array(10).fill(null).map(() => ({rank:null,kills:null})); dbScoresRef.set(scores); }
+    showToast("Team added!", true);
+  }).catch(e => showToast("Error: " + e.message, false));
+}
+
+function fixAllLogos() {
+  var toFix = teams.filter(function(t){ return t.logo && t.logo.indexOf("data:") !== 0; });
+  if(!toFix.length){ showToast("All logos already fixed!", true); return; }
+  showToast("Fixing " + toFix.length + " logos...", true);
+  document.getElementById("fix-logos-btn").textContent = "Fixing...";
+  document.getElementById("fix-logos-btn").disabled = true;
+  var fixed = 0;
+  toFix.forEach(function(t) {
+    var img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = function() {
+      try {
+        var c = document.createElement("canvas"); c.width=80; c.height=80;
+        c.getContext("2d").drawImage(img,0,0,80,80);
+        var b64 = c.toDataURL("image/jpeg", 0.7);
+        var idx = teams.findIndex(function(x){ return x.name===t.name; });
+        if(idx > -1) teams[idx].logo = b64;
+      } catch(e) {}
+      fixed++;
+      if(fixed >= toFix.length) saveFixedLogos();
+    };
+    img.onerror = function() {
+      fixed++;
+      if(fixed >= toFix.length) saveFixedLogos();
+    };
+    img.src = "https://images.weserv.nl/?url=" + encodeURIComponent(t.logo.replace("https://",""));
+  });
+  function saveFixedLogos() {
+    dbTeamsRef.set(teams).then(function(){
+      showToast("All logos fixed and saved!", true);
+      document.getElementById("fix-logos-btn").textContent = "\u{1F4F7} Fix All Logos";
+      document.getElementById("fix-logos-btn").disabled = false;
+    }).catch(function(e){ showToast("Error: "+e.message, false); });
+  }
+}
+
+function removeTeam(name) {
+  if (!confirm("Remove " + name + "?")) return;
+  const newTeams = teams.filter(t => t.name !== name);
+  dbTeamsRef.set(newTeams).then(() => { delete scores[name]; return dbScoresRef.set(scores); })
+    .then(() => showToast("Removed", true)).catch(e => showToast("Error: " + e.message, false));
+}
+
+function importCSV(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const names = e.target.result.split(/[,\n\r]+/).map(n => n.trim().toUpperCase()).filter(n => n.length > 0);
+    const newTeams = [...teams];
+    let added = 0;
+    names.forEach(name => {
+      if (!newTeams.find(t => t.name === name)) {
+        newTeams.push({name, logo: ""});
+        var safeKey = sanitizeKey(name);
+        if (!scores[safeKey]) scores[safeKey] = Array(10).fill(null).map(() => ({rank:null,kills:null}));
+        added++;
+      }
+    });
+    dbTeamsRef.set(newTeams).then(() => dbScoresRef.set(scores))
+      .then(() => showToast(added + " teams imported!", true))
+      .catch(e => showToast("Error: " + e.message, false));
+    input.value = "";
+  };
+  reader.readAsText(file);
+}
+
+function renderTeamsMgmt() {
+  const list = document.getElementById("teams-list-mgmt");
+  document.getElementById("team-count").textContent = teams.length;
+  if (teams.length === 0) { list.innerHTML = '<div class="no-teams">No teams yet.</div>'; return; }
+  list.innerHTML = "";
+  teams.forEach(t => {
+    const row = document.createElement("div"); row.className = "team-mgmt-row";
+    row.innerHTML = '<img class="team-mgmt-logo" src="'+(t.logo||'')+'" alt="" onerror="this.style.opacity=0.2">' +
+      '<div class="team-mgmt-name">'+t.name+'</div>' +
+      (isSuperAdmin ? '<span class="team-mgmt-del" onclick="removeTeam(\'' + t.name.replace(/\'/, "\'") + '\')" >&#10005; Remove</span>' : '');
+    list.appendChild(row);
+  });
+}
+
+function switchMatch(idx) {
+  saveAll();
+  currentMatch = idx;
+  document.querySelectorAll(".match-tab").forEach((b,i) => b.classList.toggle("active", i===idx));
+  renderScoreGrid();
+}
+
+function saveAll() {
+  teams.forEach(t => {
+    const re = document.getElementById("rank_" + t.name + "_" + currentMatch);
+    const ke = document.getElementById("kills_" + t.name + "_" + currentMatch);
+    if (re && ke) {
+      var safeKey = sanitizeKey(t.name);
+      if (!scores[safeKey]) scores[safeKey] = Array(10).fill(null).map(() => ({rank:null,kills:null}));
+      scores[safeKey][currentMatch] = {
+        rank: re.value !== "" ? parseInt(re.value) : null,
+        kills: ke.value !== "" ? parseInt(ke.value) : null
+      };
+    }
+  });
+  dbScoresRef.set(scores).then(() => {
+    document.getElementById("last-saved").textContent = new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    showToast("Saved!", true);
+  }).catch(e => showToast("Error: " + e.message, false));
+}
+
+function autoSave(teamName) {
+  const re = document.getElementById("rank_" + teamName + "_" + currentMatch);
+  const ke = document.getElementById("kills_" + teamName + "_" + currentMatch);
+  var safeKey = sanitizeKey(teamName);
+  if (!scores[safeKey]) scores[safeKey] = Array(10).fill(null).map(() => ({rank:null,kills:null}));
+  scores[safeKey][currentMatch] = {
+    rank: re && re.value !== "" ? parseInt(re.value) : null,
+    kills: ke && ke.value !== "" ? parseInt(ke.value) : null
+  };
+  previewScore(teamName);
+  dbScoresRef.set(scores).then(() => {
+    document.getElementById("last-saved").textContent = new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    const s = document.getElementById("saved_" + teamName);
+    if (s) { s.classList.add("show"); setTimeout(() => s.classList.remove("show"), 1500); }
+    renderScoreGrid(); // refresh all dropdowns to update taken ranks
+  });
+}
+
+function handleKey(event, team, field) {
+  if (event.key === "Enter" || event.key === "Tab") {
+    autoSave(team);
+    if (field === "rank") { event.preventDefault(); const k = document.getElementById("kills_" + team + "_" + currentMatch); if (k) k.focus(); }
+  }
+}
+
+function clearTeamMatch(teamName) {
+  if (!scores[teamName]) scores[teamName] = Array(10).fill(null).map(() => ({rank:null,kills:null}));
+  scores[teamName][currentMatch] = {rank:null,kills:null};
+  dbScoresRef.set(scores); renderScoreGrid();
+}
+
+
+
+function getUsedRanks(excludeTeam) {
+  var used = {};
+  teams.forEach(function(t) {
+    if (t.name === excludeTeam) return;
+    var key = sanitizeKey(t.name);
+    var m = scores[key] && scores[key][currentMatch];
+    if (m && m.rank !== null) used[m.rank] = t.name;
+  });
+  return used;
+}
+
+function renderScoreGrid() {
+  const grid = document.getElementById("team-grid");
+  if (teams.length === 0) {
+    grid.innerHTML = '<div class="no-teams" style="grid-column:1/-1;">Go to "Manage Teams" tab to add teams first.</div>';
+    return;
+  }
+  grid.innerHTML = "";
+  teams.forEach(t => {
+    var safeKey = sanitizeKey(t.name);
+    const m = (scores[safeKey] && scores[safeKey][currentMatch]) || {rank:null,kills:null};
+    const hasData = m.rank !== null && m.kills !== null;
+    const rv = m.rank !== null ? m.rank : "";
+    const kv = m.kills !== null ? m.kills : "";
+    const tn = t.name.replace(/'/g,"\'");
+    const pp = placementPts(m.rank);
+    const k = m.kills !== null ? parseInt(m.kills) : 0;
+    const total = pp + k;
+    const ptsPreview = (m.rank !== null || m.kills !== null) ? 'Place: <span>'+pp+'</span> + Kills: <span>'+k+'</span> = <span>'+total+' pts</span>' : '';
+
+    // Build rank dropdown - grey out used ranks
+    const usedRanks = getUsedRanks(t.name);
+    var rankOpts = '<option value="">—</option>';
+    for (var r = 1; r <= 25; r++) {
+      var taken = usedRanks[r];
+      var sel = (m.rank == r) ? ' selected' : '';
+      var disabled = taken ? ' disabled' : '';
+      var label = taken ? r + ' (' + taken.substring(0,8) + ')' : r;
+      rankOpts += '<option value="'+r+'"'+sel+disabled+'>'+label+'</option>';
+    }
+
+    const card = document.createElement("div");
+    card.className = "team-card" + (hasData ? " has-data" : "");
+    card.innerHTML =
+      '<div class="card-header">' +
+        '<img class="card-logo" src="'+(t.logo||'')+'" alt="" onerror="this.style.opacity=0.2">' +
+        '<div class="card-name">'+t.name+'</div>' +
+        '<span class="card-clear" onclick="clearTeamMatch(\'' + tn + '\')">clear</span>' +
+      '</div>' +
+      '<div class="card-inputs">' +
+        '<div class="inp-group"><div class="inp-label">Rank</div>' +
+          '<select class="inp rank-sel" id="rank_'+t.name+'_'+currentMatch+'"' +
+          ' onchange="autoSave(\'' + tn + '\')">'+rankOpts+'</select></div>' +
+        '<div class="inp-group"><div class="inp-label">Kills</div>' +
+          '<input class="inp" type="number" min="0" max="99" id="kills_'+t.name+'_'+currentMatch+'" value="'+kv+'" placeholder="—"' +
+          ' onchange="autoSave(\'' + tn + '\')" onkeydown="handleKey(event,\'' + tn + '\',\'kills\')"></div>' +
+      '</div>' +
+      '<div class="card-pts-preview" id="prev_'+t.name+'">'+ptsPreview+'</div>' +
+      '<div class="card-saved" id="saved_'+t.name+'">&#x2713; Saved</div>';
+    grid.appendChild(card);
+  });
+}
+
+function openArchiveModal() {
+  document.getElementById("archive-date").value = new Date().toISOString().split("T")[0];
+  document.getElementById("archive-name").value = "";
+  document.getElementById("archive-modal").classList.add("show");
+}
+function closeArchiveModal() { document.getElementById("archive-modal").classList.remove("show"); }
+function confirmArchive() {
+  const name = document.getElementById("archive-name").value.trim();
+  const dateVal = document.getElementById("archive-date").value;
+  if (!name) { alert("Enter a tournament name"); return; }
+  if (!dateVal) { alert("Select a date"); return; }
+  db.ref("pmac/archive").child("t_" + Date.now()).set({
+    name, date: new Date(dateVal).getTime(), archivedAt: Date.now(),
+    teams: teams, data: scores
+  }).then(() => {
+    scores = {};
+    return Promise.all([dbTeamsRef.set([]), dbScoresRef.set({})]);
+  }).then(() => { closeArchiveModal(); showToast("Tournament archived!", true); })
+  .catch(e => showToast("Error: " + e.message, false));
+}
+
+
+// Auto-login if already authenticated in this session
+var _admSession = sessionStorage.getItem("pmac_admin_auth");
+if (_admSession === "super") { isSuperAdmin = true; }
+if (_admSession === "true" || _admSession === "super") {
+  showMainPage();
+  const fbStatus = document.getElementById("fb-status");
+  dbTeamsRef.on("value", (snap) => {
+    fbStatus.textContent = "\u25CF Connected";
+    fbStatus.className = "fb-badge fb-ok";
+    const val = snap.val();
+    teams = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
+    renderTeamsMgmt();
+    renderScoreGrid();
+  }, () => {
+    fbStatus.textContent = "\u25CF Error";
+    fbStatus.className = "fb-badge fb-err";
+  });
+  dbScoresRef.on("value", (snap) => {
+    scores = snap.val() || {};
+    renderScoreGrid();
+  });
+}
+
+
+var navHistory = [];
+var navIndex = -1;
+
+function navTo(page) {
+  // Trim forward history
+  navHistory = navHistory.slice(0, navIndex + 1);
+  navHistory.push(page);
+  navIndex = navHistory.length - 1;
+  loadNavFrame(page);
+}
+
+function navBack() {
+  if (navIndex > 0) {
+    navIndex--;
+    loadNavFrame(navHistory[navIndex]);
+  }
+}
+
+function navForward() {
+  if (navIndex < navHistory.length - 1) {
+    navIndex++;
+    loadNavFrame(navHistory[navIndex]);
+  }
+}
+
+function loadNavFrame(page) {
+  var wrap = document.getElementById("nav-frame-wrap");
+  var frame = document.getElementById("nav-frame");
+  var lbl = document.getElementById("nav-current-lbl");
+  wrap.style.display = "block";
+  frame.src = page;
+  lbl.textContent = page.replace(".html","").toUpperCase();
+  // Scroll to frame
+  wrap.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function closeNavFrame() {
+  document.getElementById("nav-frame-wrap").style.display = "none";
+  document.getElementById("nav-frame").src = "";
+  navHistory = [];
+  navIndex = -1;
+}
+
+function sanitizeKey(name) {
+  return name.replace(/[\.\#\$\/\[\]]/g, "_");
+}
+
+function importFromRegistration() {
+  db.ref("pmac/registrations").once("value").then(function(snap) {
+    var regs = snap.val();
+    if (!regs || Object.keys(regs).length === 0) {
+      showToast("No registrations found", false);
+      return;
+    }
+
+    var regList = Object.values(regs);
+    // Filter approved teams only, or all if none approved
+    var approved = regList.filter(function(r) { return r.status === "approved"; });
+    var toImport = approved.length > 0 ? approved : regList;
+
+    var label = approved.length > 0 ? "approved" : "all";
+    if (!confirm("Import " + toImport.length + " " + label + " teams from registration?\n\nThis will add them to today's tournament teams.")) return;
+
+    var newTeams = teams.slice();
+    var added = 0;
+    var skipped = 0;
+
+    toImport.forEach(function(reg) {
+      if (!reg.name) return;
+      var exists = false;
+      for (var i = 0; i < newTeams.length; i++) {
+        if (newTeams[i].name === reg.name) { exists = true; break; }
+      }
+      if (exists) { skipped++; return; }
+      newTeams.push({ name: reg.name, logo: reg.logo || "" });
+      added++;
+    });
+
+    if (added === 0) {
+      showToast("All teams already added (" + skipped + " skipped)", false);
+      return;
+    }
+
+    // Init scores for new teams
+    toImport.forEach(function(reg) {
+      if (!reg.name) return;
+      var safeKey = sanitizeKey(reg.name);
+      if (!scores[safeKey]) {
+        scores[safeKey] = Array(10).fill(null).map(function() { return {rank:null, kills:null}; });
+      }
+    });
+
+    dbTeamsRef.set(newTeams).then(function() {
+      return dbScoresRef.set(scores);
+    }).then(function() {
+      showToast(added + " teams imported!" + (skipped > 0 ? " (" + skipped + " skipped)" : ""), true);
+    }).catch(function(e) {
+      showToast("Error: " + e.message, false);
+    });
+  }).catch(function(e) {
+    showToast("Error reading registrations: " + e.message, false);
+  });
+}
+
+/* ── OBS OVERLAY / STREAMER SETTINGS ── */
+var overlayRef = db.ref("pmac/overlay");
+var overlayInitialized = false;
+var overlayStreamers = [];
+
+function initOverlay() {
+  if (overlayInitialized) return;
+  overlayInitialized = true;
+  overlayRef.on("value", function(snap) {
+    var data = snap.val() || {};
+    overlayStreamers = data.streamers ? (Array.isArray(data.streamers) ? data.streamers : Object.values(data.streamers)) : [];
+    renderOverlayActive(data.active || null);
+    renderOverlayRoster();
+  });
+}
+
+function renderOverlayActive(active) {
+  var none = document.getElementById("overlay-active-none");
+  var avatar = document.getElementById("overlay-active-avatar");
+  var info = document.getElementById("overlay-active-info");
+  var nameEl = document.getElementById("overlay-active-name");
+  if (!active || !active.name) {
+    none.style.display = "";
+    avatar.style.display = "none";
+    info.style.display = "none";
+  } else {
+    none.style.display = "none";
+    avatar.src = active.logo || "";
+    avatar.style.display = active.logo ? "block" : "none";
+    info.style.display = "";
+    nameEl.textContent = active.name + (active.handle ? "  " + active.handle : "");
+  }
+}
+
+function renderOverlayRoster() {
+  var list = document.getElementById("overlay-streamers-list");
+  list.innerHTML = "";
+  if (!overlayStreamers.length) {
+    list.innerHTML = '<div class="no-teams">No streamers added yet.</div>';
+    return;
+  }
+  overlayStreamers.forEach(function(s, idx) {
+    var row = document.createElement("div");
+    row.className = "overlay-streamer-item";
+    row.id = "os-row-" + idx;
+    row.innerHTML =
+      '<img class="overlay-streamer-avatar" src="' + escHtml(s.logo||"") + '" onerror="this.style.display=\'none\'" style="' + (s.logo?"":"display:none;") + '">' +
+      '<div class="overlay-streamer-name">' + escHtml(s.name) + (s.handle ? '<span style="font-weight:600;font-size:10px;color:#606878;margin-left:6px;text-transform:none;letter-spacing:0;">' + escHtml(s.handle) + '</span>' : '') + '</div>' +
+      '<span class="overlay-streamer-set" onclick="setLiveStreamer(' + idx + ')">&#128308; Set Live</span>' +
+      '<span class="overlay-streamer-del" onclick="deleteStreamer(' + idx + ')" title="Remove">&#10005;</span>';
+    list.appendChild(row);
+  });
+}
+
+function previewStreamerLogo(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var prev = document.getElementById("new-streamer-logo-preview");
+  var url = URL.createObjectURL(file);
+  prev.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+}
+
+function addStreamer() {
+  var name = document.getElementById("new-streamer-name").value.trim().toUpperCase();
+  var handle = document.getElementById("new-streamer-handle").value.trim();
+  var fileInput = document.getElementById("new-streamer-logo-file");
+  var file = fileInput.files[0];
+  if (!name) { showToast("Enter a streamer name", false); return; }
+
+  var uploading = document.getElementById("streamer-uploading");
+
+  function saveStreamer(logoUrl) {
+    var updated = overlayStreamers.slice();
+    updated.push({ name: name, handle: handle, logo: logoUrl || "" });
+    overlayRef.child("streamers").set(updated).then(function() {
+      showToast(name + " added!", true);
+      document.getElementById("new-streamer-name").value = "";
+      document.getElementById("new-streamer-handle").value = "";
+      fileInput.value = "";
+      document.getElementById("new-streamer-logo-preview").innerHTML = '<span class="overlay-logo-placeholder">&#128247;</span>';
+      uploading.style.display = "none";
+    }).catch(function(e) { showToast("Error: " + e.message, false); uploading.style.display = "none"; });
+  }
+
+  if (file) {
+    uploading.style.display = "inline";
+    var ref = storage.ref("pmac/streamers/" + Date.now() + "_" + file.name);
+    ref.put(file).then(function(snap) {
+      return snap.ref.getDownloadURL();
+    }).then(function(url) {
+      saveStreamer(url);
+    }).catch(function(e) { showToast("Upload error: " + e.message, false); uploading.style.display = "none"; });
+  } else {
+    saveStreamer("");
+  }
+}
+
+function setLiveStreamer(idx) {
+  var s = overlayStreamers[idx];
+  if (!s) return;
+  overlayRef.child("active").set({ name: s.name, handle: s.handle || "", logo: s.logo || "", ts: Date.now() })
+    .then(function() { showToast("🔴 " + s.name + " is now LIVE on overlay!", true); })
+    .catch(function(e) { showToast("Error: " + e.message, false); });
+}
+
+function deleteStreamer(idx) {
+  if (!confirm("Remove this streamer?")) return;
+  var updated = overlayStreamers.filter(function(_, i) { return i !== idx; });
+  overlayRef.child("streamers").set(updated).catch(function(e) { showToast("Error: " + e.message, false); });
+}
+
+
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.className = "toast show " + (ok ? "toast-ok" : "toast-err");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+/* ── FORUM / LIVE CHAT ── */
+var forumRef = db.ref("pmac/forum/messages");
+var forumInitialized = false;
+
+function initForum() {
+  if (forumInitialized) return;
+  forumInitialized = true;
+  // Set nick from admin status
+  if (isSuperAdmin) {
+    document.getElementById("chat-nick").value = "Super Admin";
+    document.getElementById("forum-user-badge").textContent = "SUPER ADMIN";
+  } else {
+    document.getElementById("chat-nick").value = "Admin";
+    document.getElementById("forum-user-badge").textContent = "ADMIN";
+  }
+  // Listen for messages
+  forumRef.limitToLast(100).on("child_added", function(snap) {
+    var msg = snap.val();
+    if (!msg) return;
+    document.getElementById("chat-empty").style.display = "none";
+    appendChatMessage(snap.key, msg);
+    scrollChatToBottom();
+  });
+  forumRef.on("child_removed", function(snap) {
+    var el = document.getElementById("cmsg-" + snap.key);
+    if (el) el.remove();
+    var msgs = document.getElementById("chat-messages");
+    var hasMsg = msgs.querySelectorAll(".chat-msg,.chat-system").length > 0;
+    document.getElementById("chat-empty").style.display = hasMsg ? "none" : "flex";
+  });
+}
+
+function appendChatMessage(key, msg) {
+  var container = document.getElementById("chat-messages");
+  var nickInp = document.getElementById("chat-nick");
+  var myNick = nickInp ? nickInp.value.trim() : "Admin";
+  var isMine = msg.nick === myNick || (msg.isAdmin && myNick.toLowerCase().indexOf("admin") !== -1);
+
+  var div = document.createElement("div");
+  div.id = "cmsg-" + key;
+
+  if (msg.type === "system") {
+    div.className = "chat-system";
+    div.textContent = msg.text;
+  } else {
+    div.className = "chat-msg " + (isMine ? "mine" : "other");
+    var ts = msg.ts ? new Date(msg.ts).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}) : "";
+    var adminTag = msg.isAdmin ? ' <span style="color:#e8b800;font-size:8px;">★ADMIN</span>' : '';
+    div.innerHTML =
+      '<div class="chat-meta ' + (isMine?"mine":"") + '">' + escHtml(msg.nick||"Guest") + adminTag + ' · ' + ts + '</div>' +
+      '<div class="chat-bubble">' + escHtml(msg.text) + '</div>';
+  }
+  container.appendChild(div);
+}
+
+function sendChatMessage() {
+  var inp = document.getElementById("chat-text");
+  var nickInp = document.getElementById("chat-nick");
+  var text = inp.value.trim();
+  var nick = nickInp.value.trim() || "Admin";
+  if (!text) return;
+  var btn = document.getElementById("chat-send-btn");
+  btn.disabled = true;
+  forumRef.push({
+    nick: nick,
+    text: text,
+    ts: Date.now(),
+    isAdmin: true
+  }).then(function() {
+    inp.value = "";
+    inp.style.height = "auto";
+    btn.disabled = false;
+    inp.focus();
+  }).catch(function(e) {
+    showToast("Error: " + e.message, false);
+    btn.disabled = false;
+  });
+}
+
+function clearAllChat() {
+  if (!confirm("Clear ALL forum messages? This cannot be undone.")) return;
+  forumRef.remove().then(function() {
+    var msgs = document.getElementById("chat-messages");
+    // Remove all message elements
+    Array.from(msgs.children).forEach(function(c) {
+      if (c.id !== "chat-empty") c.remove();
+    });
+    document.getElementById("chat-empty").style.display = "flex";
+    // Post a system message
+    forumRef.push({ type:"system", text:"Chat was cleared by Admin · " + new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}), ts: Date.now() });
+    showToast("Chat cleared", true);
+  }).catch(function(e) { showToast("Error: " + e.message, false); });
+}
+
+function scrollChatToBottom() {
+  var box = document.getElementById("chat-messages");
+  if (box) box.scrollTop = box.scrollHeight;
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+</script>
+</body>
+</html>
