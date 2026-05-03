@@ -270,28 +270,317 @@
   const cx = cv.getContext('2d');
   let W, H, t = 0;
 
-  function resize() { W = cv.width = innerWidth; H = cv.height = innerHeight; buildHexes(); }
+  function resize() { W = cv.width = innerWidth; H = cv.height = innerHeight; }
   addEventListener('resize', resize);
+  W = cv.width = innerWidth; H = cv.height = innerHeight;
 
-  /* hex grid */
-  const HR = 36;
+  /* ══════════════════════════════════════════════
+     AK-47 SILHOUETTE DRAW  (origin = left grip)
+     scale: 1 unit ≈ 1px at s=1
+  ══════════════════════════════════════════════ */
+  function drawAK(x, y, s, alpha) {
+    cx.save();
+    cx.translate(x, y);
+    cx.scale(s, s);
+    cx.globalAlpha = alpha;
+
+    const col = '#c8a855';       // gold-bronze
+    const dark = '#7a5e1a';
+    const wood = '#6b3a1f';
+    const metal = '#3a3a3a';
+
+    /* ── barrel ── */
+    cx.fillStyle = metal;
+    cx.fillRect(60, -4, 180, 8);          // main barrel tube
+    cx.fillRect(220, -2, 18, 4);           // flash hider base
+    // flash hider prongs
+    cx.fillRect(236, -6, 4, 5);
+    cx.fillRect(236,  2, 4, 5);
+    cx.fillRect(242, -4, 4, 3);
+    cx.fillRect(242,  2, 4, 3);
+
+    /* ── gas tube above barrel ── */
+    cx.fillStyle = metal;
+    cx.fillRect(100, -10, 120, 4);
+
+    /* ── receiver (main body) ── */
+    cx.fillStyle = col;
+    cx.beginPath();
+    cx.rect(30, -14, 150, 28);
+    cx.fill();
+    // selector / detail lines
+    cx.fillStyle = dark;
+    cx.fillRect(120, -12, 2, 24);
+    cx.fillRect(148, -8, 2, 16);
+    // dust cover
+    cx.fillStyle = '#b8962e';
+    cx.fillRect(50, -12, 80, 6);
+
+    /* ── pistol grip ── */
+    cx.fillStyle = wood;
+    cx.beginPath();
+    cx.moveTo(55, 14); cx.lineTo(70, 14); cx.lineTo(75, 50); cx.lineTo(52, 50);
+    cx.closePath(); cx.fill();
+    // grip texture lines
+    cx.strokeStyle = 'rgba(0,0,0,0.3)'; cx.lineWidth = 1;
+    for (let i = 0; i < 5; i++) { cx.beginPath(); cx.moveTo(54+i*3, 16); cx.lineTo(57+i*3, 48); cx.stroke(); }
+
+    /* ── trigger guard ── */
+    cx.strokeStyle = metal; cx.lineWidth = 3; cx.fillStyle = 'transparent';
+    cx.beginPath();
+    cx.moveTo(55, 14); cx.quadraticCurveTo(45, 32, 55, 48); cx.lineTo(75, 50);
+    cx.stroke();
+
+    /* ── trigger ── */
+    cx.strokeStyle = metal; cx.lineWidth = 2;
+    cx.beginPath(); cx.moveTo(62, 16); cx.lineTo(58, 38); cx.stroke();
+
+    /* ── magazine (curved AK-style) ── */
+    cx.fillStyle = metal;
+    cx.beginPath();
+    cx.moveTo(75, 14); cx.lineTo(105, 14);
+    cx.quadraticCurveTo(112, 50, 108, 70);
+    cx.lineTo(80, 70);
+    cx.quadraticCurveTo(72, 50, 75, 14);
+    cx.fill();
+    // mag rib
+    cx.fillStyle = '#555';
+    cx.fillRect(88, 20, 4, 44);
+
+    /* ── handguard (wood) ── */
+    cx.fillStyle = wood;
+    cx.beginPath();
+    cx.rect(60, -18, 90, 8);
+    cx.fill();
+    cx.fillRect(60, 10, 90, 8);
+
+    /* ── stock (folding style) ── */
+    cx.strokeStyle = metal; cx.lineWidth = 5;
+    cx.beginPath();
+    cx.moveTo(30, -8); cx.lineTo(-40, -20); cx.stroke();
+    cx.beginPath();
+    cx.moveTo(30, 8);  cx.lineTo(-40,  20); cx.stroke();
+    cx.beginPath();
+    cx.moveTo(-40, -20); cx.lineTo(-40, 20); cx.stroke();
+
+    /* ── front sight post ── */
+    cx.fillStyle = metal;
+    cx.fillRect(198, -18, 6, 14);
+    cx.fillRect(196, -22, 10, 5);
+
+    /* ── rear sight ── */
+    cx.fillStyle = metal;
+    cx.fillRect(148, -20, 12, 10);
+    cx.fillRect(150, -26, 8, 8);
+
+    cx.restore();
+  }
+
+  /* ══════════════════════════════════════════════
+     FLOATING AK-47s (background silhouettes)
+  ══════════════════════════════════════════════ */
+  const guns = Array.from({ length: 4 }, (_, i) => ({
+    x:     W * (0.1 + i * 0.26),
+    y:     H * (0.15 + Math.random() * 0.6),
+    vy:    0.08 + Math.random() * 0.08,
+    phase: Math.random() * Math.PI * 2,
+    s:     0.55 + Math.random() * 0.35,
+    flip:  Math.random() > 0.5,
+  }));
+
+  function drawGuns() {
+    guns.forEach(g => {
+      g.y += g.vy;
+      if (g.y > H + 80) { g.y = -80; g.x = W * (0.05 + Math.random() * 0.9); }
+      const bob   = Math.sin(t * 0.001 + g.phase) * 6;
+      const alpha = 0.06 + 0.04 * Math.abs(Math.sin(t * 0.0008 + g.phase));
+      cx.save();
+      if (g.flip) { cx.translate(g.x + g.s * 260, g.y + bob); cx.scale(-1, 1); drawAK(0, 0, g.s, alpha); }
+      else          drawAK(g.x, g.y + bob, g.s, alpha);
+      cx.restore();
+    });
+  }
+
+  /* ══════════════════════════════════════════════
+     FLYING BULLETS  (streaking left → right)
+  ══════════════════════════════════════════════ */
+  const bullets = [];
+  let bTimer = 0;
+
+  function spawnBullet() {
+    const angle = (Math.random() - 0.5) * 0.18;   // slight spread
+    const speed = 14 + Math.random() * 10;
+    bullets.push({
+      x:     -20,
+      y:     H * (0.1 + Math.random() * 0.8),
+      vx:    Math.cos(angle) * speed,
+      vy:    Math.sin(angle) * speed,
+      life:  1,
+      len:   18 + Math.random() * 22,
+    });
+  }
+
+  function drawBullets() {
+    if (++bTimer > 8 + Math.floor(Math.random() * 12)) { spawnBullet(); bTimer = 0; }
+    for (let i = bullets.length - 1; i >= 0; i--) {
+      const b = bullets[i];
+      b.x += b.vx; b.y += b.vy;
+      if (b.x > W + 40 || b.y < -20 || b.y > H + 20) { bullets.splice(i, 1); continue; }
+
+      // tracer streak
+      const g = cx.createLinearGradient(b.x, b.y, b.x - b.vx * b.len / b.vx, b.y - b.vy * b.len / b.vx);
+      g.addColorStop(0,   `rgba(255,240,150,${b.life * 0.95})`);
+      g.addColorStop(0.3, `rgba(255,180,50,${b.life * 0.6})`);
+      g.addColorStop(1,   'rgba(255,100,0,0)');
+      cx.beginPath();
+      cx.moveTo(b.x, b.y);
+      cx.lineTo(b.x - b.vx * (b.len / Math.max(Math.abs(b.vx), 1)),
+                b.y - b.vy * (b.len / Math.max(Math.abs(b.vx), 1)));
+      cx.strokeStyle = g;
+      cx.lineWidth = 1.8;
+      cx.stroke();
+
+      // bullet tip dot
+      cx.beginPath(); cx.arc(b.x, b.y, 2, 0, Math.PI * 2);
+      cx.fillStyle = `rgba(255,255,200,${b.life * 0.9})`; cx.fill();
+    }
+  }
+
+  /* ══════════════════════════════════════════════
+     SHELL CASINGS  (eject upward + arc down)
+  ══════════════════════════════════════════════ */
+  const casings = [];
+  let cTimer = 0;
+
+  function spawnCasing(bx, by) {
+    casings.push({
+      x: bx || W * (0.3 + Math.random() * 0.5),
+      y: by || H * (0.3 + Math.random() * 0.4),
+      vx:  3 + Math.random() * 4,
+      vy: -(4 + Math.random() * 5),
+      rot: Math.random() * Math.PI * 2,
+      rspd: (Math.random() - 0.5) * 0.3,
+      life: 1,
+    });
+  }
+
+  function drawCasings() {
+    if (++cTimer > 12) { spawnCasing(); cTimer = 0; }
+    for (let i = casings.length - 1; i >= 0; i--) {
+      const c = casings[i];
+      c.x   += c.vx;
+      c.y   += c.vy;
+      c.vy  += 0.18;          // gravity
+      c.rot += c.rspd;
+      c.life -= 0.012;
+      if (c.life <= 0) { casings.splice(i, 1); continue; }
+
+      cx.save();
+      cx.translate(c.x, c.y);
+      cx.rotate(c.rot);
+      cx.globalAlpha = c.life * 0.7;
+      // casing body
+      cx.fillStyle = '#c8901a';
+      cx.beginPath(); cx.roundRect(-2, -6, 5, 12, 1); cx.fill();
+      // brass shine
+      cx.fillStyle = 'rgba(255,220,100,0.5)';
+      cx.beginPath(); cx.roundRect(-1, -5, 2, 9, 1); cx.fill();
+      // rim
+      cx.fillStyle = '#a06010';
+      cx.beginPath(); cx.ellipse(0.5, 6, 3, 2, 0, 0, Math.PI * 2); cx.fill();
+      cx.restore();
+    }
+  }
+
+  /* ══════════════════════════════════════════════
+     MUZZLE FLASH  (periodic burst)
+  ══════════════════════════════════════════════ */
+  let flash = null, flashT = 0;
+
+  function drawMuzzleFlash() {
+    if (++flashT > 25 + Math.floor(Math.random() * 40)) {
+      flash = { x: W * (0.05 + Math.random() * 0.12), y: H * (0.3 + Math.random() * 0.4), life: 1 };
+      flashT = 0;
+      spawnCasing(flash.x + 20, flash.y);
+    }
+    if (!flash) return;
+    flash.life -= 0.15;
+    if (flash.life <= 0) { flash = null; return; }
+
+    const fx = flash.x, fy = flash.y, fl = flash.life;
+    // outer glow
+    const glow = cx.createRadialGradient(fx, fy, 0, fx, fy, 60);
+    glow.addColorStop(0,   `rgba(255,220,80,${fl * 0.6})`);
+    glow.addColorStop(0.4, `rgba(255,100,0,${fl * 0.25})`);
+    glow.addColorStop(1,   'rgba(0,0,0,0)');
+    cx.fillStyle = glow; cx.beginPath(); cx.arc(fx, fy, 60, 0, Math.PI * 2); cx.fill();
+    // star burst rays
+    cx.save(); cx.translate(fx, fy);
+    for (let i = 0; i < 8; i++) {
+      cx.rotate(Math.PI / 4);
+      const len = (20 + Math.random() * 30) * fl;
+      cx.beginPath(); cx.moveTo(0, 0); cx.lineTo(len, 0);
+      cx.strokeStyle = `rgba(255,240,120,${fl * 0.7})`; cx.lineWidth = 2 + Math.random() * 3;
+      cx.stroke();
+    }
+    cx.restore();
+  }
+
+  /* ══════════════════════════════════════════════
+     CROSSHAIR  (floating, slow drift)
+  ══════════════════════════════════════════════ */
+  function drawCrosshair(x, y, r, alpha) {
+    const gap = r * 0.35;
+    cx.save();
+    cx.globalAlpha = alpha;
+    cx.strokeStyle = '#f5c400';
+    cx.lineWidth = 1.5;
+    // cross lines
+    cx.beginPath(); cx.moveTo(x - r, y); cx.lineTo(x - gap, y); cx.stroke();
+    cx.beginPath(); cx.moveTo(x + gap, y); cx.lineTo(x + r, y); cx.stroke();
+    cx.beginPath(); cx.moveTo(x, y - r); cx.lineTo(x, y - gap); cx.stroke();
+    cx.beginPath(); cx.moveTo(x, y + gap); cx.lineTo(x, y + r); cx.stroke();
+    // outer ring
+    cx.beginPath(); cx.arc(x, y, r, 0, Math.PI * 2);
+    cx.strokeStyle = `rgba(245,196,0,${alpha * 0.5})`; cx.stroke();
+    // center dot
+    cx.beginPath(); cx.arc(x, y, 2, 0, Math.PI * 2);
+    cx.fillStyle = `rgba(245,196,0,${alpha})`; cx.fill();
+    cx.restore();
+  }
+
+  const crosshairs = Array.from({ length: 3 }, (_, i) => ({
+    x:     W * (0.15 + i * 0.35),
+    y:     H * (0.2  + Math.random() * 0.5),
+    r:     18 + Math.random() * 14,
+    phase: Math.random() * Math.PI * 2,
+    spd:   0.0004 + Math.random() * 0.0004,
+  }));
+
+  function drawCrosshairs() {
+    crosshairs.forEach(c => {
+      const alpha = 0.08 + 0.06 * Math.abs(Math.sin(t * c.spd + c.phase));
+      const drift = Math.sin(t * 0.0007 + c.phase) * 18;
+      drawCrosshair(c.x + drift, c.y, c.r, alpha);
+    });
+  }
+
+  /* ══════════════════════════════════════════════
+     HEX GRID (light)
+  ══════════════════════════════════════════════ */
+  const HR = 34;
   let hexes = [];
   function buildHexes() {
     hexes = [];
     const cols = Math.ceil(W / (HR * 1.5)) + 3;
     const rows = Math.ceil(H / (HR * Math.sqrt(3))) + 3;
-    for (let r = -1; r < rows; r++) {
-      for (let c = -1; c < cols; c++) {
-        hexes.push({
-          cx: c * HR * 1.5,
-          cy: r * HR * Math.sqrt(3) + (c % 2 ? HR * Math.sqrt(3) / 2 : 0),
-          phase: Math.random() * Math.PI * 2,
-          spd:   0.0005 + Math.random() * 0.001,
-          lit:   Math.random() > 0.87,
-        });
-      }
-    }
+    for (let r = -1; r < rows; r++)
+      for (let c = -1; c < cols; c++)
+        hexes.push({ cx: c * HR * 1.5, cy: r * HR * Math.sqrt(3) + (c % 2 ? HR * Math.sqrt(3) / 2 : 0),
+          phase: Math.random() * Math.PI * 2, spd: 0.0004 + Math.random() * 0.001, lit: Math.random() > 0.9 });
   }
+  buildHexes();
+  addEventListener('resize', buildHexes);
 
   function hexPath(x, y, r) {
     cx.beginPath();
@@ -306,123 +595,69 @@
   function drawHexGrid() {
     hexes.forEach(h => {
       const p = Math.abs(Math.sin(t * h.spd + h.phase));
-      if (h.lit) {
-        hexPath(h.cx, h.cy, HR - 2);
-        cx.fillStyle = `rgba(245,196,0,${p * 0.055})`;
-        cx.fill();
-      }
-      hexPath(h.cx, h.cy, HR - 2);
-      cx.strokeStyle = h.lit
-        ? `rgba(245,196,0,${0.04 + p * 0.15})`
-        : `rgba(40,90,220,${0.012 + p * 0.025})`;
-      cx.lineWidth = h.lit ? 1.1 : 0.5;
-      cx.stroke();
+      if (h.lit) { hexPath(h.cx, h.cy, HR - 1); cx.fillStyle = `rgba(245,196,0,${p * 0.045})`; cx.fill(); }
+      hexPath(h.cx, h.cy, HR - 1);
+      cx.strokeStyle = h.lit ? `rgba(245,196,0,${0.03 + p * 0.12})` : `rgba(30,80,200,${0.01 + p * 0.02})`;
+      cx.lineWidth = h.lit ? 1 : 0.4; cx.stroke();
     });
   }
 
-  /* perspective floor */
-  function drawFloor() {
-    const vx = W / 2, vy = H * 0.44;
-    cx.lineWidth = 0.5;
-    for (let i = 0; i <= 20; i++) {
-      const g = i / 20, y = vy + g * H * 0.58, sp = g * W * 0.9, a = 0.025 + g * 0.13;
-      cx.beginPath(); cx.moveTo(vx - sp / 2, y); cx.lineTo(vx + sp / 2, y);
-      cx.strokeStyle = `rgba(35,85,255,${a})`; cx.stroke();
-    }
-    for (let i = 0; i <= 18; i++) {
-      const xb = W * (i / 18), a = 0.025 + 0.055 * (1 - Math.abs(i / 18 - 0.5) * 2);
-      cx.beginPath(); cx.moveTo(vx, vy); cx.lineTo(xb, H);
-      cx.strokeStyle = `rgba(35,85,255,${a})`; cx.stroke();
-    }
-  }
-
-  /* PUBG zone ring */
+  /* ══════════════════════════════════════════════
+     ZONE RING
+  ══════════════════════════════════════════════ */
   function drawZone() {
     const pulse = 0.5 + 0.5 * Math.sin(t * 0.0005);
     const r = Math.min(W, H) * (0.3 + 0.018 * pulse);
     const zx = W * 0.5, zy = H * 0.42;
     const g = cx.createRadialGradient(zx, zy, r * 0.82, zx, zy, r * 1.14);
     g.addColorStop(0, 'rgba(0,120,255,0)');
-    g.addColorStop(0.7, `rgba(0,100,255,${0.065 * pulse})`);
+    g.addColorStop(0.7, `rgba(0,100,255,${0.055 * pulse})`);
     g.addColorStop(1, 'rgba(0,50,180,0)');
     cx.fillStyle = g; cx.beginPath(); cx.arc(zx, zy, r * 1.14, 0, Math.PI * 2); cx.fill();
     cx.beginPath(); cx.arc(zx, zy, r, 0, Math.PI * 2);
-    cx.strokeStyle = `rgba(25,140,255,${0.18 + 0.07 * pulse})`;
-    cx.lineWidth = 1.4; cx.setLineDash([10, 8]); cx.stroke(); cx.setLineDash([]);
+    cx.strokeStyle = `rgba(25,140,255,${0.16 + 0.06 * pulse})`;
+    cx.lineWidth = 1.2; cx.setLineDash([10, 8]); cx.stroke(); cx.setLineDash([]);
   }
 
-  /* particles */
-  const pts = Array.from({ length: 80 }, () => ({
-    x: Math.random() * 1920, y: Math.random() * 1200,
-    vx: (Math.random() - 0.5) * 0.4, vy: -0.1 - Math.random() * 0.45,
-    r: 0.4 + Math.random() * 1.7, a: 0.1 + Math.random() * 0.45,
-    gold: Math.random() > 0.62,
-  }));
-  function drawPts() {
-    pts.forEach(p => {
-      p.x += p.vx; p.y += p.vy;
-      if (p.y < -4) p.y = H + 4;
-      if (p.x < -4) p.x = W + 4;
-      if (p.x > W + 4) p.x = -4;
-      cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      cx.fillStyle = p.gold ? `rgba(245,196,0,${p.a})` : `rgba(60,120,255,${p.a * 0.7})`;
-      cx.fill();
-    });
-  }
-
-  /* radar rings */
-  let rings = [], rT = 0;
-  function drawRings() {
-    if (++rT > 95) { rings.push({ x: W * (0.2 + Math.random() * 0.6), y: H * (0.15 + Math.random() * 0.5), r: 0, max: 90 + Math.random() * 120, spd: 0.5 + Math.random() * 0.5 }); rT = 0; }
-    for (let i = rings.length - 1; i >= 0; i--) {
-      const r = rings[i]; r.r += r.spd;
-      const life = 1 - r.r / r.max;
-      if (life <= 0) { rings.splice(i, 1); continue; }
-      cx.beginPath(); cx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
-      cx.strokeStyle = `rgba(245,196,0,${life * 0.16})`; cx.lineWidth = 1; cx.stroke();
-    }
-  }
-
-  /* shooting stars */
-  let sts = [], sT = 0;
-  function drawStars() {
-    if (++sT > 140 + Math.random() * 160) {
-      const a = Math.PI * (0.08 + Math.random() * 0.28), sp = 6 + Math.random() * 9;
-      sts.push({ x: Math.random() * W, y: Math.random() * H * 0.5, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1 }); sT = 0;
-    }
-    for (let i = sts.length - 1; i >= 0; i--) {
-      const s = sts[i];
-      const g = cx.createLinearGradient(s.x, s.y, s.x - s.vx * 7, s.y - s.vy * 7);
-      g.addColorStop(0, `rgba(255,255,200,${s.life * 0.9})`); g.addColorStop(1, 'rgba(255,255,200,0)');
-      cx.beginPath(); cx.moveTo(s.x, s.y); cx.lineTo(s.x - s.vx * 7, s.y - s.vy * 7);
-      cx.strokeStyle = g; cx.lineWidth = 1.5; cx.stroke();
-      s.x += s.vx; s.y += s.vy; s.life -= 0.022;
-      if (s.life <= 0 || s.x > W + 80 || s.y > H + 80) sts.splice(i, 1);
-    }
-  }
-
-  /* vignette */
+  /* ══════════════════════════════════════════════
+     VIGNETTE
+  ══════════════════════════════════════════════ */
   function drawVig() {
-    const v = cx.createRadialGradient(W / 2, H / 2, H * 0.1, W / 2, H / 2, H * 1.05);
-    v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(0.42, 'rgba(0,0,0,0.25)'); v.addColorStop(1, 'rgba(0,0,0,0.95)');
+    const v = cx.createRadialGradient(W/2, H/2, H*0.1, W/2, H/2, H*1.05);
+    v.addColorStop(0, 'rgba(0,0,0,0)');
+    v.addColorStop(0.4, 'rgba(0,0,0,0.22)');
+    v.addColorStop(1, 'rgba(0,0,0,0.95)');
     cx.fillStyle = v; cx.fillRect(0, 0, W, H);
   }
 
+  /* ══════════════════════════════════════════════
+     MAIN LOOP
+  ══════════════════════════════════════════════ */
   function loop(ts) {
-    t = ts; cx.clearRect(0, 0, W, H);
+    t = ts;
+    cx.clearRect(0, 0, W, H);
+
+    // deep bg
     cx.fillStyle = '#02040c'; cx.fillRect(0, 0, W, H);
-    const n1 = cx.createRadialGradient(W * 0.3, H * 0.28, 0, W * 0.3, H * 0.28, W * 0.58);
-    n1.addColorStop(0, 'rgba(14,7,50,.55)'); n1.addColorStop(1, 'rgba(0,0,0,0)');
+    const n1 = cx.createRadialGradient(W*.3, H*.28, 0, W*.3, H*.28, W*.56);
+    n1.addColorStop(0, 'rgba(12,6,45,.5)'); n1.addColorStop(1, 'rgba(0,0,0,0)');
     cx.fillStyle = n1; cx.fillRect(0, 0, W, H);
-    const n2 = cx.createRadialGradient(W * 0.8, H * 0.68, 0, W * 0.8, H * 0.68, W * 0.42);
-    n2.addColorStop(0, 'rgba(35,7,7,.38)'); n2.addColorStop(1, 'rgba(0,0,0,0)');
+    const n2 = cx.createRadialGradient(W*.78, H*.7, 0, W*.78, H*.7, W*.4);
+    n2.addColorStop(0, 'rgba(30,6,6,.35)'); n2.addColorStop(1, 'rgba(0,0,0,0)');
     cx.fillStyle = n2; cx.fillRect(0, 0, W, H);
-    drawFloor(); drawHexGrid(); drawZone(); drawPts(); drawRings(); drawStars(); drawVig();
+
+    drawHexGrid();
+    drawZone();
+    drawGuns();          // floating AK-47 silhouettes
+    drawCrosshairs();    // PUBG crosshairs
+    drawMuzzleFlash();   // muzzle flash bursts
+    drawBullets();       // tracer bullets
+    drawCasings();       // ejected brass
+    drawVig();
+
     requestAnimationFrame(loop);
   }
 
-  W = cv.width = innerWidth; H = cv.height = innerHeight;
-  buildHexes();
   requestAnimationFrame(loop);
 })();
 </script>
