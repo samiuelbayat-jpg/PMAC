@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PUBG Mobile Afghanistan</title>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    // ─── REPLACE WITH YOUR FIREBASE CONFIG ───────────────────────────────────
+    const firebaseConfig = {
+      apiKey:            "YOUR_API_KEY",
+      authDomain:        "YOUR_PROJECT.firebaseapp.com",
+      projectId:         "YOUR_PROJECT_ID",
+      storageBucket:     "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId:             "YOUR_APP_ID"
+    };
+    // ─────────────────────────────────────────────────────────────────────────
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    /* ── Helpers ─────────────────────────────────────────────────────────── */
+    const $ = id => document.getElementById(id);
+
+    function setError(msg) {
+      const el = $("auth-error");
+      el.textContent = msg;
+      el.style.display = msg ? "block" : "none";
+    }
+
+    function setLoading(on) {
+      $("submit-btn").disabled = on;
+      $("submit-btn").textContent = on
+        ? "Please wait…"
+        : ($("tab-login").classList.contains("active") ? "LOG IN" : "CREATE ACCOUNT");
+    }
+
+    /* ── Tab switching ───────────────────────────────────────────────────── */
+    window.switchTab = function(tab) {
+      setError("");
+      $("auth-form").reset();
+      $("confirm-group").style.display = tab === "register" ? "flex" : "none";
+      $("tab-login").classList.toggle("active",    tab === "login");
+      $("tab-register").classList.toggle("active", tab === "register");
+      $("submit-btn").textContent = tab === "login" ? "LOG IN" : "CREATE ACCOUNT";
+    };
+
+    /* ── Form submit ─────────────────────────────────────────────────────── */
+    $("auth-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      setError("");
+      const isLogin  = $("tab-login").classList.contains("active");
+      const email    = $("email").value.trim();
+      const password = $("password").value;
+
+      if (!isLogin) {
+        const confirm = $("confirm-password").value;
+        if (password !== confirm) { setError("Passwords do not match."); return; }
+        if (password.length < 6)  { setError("Password must be at least 6 characters."); return; }
+      }
+
+      setLoading(true);
+      try {
+        if (isLogin) {
+          await signInWithEmailAndPassword(auth, email, password);
+        } else {
+          await createUserWithEmailAndPassword(auth, email, password);
+        }
+        // Redirect to your main app page after successful auth
+        window.location.href = "dashboard.html";
+      } catch (err) {
+        const msgs = {
+          "auth/user-not-found":      "No account found with that email.",
+          "auth/wrong-password":      "Incorrect password.",
+          "auth/invalid-email":       "Please enter a valid email address.",
+          "auth/email-already-in-use":"That email is already registered.",
+          "auth/too-many-requests":   "Too many attempts. Please wait a moment.",
+          "auth/invalid-credential":  "Invalid email or password.",
+        };
+        setError(msgs[err.code] || err.message);
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    /* ── Already logged in? Skip landing ────────────────────────────────── */
+    onAuthStateChanged(auth, user => {
+      if (user) window.location.href = "dashboard.html";
+    });
+
+    /* ── Expose signOut for other pages ─────────────────────────────────── */
+    window.__pmacAuth = auth;
+    window.__pmacSignOut = () => signOut(auth);
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:    #f5c400;
+      --gold-dk: #c49200;
+      --dark:    #0a0c0e;
+      --panel:   rgba(10,12,14,0.88);
+      --border:  rgba(245,196,0,0.25);
+      --text:    #e8dfc8;
+      --muted:   #7a7060;
+      --red:     #e84040;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Barlow', sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── Background ─────────────────────────────────────────────────────── */
+    #bg-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      width: 100%; height: 100%;
+      display: block;
+    }
+
+    .bg-scanlines {
+      position: fixed; inset: 0; z-index: 1;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px, transparent 3px,
+        rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px
+      );
+      animation: flicker 8s infinite;
+    }
+
+    @keyframes flicker {
+      0%,100% { opacity:1; }
+      92%     { opacity:1; }
+      93%     { opacity:0.82; }
+      94%     { opacity:1; }
+      97%     { opacity:1; }
+      98%     { opacity:0.88; }
+      99%     { opacity:1; }
+    }
+
+    /* ── Layout ─────────────────────────────────────────────────────────── */
+    .page {
+      position: relative; z-index: 2;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr minmax(0,420px);
+      gap: 0;
+    }
+
+    /* ── Left hero ───────────────────────────────────────────────────────── */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 3rem 3.5rem;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+
+    .hero-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(3rem, 7vw, 6rem);
+      font-weight: 900;
+      line-height: 0.9;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+      color: #fff;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-title span {
+      display: block;
+      color: var(--gold);
+      font-size: 0.55em;
+      letter-spacing: 3px;
+      font-weight: 600;
+    }
+
+    .hero-desc {
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 360px;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    .hero-badges {
+      display: flex;
+      gap: 12px;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    /* ── Auth panel ─────────────────────────────────────────────────────── */
+    .auth-panel {
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 3rem 2.5rem;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .auth-logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .auth-logo::before {
+      content: '';
+      display: block;
+      width: 28px; height: 2px;
+      background: var(--gold);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+
+    .tab {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 0.75rem 0;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .tab::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0; right: 0;
+      height: 2px;
+      background: var(--gold);
+      transform: scaleX(0);
+      transition: transform 0.2s;
+    }
+
+    .tab.active { color: var(--gold); }
+    .tab.active::after { transform: scaleX(1); }
+
+    /* Form */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 1.1rem;
+    }
+
+    label {
+      font-size: 10px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      color: #fff;
+      font-family: 'Barlow', sans-serif;
+      font-size: 14px;
+      padding: 11px 14px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      -webkit-appearance: none;
+    }
+
+    input:focus {
+      border-color: var(--gold);
+      background: rgba(245,196,0,0.04);
+    }
+
+    input::placeholder { color: var(--muted); font-size: 13px; }
+
+    /* Error */
+    #auth-error {
+      display: none;
+      background: rgba(232,64,64,0.12);
+      border: 1px solid rgba(232,64,64,0.4);
+      color: #ff7070;
+      font-size: 12px;
+      padding: 10px 14px;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+
+    /* Submit button */
+    #submit-btn {
+      width: 100%;
+      background: var(--gold);
+      border: none;
+      color: #0a0c0e;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      padding: 14px;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    #submit-btn:hover   { background: #ffe066; }
+    #submit-btn:active  { transform: scale(0.98); }
+    #submit-btn:disabled { background: var(--muted); cursor: not-allowed; color: #444; }
+
+    /* Footer note */
+    .auth-footer {
+      margin-top: 1.75rem;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .page {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+
+      .hero {
+        padding: 2rem 1.5rem 1.5rem;
+        justify-content: flex-start;
+      }
+
+      .hero-title { font-size: 3.5rem; }
+      .hero-badges { display: none; }
+
+      .auth-panel {
+        border-left: none;
+        border-top: 1px solid var(--border);
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Animated background -->
+  <canvas id="bg-canvas"></canvas>
+  <div class="bg-scanlines"></div>
+
+  <!-- Page grid -->
+  <div class="page">
+
+    <!-- Left: hero -->
+    <section class="hero">
+      <div class="hero-eyebrow">PUBG Mobile Afghanistan</div>
+      <h1 class="hero-title">
+        PUBG<span>Mobile Afghanistan</span>
+      </h1>
+      <p class="hero-desc">
+        Track your kills, survival time, rank progression, and match history across all PUBG game modes — in real time.
+      </p>
+      <div class="hero-badges">
+        <span class="badge">Solo · Duo · Squad</span>
+        <span class="badge">Live Leaderboards</span>
+        <span class="badge">Match Replays</span>
+      </div>
+    </section>
+
+    <!-- Right: auth panel -->
+    <aside class="auth-panel">
+
+      <div class="auth-logo">PMAC</div>
+
+      <!-- Tabs -->
+      <div class="tabs" role="tablist">
+        <button class="tab active" id="tab-login"
+          onclick="switchTab('login')" role="tab" aria-selected="true">
+          Log In
+        </button>
+        <button class="tab" id="tab-register"
+          onclick="switchTab('register')" role="tab" aria-selected="false">
+          Create Account
+        </button>
+      </div>
+
+      <!-- Error banner -->
+      <div id="auth-error" role="alert"></div>
+
+      <!-- Form -->
+      <form id="auth-form" novalidate>
+
+        <div class="field-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email"
+            placeholder="you@example.com" autocomplete="email" required />
+        </div>
+
+        <div class="field-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password"
+            placeholder="••••••••" autocomplete="current-password" required />
+        </div>
+
+        <!-- Confirm password — register only -->
+        <div class="field-group" id="confirm-group" style="display:none;">
+          <label for="confirm-password">Confirm Password</label>
+          <input type="password" id="confirm-password" name="confirm-password"
+            placeholder="••••••••" autocomplete="new-password" />
+        </div>
+
+        <button type="submit" id="submit-btn">Log In</button>
+      </form>
+
+      <p class="auth-footer">
+        By creating an account you agree to our Terms of Service.<br>
+        PUBG® is a registered trademark of Krafton, Inc.
+      </p>
+
+    </aside>
+  </div>
+
+  <script>
+  (function() {
+    const canvas = document.getElementById('bg-canvas');
+    const ctx    = canvas.getContext('2d');
+
+    let W, H;
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      initBuildings();
+    }
+    window.addEventListener('resize', resize);
+
+    /* ── PUBG battlefield image (slow Ken Burns pan) ─────────────────────── */
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1920&q=85';
+    let t = 0;
+
+    function drawBg() {
+      if (!img.complete || !img.naturalWidth) {
+        ctx.fillStyle = '#0a0c0e';
+        ctx.fillRect(0, 0, W, H);
+        return;
+      }
+      const iw = img.naturalWidth, ih = img.naturalHeight;
+      const scale = Math.max(W / iw, H / ih) * 1.08;
+      const sw = iw * scale, sh = ih * scale;
+      const zoom  = 1 + 0.025 * Math.sin(t * 0.00018);
+      const panX  = (sw * zoom - W) / 2 + 30 * Math.sin(t * 0.00012);
+      const panY  = (sh * zoom - H) / 2 + 18 * Math.sin(t * 0.00009 + 1);
+      ctx.save();
+      ctx.filter = 'saturate(0.45) brightness(0.45)';
+      ctx.drawImage(img, -panX, -panY, sw * zoom, sh * zoom);
+      ctx.restore();
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       BUILDINGS
+    ══════════════════════════════════════════════════════════════════════ */
+    let buildings = [];
+
+    function initBuildings() {
+      buildings = [];
+      const count = Math.floor(W / 120) + 3;
+      for (let i = 0; i < count; i++) {
+        const bw  = 60  + Math.random() * 100;
+        const bh  = 120 + Math.random() * 220;
+        const bx  = (i / count) * W * 1.1 - 20 + (Math.random() - 0.5) * 40;
+        const by  = H - bh;
+        const floors = Math.floor(bh / 28) + 1;
+        // windows grid
+        const wins = [];
+        const wcols = Math.floor(bw / 22);
+        const wrows = Math.floor(bh / 28);
+        for (let r = 0; r < wrows; r++) {
+          for (let c = 0; c < wcols; c++) {
+            wins.push({
+              x: bx + 8 + c * 22,
+              y: by + 10 + r * 28,
+              lit: Math.random() > 0.55,
+              flicker: Math.random() > 0.7,
+              phase: Math.random() * Math.PI * 2,
+            });
+          }
+        }
+        // fire sources on rooftop
+        const fireCount = Math.floor(1 + Math.random() * 3);
+        const fires = [];
+        for (let f = 0; f < fireCount; f++) {
+          fires.push({
+            x: bx + 10 + Math.random() * (bw - 20),
+            y: by,
+            size: 18 + Math.random() * 28,
+            phase: Math.random() * Math.PI * 2,
+            speed: 0.04 + Math.random() * 0.04,
+          });
+        }
+        buildings.push({ bx, by, bw, bh, wins, fires,
+          damaged: Math.random() > 0.5,
+          color: `rgb(${20 + Math.floor(Math.random()*18)},${16 + Math.floor(Math.random()*14)},${12 + Math.floor(Math.random()*10)})`,
+        });
+      }
+    }
+
+    function drawBuildings() {
+      // Draw back-to-front (painters algo — tallest first heuristic)
+      [...buildings].sort((a,b) => b.bh - a.bh).forEach(b => {
+        // body
+        ctx.fillStyle = b.color;
+        ctx.fillRect(b.bx, b.by, b.bw, b.bh);
+
+        // damage cracks / collapsed section
+        if (b.damaged) {
+          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.beginPath();
+          ctx.moveTo(b.bx + b.bw * 0.6, b.by);
+          ctx.lineTo(b.bx + b.bw * 0.8, b.by + b.bh * 0.35);
+          ctx.lineTo(b.bx + b.bw,       b.by + b.bh * 0.25);
+          ctx.lineTo(b.bx + b.bw,       b.by);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // floor lines
+        ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+        ctx.lineWidth = 1;
+        const floorH = 28;
+        for (let fy = b.by + floorH; fy < b.by + b.bh; fy += floorH) {
+          ctx.beginPath(); ctx.moveTo(b.bx, fy); ctx.lineTo(b.bx + b.bw, fy); ctx.stroke();
+        }
+
+        // windows
+        b.wins.forEach(w => {
+          if (!w.lit) { ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(w.x, w.y, 12, 16); return; }
+          const flick = w.flicker ? 0.5 + 0.5 * Math.sin(t * 0.003 + w.phase) : 1;
+          // fire-orange glow for broken windows
+          const orange = `rgba(255,${100 + Math.floor(flick * 80)},0,${0.55 + flick * 0.35})`;
+          ctx.fillStyle = orange;
+          ctx.fillRect(w.x, w.y, 12, 16);
+          // inner glow
+          const wg = ctx.createRadialGradient(w.x+6, w.y+8, 0, w.x+6, w.y+8, 22);
+          wg.addColorStop(0, `rgba(255,160,0,${0.18 * flick})`);
+          wg.addColorStop(1, 'rgba(255,80,0,0)');
+          ctx.fillStyle = wg;
+          ctx.fillRect(w.x - 8, w.y - 8, 28, 30);
+        });
+
+        // rooftop edge
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(b.bx - 3, b.by - 4, b.bw + 6, 6);
+      });
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       FIRE SYSTEM
+    ══════════════════════════════════════════════════════════════════════ */
+    function drawFireAt(fx, fy, size, phase, speed) {
+      const flicker = Math.sin(t * speed + phase);
+      const w2 = size * (0.7 + 0.3 * Math.abs(flicker));
+      const h2 = size * (1.4 + 0.4 * flicker);
+
+      // outer glow
+      const glow = ctx.createRadialGradient(fx, fy, 0, fx, fy, size * 2.2);
+      glow.addColorStop(0,   `rgba(255,120,0,0.22)`);
+      glow.addColorStop(0.5, `rgba(255,60,0,0.1)`);
+      glow.addColorStop(1,   'rgba(0,0,0,0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.ellipse(fx, fy, size * 2.2, size * 1.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // core flame — teardrop shape via bezier
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(fx, fy - h2);
+      ctx.bezierCurveTo(fx + w2 * 0.8, fy - h2 * 0.5, fx + w2, fy, fx, fy + size * 0.3);
+      ctx.bezierCurveTo(fx - w2, fy, fx - w2 * 0.8, fy - h2 * 0.5, fx, fy - h2);
+      ctx.closePath();
+      const fg = ctx.createLinearGradient(fx, fy - h2, fx, fy + size * 0.3);
+      fg.addColorStop(0,   'rgba(255,255,180,0.95)');
+      fg.addColorStop(0.2, 'rgba(255,220,0,0.92)');
+      fg.addColorStop(0.5, 'rgba(255,100,0,0.88)');
+      fg.addColorStop(0.8, 'rgba(200,30,0,0.7)');
+      fg.addColorStop(1,   'rgba(100,0,0,0)');
+      ctx.fillStyle = fg;
+      ctx.fill();
+
+      // inner bright core
+      ctx.beginPath();
+      ctx.ellipse(fx, fy - size * 0.15, w2 * 0.35, h2 * 0.45, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,220,0.55)';
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawAllFires() {
+      buildings.forEach(b => {
+        b.fires.forEach(f => drawFireAt(f.x, f.y, f.size, f.phase, f.speed));
+      });
+      // extra ground fires along the bottom edge
+      groundFires.forEach(f => drawFireAt(f.x, f.y, f.size, f.phase, f.speed));
+    }
+
+    /* ── Ground fires ────────────────────────────────────────────────────── */
+    let groundFires = [];
+    function initGroundFires() {
+      groundFires = [];
+      const count = 6 + Math.floor(W / 180);
+      for (let i = 0; i < count; i++) {
+        groundFires.push({
+          x:     (i / count) * W + Math.random() * (W / count),
+          y:     H - 10 - Math.random() * 30,
+          size:  12 + Math.random() * 22,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.05 + Math.random() * 0.05,
+        });
+      }
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       EMBERS (rising sparks)
+    ══════════════════════════════════════════════════════════════════════ */
+    const EMBER_COUNT = 140;
+    const embers = [];
+
+    function spawnEmber() {
+      // spawn near a random fire source
+      const allFires = [...groundFires];
+      buildings.forEach(b => b.fires.forEach(f => allFires.push(f)));
+      const src = allFires[Math.floor(Math.random() * allFires.length)];
+      if (!src) return;
+      embers.push({
+        x:     src.x + (Math.random() - 0.5) * src.size,
+        y:     src.y,
+        vx:    (Math.random() - 0.5) * 1.2,
+        vy:    -(0.8 + Math.random() * 2.2),
+        r:     0.6 + Math.random() * 2.2,
+        life:  1,
+        decay: 0.004 + Math.random() * 0.008,
+        hue:   20 + Math.floor(Math.random() * 40),
+      });
+    }
+
+    function updateEmbers() {
+      for (let i = embers.length - 1; i >= 0; i--) {
+        const e = embers[i];
+        e.x    += e.vx + Math.sin(t * 0.002 + i) * 0.4;
+        e.y    += e.vy;
+        e.vy   *= 0.995;          // slight drag
+        e.life -= e.decay;
+        if (e.life <= 0) embers.splice(i, 1);
+      }
+      while (embers.length < EMBER_COUNT) spawnEmber();
+    }
+
+    function drawEmbers() {
+      embers.forEach(e => {
+        const a = Math.min(e.life, 1);
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${e.hue},100%,65%,${a})`;
+        ctx.fill();
+        // tiny trail
+        ctx.beginPath();
+        ctx.moveTo(e.x, e.y);
+        ctx.lineTo(e.x - e.vx * 3, e.y - e.vy * 3);
+        ctx.strokeStyle = `hsla(${e.hue},100%,75%,${a * 0.4})`;
+        ctx.lineWidth = e.r * 0.6;
+        ctx.stroke();
+      });
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       SMOKE COLUMNS
+    ══════════════════════════════════════════════════════════════════════ */
+    const SMOKE_COUNT = 90;
+    const smokeParticles = [];
+
+    function spawnSmoke() {
+      const allFires = [...groundFires];
+      buildings.forEach(b => b.fires.forEach(f => allFires.push(f)));
+      const src = allFires[Math.floor(Math.random() * allFires.length)];
+      if (!src) return;
+      smokeParticles.push({
+        x:     src.x + (Math.random() - 0.5) * src.size * 0.5,
+        y:     src.y - src.size,
+        vx:    (Math.random() - 0.5) * 0.5,
+        vy:    -(0.3 + Math.random() * 0.7),
+        r:     8 + Math.random() * 18,
+        life:  1,
+        decay: 0.002 + Math.random() * 0.004,
+        gray:  30 + Math.floor(Math.random() * 40),
+      });
+    }
+
+    function updateSmoke() {
+      for (let i = smokeParticles.length - 1; i >= 0; i--) {
+        const s = smokeParticles[i];
+        s.x    += s.vx + Math.sin(t * 0.0015 + i * 0.3) * 0.3;
+        s.y    += s.vy;
+        s.r    += 0.12;
+        s.life -= s.decay;
+        if (s.life <= 0) smokeParticles.splice(i, 1);
+      }
+      while (smokeParticles.length < SMOKE_COUNT) spawnSmoke();
+    }
+
+    function drawSmoke() {
+      smokeParticles.forEach(s => {
+        const a = s.life * 0.18;
+        const g = s.gray;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${g},${g},${g},${a})`;
+        ctx.fill();
+      });
+    }
+
+    /* ── Fog layers ──────────────────────────────────────────────────────── */
+    const fogLayers = Array.from({length: 3}, (_, i) => ({
+      x: Math.random() * 2000,
+      y: 0, speed: 0.1 + i * 0.05, alpha: 0.04 + i * 0.02, scale: 1.3 + i * 0.3,
+    }));
+    function drawFog() {
+      fogLayers.forEach((f, i) => {
+        f.x -= f.speed;
+        if (f.x < -W * 1.5) f.x = W * 1.5;
+        const fy = H * (0.55 + i * 0.1);
+        const gr = ctx.createRadialGradient(f.x, fy, 0, f.x, fy, W * f.scale);
+        gr.addColorStop(0,   `rgba(180,100,40,${f.alpha})`);
+        gr.addColorStop(0.5, `rgba(100,60,20,${f.alpha * 0.4})`);
+        gr.addColorStop(1,   'rgba(0,0,0,0)');
+        ctx.beginPath();
+        ctx.ellipse(f.x, fy, W * f.scale, H * 0.2 * f.scale, 0, 0, Math.PI * 2);
+        ctx.fillStyle = gr;
+        ctx.fill();
+      });
+    }
+
+    /* ── Muzzle flashes ──────────────────────────────────────────────────── */
+    let flashTimer = 0, flashActive = false, flashX, flashY, flashLife;
+    function maybeFlash() {
+      flashTimer++;
+      if (!flashActive && flashTimer > 200 + Math.random() * 350) {
+        flashActive = true; flashTimer = 0;
+        flashX = W * (0.1 + Math.random() * 0.6);
+        flashY = H * (0.25 + Math.random() * 0.35);
+        flashLife = 1;
+      }
+      if (flashActive) {
+        const g = ctx.createRadialGradient(flashX, flashY, 0, flashX, flashY, 55);
+        g.addColorStop(0, `rgba(255,230,100,${flashLife * 0.6})`);
+        g.addColorStop(0.5, `rgba(255,120,20,${flashLife * 0.2})`);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(flashX, flashY, 55, 0, Math.PI * 2); ctx.fill();
+        flashLife -= 0.14;
+        if (flashLife <= 0) flashActive = false;
+      }
+    }
+
+    /* ── Sky glow from fires ─────────────────────────────────────────────── */
+    function drawFireGlow() {
+      const glow = ctx.createLinearGradient(0, H * 0.4, 0, H);
+      const pulse = 0.12 + 0.04 * Math.sin(t * 0.0012);
+      glow.addColorStop(0,   'rgba(0,0,0,0)');
+      glow.addColorStop(0.6, `rgba(180,50,0,${pulse})`);
+      glow.addColorStop(1,   `rgba(220,80,0,${pulse * 1.6})`);
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    /* ── Vignette ────────────────────────────────────────────────────────── */
+    function drawVignette() {
+      const v = ctx.createRadialGradient(W/2, H/2, H*0.2, W/2, H/2, H*1.1);
+      v.addColorStop(0,   'rgba(0,0,0,0)');
+      v.addColorStop(0.55,'rgba(0,0,0,0.25)');
+      v.addColorStop(1,   'rgba(0,0,0,0.85)');
+      ctx.fillStyle = v;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    /* ── Main loop ───────────────────────────────────────────────────────── */
+    function loop(ts) {
+      t = ts;
+      ctx.clearRect(0, 0, W, H);
+
+      drawBg();            // photo background (Ken Burns)
+      drawBuildings();     // dark silhouette buildings
+      drawFireGlow();      // orange sky glow
+      drawSmoke();         // rising smoke columns
+      updateSmoke();
+      drawAllFires();      // fire flames on rooftops + ground
+      updateEmbers();
+      drawEmbers();        // rising ember sparks
+      drawFog();           // drifting fog
+      maybeFlash();        // distant muzzle flash
+      drawVignette();      // edge darkening
+
+      requestAnimationFrame(loop);
+    }
+
+    // boot
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    initBuildings();
+    initGroundFires();
+    for (let i = 0; i < SMOKE_COUNT; i++) spawnSmoke();
+    for (let i = 0; i < EMBER_COUNT; i++) spawnEmber();
+
+    img.onload  = () => requestAnimationFrame(loop);
+    img.onerror = () => { canvas.style.background='#0a0c0e'; requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  })();
+  </script>
+</body>
+</html>
