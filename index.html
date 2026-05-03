@@ -211,7 +211,7 @@
 <script type="module">
   import { initializeApp }                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword,
-           onAuthStateChanged }           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+           signOut }           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey:            "AIzaSyD-RFu-40Igcoqhm8QBbu_PgdFxV6aUIQA",
@@ -259,10 +259,8 @@
     }
   });
 
-  // Already logged in → skip straight to admin
-  onAuthStateChanged(auth, user => {
-    if (user) window.location.href = "admin.html";
-  });
+  // Always sign out when landing on index so the login form always shows
+  signOut(auth).catch(() => {});
 </script>
 
 <!-- ══ GAMING BACKGROUND ══ -->
