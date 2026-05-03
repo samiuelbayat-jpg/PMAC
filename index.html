@@ -5,118 +5,213 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PUBG Mobile Afghanistan</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --gold:  #f5c400;
-      --blue:  #3a8cff;
-      --dark:  #04060f;
-      --panel: rgba(4,6,18,0.84);
-      --border:rgba(245,196,0,0.22);
-      --text:  #dde4f0;
-      --muted: #4e5a72;
+      --gold:   #f5c400;
+      --dark:   #03050d;
+      --panel:  rgba(3,5,18,0.85);
+      --border: rgba(245,196,0,0.2);
+      --muted:  #45536a;
     }
-    html, body { height:100%; font-family:'Rajdhani',sans-serif; background:var(--dark); color:var(--text); overflow:hidden; }
 
-    /* ── canvas bg ── */
-    #bg-canvas { position:fixed; inset:0; z-index:0; width:100%; height:100%; }
-    .scanlines  { position:fixed; inset:0; z-index:1; pointer-events:none;
-      background:repeating-linear-gradient(to bottom,transparent 0,transparent 2px,rgba(0,0,0,0.055) 2px,rgba(0,0,0,0.055) 3px); }
+    html, body {
+      height: 100%;
+      font-family: 'Rajdhani', sans-serif;
+      background: var(--dark);
+      color: #dde4f0;
+      overflow: hidden;
+    }
 
-    /* ── screen wrapper ── */
-    .screen { position:relative; z-index:2; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:1.5rem; }
+    /* ── canvas ── */
+    #bg { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; }
+    .scanlines {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: repeating-linear-gradient(to bottom, transparent 0, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 3px);
+    }
 
-    /* ── brand ── */
-    .brand { text-align:center; margin-bottom:1.75rem; animation:fadeDown .65s ease both; }
-    .brand-title { font-family:'Barlow Condensed',sans-serif; font-size:clamp(1.7rem,4.5vw,2.8rem); font-weight:900; text-transform:uppercase; letter-spacing:6px; color:#fff; text-shadow:0 0 40px rgba(245,196,0,.45); }
-    .brand-title em { font-style:normal; color:var(--gold); }
-    .brand-sub { font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700; letter-spacing:5px; text-transform:uppercase; color:var(--muted); margin-top:5px; }
+    /* ── centered layout ── */
+    .screen {
+      position: relative; z-index: 2;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
 
-    /* ── card ── */
-    .card { width:100%; max-width:400px; background:var(--panel); border:1px solid var(--border); backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px); padding:2.2rem 1.9rem; position:relative; animation:fadeUp .6s ease .12s both; }
-    .card::before,.card::after { content:''; position:absolute; width:16px; height:16px; border-color:var(--gold); border-style:solid; }
-    .card::before { top:-1px; left:-1px; border-width:2px 0 0 2px; }
-    .card::after  { bottom:-1px; right:-1px; border-width:0 2px 2px 0; }
+    /* ── title above card ── */
+    .brand {
+      text-align: center;
+      margin-bottom: 2rem;
+      animation: fadeDown .6s ease both;
+    }
+    .brand-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 6px;
+      color: #fff;
+      text-shadow: 0 0 40px rgba(245,196,0,.4);
+    }
+    .brand-title em { font-style: normal; color: var(--gold); }
+    .brand-sub {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 5px;
+    }
 
-    /* ── tabs ── */
-    .tabs { display:flex; border-bottom:1px solid var(--border); margin-bottom:1.6rem; }
-    .tab  { flex:1; background:none; border:none; padding:.6rem 0; font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--muted); cursor:pointer; position:relative; transition:color .2s; }
-    .tab::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:2px; background:var(--gold); transform:scaleX(0); transition:transform .2s; }
-    .tab.active { color:var(--gold); }
-    .tab.active::after { transform:scaleX(1); }
+    /* ── login card ── */
+    .card {
+      width: 100%;
+      max-width: 380px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      padding: 2.2rem 2rem;
+      position: relative;
+      animation: fadeUp .6s ease .1s both;
+    }
+    /* corner brackets */
+    .card::before, .card::after {
+      content: '';
+      position: absolute;
+      width: 14px; height: 14px;
+      border-color: var(--gold);
+      border-style: solid;
+    }
+    .card::before { top: -1px; left: -1px;   border-width: 2px 0 0 2px; }
+    .card::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+    .card-heading {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.6rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-heading::before {
+      content: '';
+      width: 22px; height: 2px;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
 
     /* ── fields ── */
-    .field { display:flex; flex-direction:column; gap:4px; margin-bottom:.95rem; }
-    .field label { font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); }
-    .field input { width:100%; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); color:#fff; font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:600; padding:10px 12px; outline:none; transition:border-color .18s,background .18s; }
-    .field input:focus { border-color:var(--gold); background:rgba(245,196,0,.04); }
-    .field input::placeholder { color:var(--muted); font-weight:400; font-size:13px; }
+    .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 1.1rem; }
+    .field label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .field input {
+      width: 100%;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.1);
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px; font-weight: 600;
+      padding: 11px 13px;
+      outline: none;
+      transition: border-color .18s, background .18s;
+    }
+    .field input:focus {
+      border-color: var(--gold);
+      background: rgba(245,196,0,.04);
+    }
+    .field input::placeholder { color: var(--muted); font-weight: 500; font-size: 13px; }
 
-    /* ── messages ── */
-    #auth-error { display:none; background:rgba(230,48,48,.1); border:1px solid rgba(230,48,48,.35); color:#ff7070; font-size:12px; line-height:1.5; padding:9px 12px; margin-bottom:.9rem; }
-    #pending-notice { display:none; background:rgba(245,196,0,.07); border:1px solid rgba(245,196,0,.3); color:var(--gold); font-size:13px; line-height:1.6; padding:13px; text-align:center; margin-bottom:.9rem; }
+    /* ── error ── */
+    #err {
+      display: none;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px; font-weight: 600;
+      background: rgba(220,50,50,.1);
+      border: 1px solid rgba(220,50,50,.3);
+      color: #ff6b6b;
+      padding: 9px 13px;
+      margin-bottom: 1rem;
+      line-height: 1.4;
+    }
 
     /* ── button ── */
-    #submit-btn { width:100%; background:var(--gold); border:none; color:#060810; font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:900; letter-spacing:4px; text-transform:uppercase; padding:13px; cursor:pointer; margin-top:.3rem; transition:background .2s,transform .1s; clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%); }
-    #submit-btn:hover   { background:#ffe066; }
-    #submit-btn:active  { transform:scale(.98); }
-    #submit-btn:disabled{ background:#222; color:#555; cursor:not-allowed; }
+    #login-btn {
+      width: 100%;
+      background: var(--gold);
+      border: none;
+      color: #060810;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px; font-weight: 900;
+      letter-spacing: 4px; text-transform: uppercase;
+      padding: 13px;
+      cursor: pointer;
+      margin-top: .4rem;
+      transition: background .18s, transform .1s;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    }
+    #login-btn:hover    { background: #ffe066; }
+    #login-btn:active   { transform: scale(.98); }
+    #login-btn:disabled { background: #1e2230; color: #3a4255; cursor: not-allowed; }
 
-    .card-footer { margin-top:1.3rem; font-size:10px; color:var(--muted); text-align:center; line-height:1.6; }
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-14px); } to { opacity:1; transform:none; } }
 
-    @keyframes fadeUp   { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
-    @keyframes fadeDown { from{opacity:0;transform:translateY(-14px)} to{opacity:1;transform:none} }
-    @media(max-width:480px){ .card{padding:1.7rem 1.2rem;} }
+    @media (max-width: 420px) { .card { padding: 1.7rem 1.3rem; } }
   </style>
 </head>
 <body>
 
-<canvas id="bg-canvas"></canvas>
+<canvas id="bg"></canvas>
 <div class="scanlines"></div>
 
 <div class="screen">
+
   <div class="brand">
     <div class="brand-title">PUBG <em>Mobile</em> Afghanistan</div>
     <div class="brand-sub">Official Tournament Platform</div>
   </div>
 
   <div class="card">
-    <div class="tabs" role="tablist">
-      <button class="tab active" id="tab-login"    onclick="switchTab('login')"    role="tab">Log In</button>
-      <button class="tab"        id="tab-register" onclick="switchTab('register')" role="tab">Register</button>
-    </div>
+    <div class="card-heading">Admin Access</div>
 
-    <div id="auth-error"     role="alert"></div>
-    <div id="pending-notice">⏳ Your account is pending admin approval.<br>You will receive access once approved.</div>
+    <div id="err"></div>
 
-    <form id="auth-form" novalidate>
+    <form id="form" novalidate>
       <div class="field">
-        <label for="email">Email Address</label>
-        <input type="email" id="email" placeholder="you@example.com" autocomplete="email" required/>
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="admin@example.com" autocomplete="email" required/>
       </div>
       <div class="field">
         <label for="password">Password</label>
         <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required/>
       </div>
-      <div class="field" id="confirm-group" style="display:none;">
-        <label for="confirm-password">Confirm Password</label>
-        <input type="password" id="confirm-password" placeholder="••••••••" autocomplete="new-password"/>
-      </div>
-      <button type="submit" id="submit-btn">Log In</button>
+      <button type="submit" id="login-btn">Sign In</button>
     </form>
-    <div class="card-footer">PUBG® is a registered trademark of Krafton, Inc.</div>
   </div>
+
 </div>
 
-<!-- ══ FIREBASE AUTH + APPROVAL ══ -->
+<!-- ══ FIREBASE AUTH ══ -->
 <script type="module">
-  import { initializeApp }                       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { initializeApp }                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword,
-           createUserWithEmailAndPassword,
-           onAuthStateChanged, signOut }         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getDatabase, ref, set, get }          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+           onAuthStateChanged }           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey:            "AIzaSyD-RFu-40Igcoqhm8QBbu_PgdFxV6aUIQA",
@@ -128,218 +223,211 @@
     appId:             "1:279105805502:web:8def653069d0b3d73bd2ef"
   };
 
-  const ADMIN_EMAIL = "samiuel.bayat@gmail.com"; // always auto-approved
-
   const app  = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const db   = getDatabase(app);
 
-  const $  = id => document.getElementById(id);
-  const setErr = msg => { $("auth-error").textContent=msg; $("auth-error").style.display=msg?"block":"none"; };
-  const setLoad = on  => { $("submit-btn").disabled=on; $("submit-btn").textContent=on?"Please wait…":($("tab-login").classList.contains("active")?"LOG IN":"REQUEST ACCESS"); };
+  const errEl = document.getElementById("err");
+  const btn   = document.getElementById("login-btn");
 
-  window.switchTab = tab => {
-    setErr(""); $("auth-form").reset(); $("pending-notice").style.display="none";
-    $("confirm-group").style.display = tab==="register"?"flex":"none";
-    $("tab-login").classList.toggle("active",    tab==="login");
-    $("tab-register").classList.toggle("active", tab==="register");
-    $("submit-btn").textContent = tab==="login"?"LOG IN":"REQUEST ACCESS";
-  };
+  function showErr(msg) { errEl.textContent = msg; errEl.style.display = "block"; }
+  function clearErr()   { errEl.style.display = "none"; }
 
-  $("auth-form").addEventListener("submit", async e => {
-    e.preventDefault(); setErr(""); $("pending-notice").style.display="none";
-    const isLogin  = $("tab-login").classList.contains("active");
-    const email    = $("email").value.trim().toLowerCase();
-    const password = $("password").value;
-    if (!isLogin) {
-      if ($("confirm-password").value !== password) { setErr("Passwords do not match."); return; }
-      if (password.length < 6) { setErr("Password must be at least 6 characters."); return; }
-    }
-    setLoad(true);
+  document.getElementById("form").addEventListener("submit", async e => {
+    e.preventDefault();
+    clearErr();
+    const email    = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    if (!email || !password) { showErr("Please enter your email and password."); return; }
+
+    btn.disabled    = true;
+    btn.textContent = "Signing in…";
+
     try {
-      if (isLogin) {
-        const cred = await signInWithEmailAndPassword(auth, email, password);
-        if (email === ADMIN_EMAIL) { window.location.href="admin.html"; return; }
-        const snap = await get(ref(db, `pmac/users/${cred.user.uid}`));
-        const d = snap.val();
-        if (!d || d.status==="pending") { await signOut(auth); $("pending-notice").style.display="block"; }
-        else if (d.status==="approved") { window.location.href="admin.html"; }
-        else if (d.status==="rejected") { await signOut(auth); setErr("Your request was declined. Contact admin."); }
-        else { await signOut(auth); setErr("Unknown status. Contact admin."); }
-      } else {
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        await set(ref(db, `pmac/users/${cred.user.uid}`), {
-          email, uid: cred.user.uid,
-          status:      email===ADMIN_EMAIL?"approved":"pending",
-          requestedAt: Date.now(),
-          approvedAt:  email===ADMIN_EMAIL?Date.now():null,
-        });
-        if (email===ADMIN_EMAIL) { window.location.href="admin.html"; }
-        else { await signOut(auth); $("auth-form").reset(); $("pending-notice").style.display="block"; }
-      }
-    } catch(err) {
-      const m = { "auth/user-not-found":"No account with that email.","auth/wrong-password":"Wrong password.","auth/invalid-email":"Invalid email.","auth/email-already-in-use":"Email already registered.","auth/too-many-requests":"Too many attempts.","auth/invalid-credential":"Invalid email or password." };
-      setErr(m[err.code]||err.message);
-    } finally { setLoad(false); }
+      await signInWithEmailAndPassword(auth, email, password);
+      window.location.href = "admin.html";
+    } catch (err) {
+      const msgs = {
+        "auth/user-not-found":    "No account found with that email.",
+        "auth/wrong-password":    "Incorrect password.",
+        "auth/invalid-email":     "Please enter a valid email address.",
+        "auth/too-many-requests": "Too many failed attempts. Try again later.",
+        "auth/invalid-credential":"Invalid email or password.",
+      };
+      showErr(msgs[err.code] || "Sign in failed. Please try again.");
+      btn.disabled    = false;
+      btn.textContent = "Sign In";
+    }
   });
 
-  onAuthStateChanged(auth, async user => {
-    if (!user) return;
-    const email = user.email?.toLowerCase();
-    if (email===ADMIN_EMAIL) { window.location.href="admin.html"; return; }
-    const snap = await get(ref(db, `pmac/users/${user.uid}`));
-    if (snap.val()?.status==="approved") window.location.href="admin.html";
-    else await signOut(auth);
+  // Already logged in → skip straight to admin
+  onAuthStateChanged(auth, user => {
+    if (user) window.location.href = "admin.html";
   });
-
-  window.__pmacSignOut = () => signOut(auth);
 </script>
 
 <!-- ══ GAMING BACKGROUND ══ -->
 <script>
-(function(){
-  const cv = document.getElementById('bg-canvas');
+(function () {
+  const cv = document.getElementById('bg');
   const cx = cv.getContext('2d');
   let W, H, t = 0;
 
-  function resize(){ W=cv.width=innerWidth; H=cv.height=innerHeight; buildHexes(); }
+  function resize() { W = cv.width = innerWidth; H = cv.height = innerHeight; buildHexes(); }
   addEventListener('resize', resize);
 
   /* hex grid */
   const HR = 36;
   let hexes = [];
-  function buildHexes(){
-    hexes=[];
-    const cols=Math.ceil(W/(HR*1.5))+3, rows=Math.ceil(H/(HR*Math.sqrt(3)))+3;
-    for(let r=-1;r<rows;r++) for(let c=-1;c<cols;c++){
-      hexes.push({ cx:c*HR*1.5, cy:r*HR*Math.sqrt(3)+(c%2?HR*Math.sqrt(3)/2:0),
-        phase:Math.random()*Math.PI*2, spd:0.0006+Math.random()*0.001,
-        bright:Math.random()>.86 });
+  function buildHexes() {
+    hexes = [];
+    const cols = Math.ceil(W / (HR * 1.5)) + 3;
+    const rows = Math.ceil(H / (HR * Math.sqrt(3))) + 3;
+    for (let r = -1; r < rows; r++) {
+      for (let c = -1; c < cols; c++) {
+        hexes.push({
+          cx: c * HR * 1.5,
+          cy: r * HR * Math.sqrt(3) + (c % 2 ? HR * Math.sqrt(3) / 2 : 0),
+          phase: Math.random() * Math.PI * 2,
+          spd:   0.0005 + Math.random() * 0.001,
+          lit:   Math.random() > 0.87,
+        });
+      }
     }
   }
 
-  function hexPath(x,y,r){
+  function hexPath(x, y, r) {
     cx.beginPath();
-    for(let i=0;i<6;i++){
-      const a=Math.PI/3*i-Math.PI/6;
-      i?cx.lineTo(x+r*Math.cos(a),y+r*Math.sin(a)):cx.moveTo(x+r*Math.cos(a),y+r*Math.sin(a));
+    for (let i = 0; i < 6; i++) {
+      const a = Math.PI / 3 * i - Math.PI / 6;
+      i ? cx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a))
+        : cx.moveTo(x + r * Math.cos(a), y + r * Math.sin(a));
     }
     cx.closePath();
   }
 
-  function drawHexGrid(){
-    hexes.forEach(h=>{
-      const p=Math.abs(Math.sin(t*h.spd+h.phase));
-      if(h.bright){ hexPath(h.cx,h.cy,HR-2); cx.fillStyle=`rgba(245,196,0,${p*.06})`; cx.fill(); }
-      hexPath(h.cx,h.cy,HR-2);
-      cx.strokeStyle=h.bright?`rgba(245,196,0,${.04+p*.14})`:`rgba(50,100,220,${.015+p*.03})`;
-      cx.lineWidth=h.bright?1.1:.5; cx.stroke();
+  function drawHexGrid() {
+    hexes.forEach(h => {
+      const p = Math.abs(Math.sin(t * h.spd + h.phase));
+      if (h.lit) {
+        hexPath(h.cx, h.cy, HR - 2);
+        cx.fillStyle = `rgba(245,196,0,${p * 0.055})`;
+        cx.fill();
+      }
+      hexPath(h.cx, h.cy, HR - 2);
+      cx.strokeStyle = h.lit
+        ? `rgba(245,196,0,${0.04 + p * 0.15})`
+        : `rgba(40,90,220,${0.012 + p * 0.025})`;
+      cx.lineWidth = h.lit ? 1.1 : 0.5;
+      cx.stroke();
     });
   }
 
-  /* perspective grid floor */
-  function drawFloor(){
-    const vx=W/2, vy=H*.44;
-    cx.lineWidth=.5;
-    for(let i=0;i<=20;i++){
-      const prog=i/20, y=vy+prog*H*.6, sp=prog*W*.88, a=.03+prog*.14;
-      cx.beginPath(); cx.moveTo(vx-sp/2,y); cx.lineTo(vx+sp/2,y);
-      cx.strokeStyle=`rgba(40,90,255,${a})`; cx.stroke();
+  /* perspective floor */
+  function drawFloor() {
+    const vx = W / 2, vy = H * 0.44;
+    cx.lineWidth = 0.5;
+    for (let i = 0; i <= 20; i++) {
+      const g = i / 20, y = vy + g * H * 0.58, sp = g * W * 0.9, a = 0.025 + g * 0.13;
+      cx.beginPath(); cx.moveTo(vx - sp / 2, y); cx.lineTo(vx + sp / 2, y);
+      cx.strokeStyle = `rgba(35,85,255,${a})`; cx.stroke();
     }
-    for(let i=0;i<=18;i++){
-      const xb=W*(i/18), a=.03+.055*(1-Math.abs(i/18-.5)*2);
-      cx.beginPath(); cx.moveTo(vx,vy); cx.lineTo(xb,H);
-      cx.strokeStyle=`rgba(40,90,255,${a})`; cx.stroke();
+    for (let i = 0; i <= 18; i++) {
+      const xb = W * (i / 18), a = 0.025 + 0.055 * (1 - Math.abs(i / 18 - 0.5) * 2);
+      cx.beginPath(); cx.moveTo(vx, vy); cx.lineTo(xb, H);
+      cx.strokeStyle = `rgba(35,85,255,${a})`; cx.stroke();
     }
   }
 
-  /* PUBG blue zone ring */
-  function drawZone(){
-    const pulse=.5+.5*Math.sin(t*.0005);
-    const r=Math.min(W,H)*(.30+.018*pulse);
-    const zx=W*.5, zy=H*.42;
-    const glow=cx.createRadialGradient(zx,zy,r*.82,zx,zy,r*1.14);
-    glow.addColorStop(0,'rgba(0,130,255,0)');
-    glow.addColorStop(.7,`rgba(0,110,255,${.07*pulse})`);
-    glow.addColorStop(1,'rgba(0,60,180,0)');
-    cx.fillStyle=glow; cx.beginPath(); cx.arc(zx,zy,r*1.14,0,Math.PI*2); cx.fill();
-    cx.beginPath(); cx.arc(zx,zy,r,0,Math.PI*2);
-    cx.strokeStyle=`rgba(30,150,255,${.2+.07*pulse})`; cx.lineWidth=1.5;
-    cx.setLineDash([10,7]); cx.stroke(); cx.setLineDash([]);
+  /* PUBG zone ring */
+  function drawZone() {
+    const pulse = 0.5 + 0.5 * Math.sin(t * 0.0005);
+    const r = Math.min(W, H) * (0.3 + 0.018 * pulse);
+    const zx = W * 0.5, zy = H * 0.42;
+    const g = cx.createRadialGradient(zx, zy, r * 0.82, zx, zy, r * 1.14);
+    g.addColorStop(0, 'rgba(0,120,255,0)');
+    g.addColorStop(0.7, `rgba(0,100,255,${0.065 * pulse})`);
+    g.addColorStop(1, 'rgba(0,50,180,0)');
+    cx.fillStyle = g; cx.beginPath(); cx.arc(zx, zy, r * 1.14, 0, Math.PI * 2); cx.fill();
+    cx.beginPath(); cx.arc(zx, zy, r, 0, Math.PI * 2);
+    cx.strokeStyle = `rgba(25,140,255,${0.18 + 0.07 * pulse})`;
+    cx.lineWidth = 1.4; cx.setLineDash([10, 8]); cx.stroke(); cx.setLineDash([]);
   }
 
-  /* floating particles */
-  const pts=Array.from({length:90},()=>({
-    x:Math.random()*2000,y:Math.random()*1200,
-    vx:(Math.random()-.5)*.4,vy:-.1-.4*Math.random(),
-    r:.4+Math.random()*1.8,a:.1+Math.random()*.5,gold:Math.random()>.6
+  /* particles */
+  const pts = Array.from({ length: 80 }, () => ({
+    x: Math.random() * 1920, y: Math.random() * 1200,
+    vx: (Math.random() - 0.5) * 0.4, vy: -0.1 - Math.random() * 0.45,
+    r: 0.4 + Math.random() * 1.7, a: 0.1 + Math.random() * 0.45,
+    gold: Math.random() > 0.62,
   }));
-  function drawPts(){
-    pts.forEach(p=>{
-      p.x+=p.vx; p.y+=p.vy;
-      if(p.y<-4)p.y=H+4; if(p.x<-4)p.x=W+4; if(p.x>W+4)p.x=-4;
-      cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      cx.fillStyle=p.gold?`rgba(245,196,0,${p.a})`:`rgba(70,130,255,${p.a*.7})`; cx.fill();
+  function drawPts() {
+    pts.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.y < -4) p.y = H + 4;
+      if (p.x < -4) p.x = W + 4;
+      if (p.x > W + 4) p.x = -4;
+      cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      cx.fillStyle = p.gold ? `rgba(245,196,0,${p.a})` : `rgba(60,120,255,${p.a * 0.7})`;
+      cx.fill();
     });
   }
 
   /* radar rings */
-  let rings=[], rTmr=0;
-  function drawRings(){
-    if(++rTmr>100){rings.push({x:W*(.2+Math.random()*.6),y:H*(.15+Math.random()*.5),r:0,max:80+Math.random()*130,spd:.55+Math.random()*.45});rTmr=0;}
-    for(let i=rings.length-1;i>=0;i--){
-      const r=rings[i]; r.r+=r.spd; const life=1-r.r/r.max;
-      if(life<=0){rings.splice(i,1);continue;}
-      cx.beginPath(); cx.arc(r.x,r.y,r.r,0,Math.PI*2);
-      cx.strokeStyle=`rgba(245,196,0,${life*.16})`; cx.lineWidth=1; cx.stroke();
+  let rings = [], rT = 0;
+  function drawRings() {
+    if (++rT > 95) { rings.push({ x: W * (0.2 + Math.random() * 0.6), y: H * (0.15 + Math.random() * 0.5), r: 0, max: 90 + Math.random() * 120, spd: 0.5 + Math.random() * 0.5 }); rT = 0; }
+    for (let i = rings.length - 1; i >= 0; i--) {
+      const r = rings[i]; r.r += r.spd;
+      const life = 1 - r.r / r.max;
+      if (life <= 0) { rings.splice(i, 1); continue; }
+      cx.beginPath(); cx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+      cx.strokeStyle = `rgba(245,196,0,${life * 0.16})`; cx.lineWidth = 1; cx.stroke();
     }
   }
 
   /* shooting stars */
-  let sts=[], sTmr=0;
-  function drawStars(){
-    if(++sTmr>130+Math.random()*170){
-      const a=Math.PI*(.08+Math.random()*.28), sp=6+Math.random()*8;
-      sts.push({x:Math.random()*W,y:Math.random()*H*.5,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1});
-      sTmr=0;
+  let sts = [], sT = 0;
+  function drawStars() {
+    if (++sT > 140 + Math.random() * 160) {
+      const a = Math.PI * (0.08 + Math.random() * 0.28), sp = 6 + Math.random() * 9;
+      sts.push({ x: Math.random() * W, y: Math.random() * H * 0.5, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1 }); sT = 0;
     }
-    for(let i=sts.length-1;i>=0;i--){
-      const s=sts[i];
-      const g=cx.createLinearGradient(s.x,s.y,s.x-s.vx*7,s.y-s.vy*7);
-      g.addColorStop(0,`rgba(255,255,200,${s.life*.9})`); g.addColorStop(1,'rgba(255,255,200,0)');
-      cx.beginPath(); cx.moveTo(s.x,s.y); cx.lineTo(s.x-s.vx*7,s.y-s.vy*7);
-      cx.strokeStyle=g; cx.lineWidth=1.5; cx.stroke();
-      s.x+=s.vx; s.y+=s.vy; s.life-=.022;
-      if(s.life<=0||s.x>W+80||s.y>H+80)sts.splice(i,1);
+    for (let i = sts.length - 1; i >= 0; i--) {
+      const s = sts[i];
+      const g = cx.createLinearGradient(s.x, s.y, s.x - s.vx * 7, s.y - s.vy * 7);
+      g.addColorStop(0, `rgba(255,255,200,${s.life * 0.9})`); g.addColorStop(1, 'rgba(255,255,200,0)');
+      cx.beginPath(); cx.moveTo(s.x, s.y); cx.lineTo(s.x - s.vx * 7, s.y - s.vy * 7);
+      cx.strokeStyle = g; cx.lineWidth = 1.5; cx.stroke();
+      s.x += s.vx; s.y += s.vy; s.life -= 0.022;
+      if (s.life <= 0 || s.x > W + 80 || s.y > H + 80) sts.splice(i, 1);
     }
   }
 
   /* vignette */
-  function drawVig(){
-    const v=cx.createRadialGradient(W/2,H/2,H*.12,W/2,H/2,H*1.05);
-    v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(.45,'rgba(0,0,0,.28)'); v.addColorStop(1,'rgba(0,0,0,.94)');
-    cx.fillStyle=v; cx.fillRect(0,0,W,H);
+  function drawVig() {
+    const v = cx.createRadialGradient(W / 2, H / 2, H * 0.1, W / 2, H / 2, H * 1.05);
+    v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(0.42, 'rgba(0,0,0,0.25)'); v.addColorStop(1, 'rgba(0,0,0,0.95)');
+    cx.fillStyle = v; cx.fillRect(0, 0, W, H);
   }
 
-  function loop(ts){
-    t=ts; cx.clearRect(0,0,W,H);
-    /* bg */
-    cx.fillStyle='#03050e'; cx.fillRect(0,0,W,H);
-    const n=cx.createRadialGradient(W*.3,H*.28,0,W*.3,H*.28,W*.6);
-    n.addColorStop(0,'rgba(16,8,55,.55)'); n.addColorStop(1,'rgba(0,0,0,0)');
-    cx.fillStyle=n; cx.fillRect(0,0,W,H);
-    const n2=cx.createRadialGradient(W*.78,H*.7,0,W*.78,H*.7,W*.45);
-    n2.addColorStop(0,'rgba(40,8,8,.4)'); n2.addColorStop(1,'rgba(0,0,0,0)');
-    cx.fillStyle=n2; cx.fillRect(0,0,W,H);
-
-    drawFloor(); drawHexGrid(); drawZone();
-    drawPts(); drawRings(); drawStars(); drawVig();
+  function loop(ts) {
+    t = ts; cx.clearRect(0, 0, W, H);
+    cx.fillStyle = '#02040c'; cx.fillRect(0, 0, W, H);
+    const n1 = cx.createRadialGradient(W * 0.3, H * 0.28, 0, W * 0.3, H * 0.28, W * 0.58);
+    n1.addColorStop(0, 'rgba(14,7,50,.55)'); n1.addColorStop(1, 'rgba(0,0,0,0)');
+    cx.fillStyle = n1; cx.fillRect(0, 0, W, H);
+    const n2 = cx.createRadialGradient(W * 0.8, H * 0.68, 0, W * 0.8, H * 0.68, W * 0.42);
+    n2.addColorStop(0, 'rgba(35,7,7,.38)'); n2.addColorStop(1, 'rgba(0,0,0,0)');
+    cx.fillStyle = n2; cx.fillRect(0, 0, W, H);
+    drawFloor(); drawHexGrid(); drawZone(); drawPts(); drawRings(); drawStars(); drawVig();
     requestAnimationFrame(loop);
   }
 
-  W=cv.width=innerWidth; H=cv.height=innerHeight;
-  buildHexes(); requestAnimationFrame(loop);
+  W = cv.width = innerWidth; H = cv.height = innerHeight;
+  buildHexes();
+  requestAnimationFrame(loop);
 })();
 </script>
+
 </body>
 </html>
