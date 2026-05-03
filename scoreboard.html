@@ -162,6 +162,7 @@ const db = firebase.database();
 function placementPts(rank) {
   if (rank === null || rank === undefined || rank === '') return 0;
   const r = parseInt(rank);
+  if (isNaN(r) || r <= 0) return 0;
   if (r === 1) return 10;
   if (r === 2) return 6;
   if (r === 3) return 5;
@@ -177,11 +178,15 @@ function calc(team, matches) {
   let kills = 0, placement = 0, played = 0;
   const arr = Array(10).fill(null).map((_, i) => (matches && matches[i]) || null);
   for (const m of arr) {
-    if (!m || (m.rank === null && m.kills === null)) continue;
+    if (!m || (m.rank === null && (m.kills === null || m.kills === undefined))) continue;
     played++;
-    kills += (m.kills !== null ? parseInt(m.kills) : 0);
-    placement += placementPts(m.rank);
+    const k = parseInt(m.kills);
+    kills += (!isNaN(k) && k > 0) ? k : 0;
+    const pp = placementPts(m.rank);
+    placement += (!isNaN(pp)) ? pp : 0;
   }
+  kills = isNaN(kills) ? 0 : kills;
+  placement = isNaN(placement) ? 0 : placement;
   return { ...team, kills, placement, total: kills + placement, played, matches: arr };
 }
 
@@ -207,6 +212,7 @@ function killCls(k){
   return n>=10?'kh':n>=5?'km':'kl';
 }
 
+function safeNum(v){ const n = parseInt(v); return isNaN(n) ? 0 : n; }
 function render(){
   if(currentTeams.length===0){
     document.getElementById("hero-wrap").innerHTML='<div class="no-data" style="padding:1rem">No teams added yet.</div>';
@@ -240,11 +246,11 @@ function render(){
         '<div class="hero-meta">'+leader.played+' match'+(leader.played!==1?'es':'')+' played</div>'+
       '</div>'+
       '<div class="hero-stats">'+
-        '<div class="hero-stat"><div class="hero-stat-lbl">Place Pts</div><div class="hero-stat-val place">'+leader.placement+'</div></div>'+
+        '<div class="hero-stat"><div class="hero-stat-lbl">Place Pts</div><div class="hero-stat-val place">'+safeNum(leader.placement)+'</div></div>'+
         '<div class="hero-divider"></div>'+
-        '<div class="hero-stat"><div class="hero-stat-lbl">Kills</div><div class="hero-stat-val kills">'+leader.kills+'</div></div>'+
+        '<div class="hero-stat"><div class="hero-stat-lbl">Kills</div><div class="hero-stat-val kills">'+safeNum(leader.kills)+'</div></div>'+
         '<div class="hero-divider"></div>'+
-        '<div class="hero-stat"><div class="hero-stat-lbl">Total</div><div class="hero-stat-val total">'+leader.total+'</div></div>'+
+        '<div class="hero-stat"><div class="hero-stat-lbl">Total</div><div class="hero-stat-val total">'+safeNum(leader.total)+'</div></div>'+
       '</div>'+
     '</div>';
 
@@ -252,8 +258,8 @@ function render(){
   document.getElementById("mini-stats").innerHTML =
     '<div class="mini-stat">Teams: <span>'+teams.length+'</span></div>'+
     '<div class="mini-stat">Matches Played: <span>'+totalMatches+' / 10</span></div>'+
-    '<div class="mini-stat">Total Kills: <span>'+totalKills+'</span></div>'+
-    '<div class="mini-stat">Top Fragger: <span>'+topKiller.name+' ('+maxKills+')</span></div>';
+    '<div class="mini-stat">Total Kills: <span>'+safeNum(totalKills)+'</span></div>'+
+    '<div class="mini-stat">Top Fragger: <span>'+topKiller.name+' ('+safeNum(maxKills)+')</span></div>';
 
   const tbody=document.getElementById("tbody");tbody.innerHTML="";
   teams.forEach((t,i)=>{
@@ -272,9 +278,9 @@ function render(){
       '<td><img class="team-logo-cell" src="'+(t.logo||'')+'" alt="" onerror="this.style.opacity=0.15"></td>'+
       '<td class="left"><div class="team-name">'+t.name+'</div><div class="team-meta">'+t.played+' match'+(t.played!==1?'es':'')+'</div></td>'+
       cells+
-      '<td class="col-t"><span class="kv">'+t.kills+'</span></td>'+
-      '<td class="col-t"><span class="kv">'+t.placement+'</span></td>'+
-      '<td class="col-t"><span class="pv">'+t.total+'</span></td>';
+      '<td class="col-t"><span class="kv">'+safeNum(t.kills)+'</span></td>'+
+      '<td class="col-t"><span class="kv">'+safeNum(t.placement)+'</span></td>'+
+      '<td class="col-t"><span class="pv">'+safeNum(t.total)+'</span></td>';
     tbody.appendChild(tr);
   });
 }
