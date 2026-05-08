@@ -324,8 +324,11 @@ function navForward(){ if(navIndex<navHistory.length-1){ navIndex++; document.ge
 function closeNavFrame(){ document.getElementById("nav-frame-wrap").style.display="none"; document.getElementById("nav-frame").src="about:blank"; navHistory=[]; navIndex=-1; }
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
+    // Anyone who passes Firebase login is the admin — grant full rights
+    isSuperAdmin = true;
     showMainPage();
   } else {
+    isSuperAdmin = false;
     window.location.href = "index.html";
   }
 });
