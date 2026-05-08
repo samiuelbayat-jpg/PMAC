@@ -141,48 +141,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 #nav-frame-wrap{display:none;margin-bottom:1.5rem;border:1px solid rgba(255,255,255,0.12);border-radius:8px;overflow:hidden;}
 .progress-text{font-family:'Share Tech Mono',monospace;font-size:11px;color:#00e5b0;margin-top:8px;}
 @media(max-width:600px){.team-grid{grid-template-columns:1fr;}.player-row{flex-wrap:wrap;}}
-
-/* ===== EVENT GROUP STYLES ===== */
-.eg-wrap{display:flex;flex-direction:column;gap:18px;}
-.eg-active-banner{background:linear-gradient(135deg,rgba(232,184,0,0.12),rgba(232,184,0,0.05));border:1px solid rgba(232,184,0,0.35);border-radius:8px;padding:12px 18px;margin-bottom:1.25rem;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-.eg-active-dot{width:8px;height:8px;border-radius:50%;background:#e8b800;animation:pulse 1.4s ease-in-out infinite;}
-.eg-active-text{font-family:'Share Tech Mono',monospace;font-size:11px;color:#e8b800;letter-spacing:0.08em;flex:1;}
-.eg-active-clear{font-family:'Share Tech Mono',monospace;font-size:10px;color:#ff6b6b;cursor:pointer;padding:4px 10px;border-radius:3px;border:1px solid rgba(255,68,68,0.3);background:rgba(255,68,68,0.1);}
-.eg-group-card{background:#0f1115;border:1px solid rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;transition:border-color 0.2s;}
-.eg-group-card.is-active{border-color:rgba(232,184,0,0.5);box-shadow:0 0 16px rgba(232,184,0,0.08);}
-.eg-group-header{display:flex;align-items:center;gap:12px;padding:12px 18px;background:#161a1f;border-bottom:1px solid rgba(255,255,255,0.08);flex-wrap:wrap;}
-.eg-group-badge{font-weight:900;font-size:18px;letter-spacing:0.12em;text-transform:uppercase;padding:4px 14px;border-radius:5px;color:#000;}
-.eg-group-badge.ga{background:#e8b800;} .eg-group-badge.gb{background:#00c97a;color:#fff;} .eg-group-badge.gc{background:#00aaff;color:#fff;} .eg-group-badge.gd{background:#ff6b6b;color:#fff;} .eg-group-badge.ge{background:#c97aff;color:#fff;} .eg-group-badge.gf{background:#ff9d00;color:#fff;}
-.eg-group-title{font-weight:800;font-size:15px;text-transform:uppercase;letter-spacing:0.06em;flex:1;}
-.eg-group-count{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;letter-spacing:0.08em;}
-.eg-date-row{display:flex;align-items:center;gap:10px;padding:10px 18px;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;}
-.eg-date-lbl{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;letter-spacing:0.1em;text-transform:uppercase;white-space:nowrap;}
-.eg-date-inp{background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#eef0f5;font-family:'Share Tech Mono',monospace;font-size:12px;padding:6px 10px;border-radius:4px;outline:none;cursor:pointer;}
-.eg-date-inp:focus{border-color:#e8b800;}
-.eg-activate-btn{font-weight:700;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;padding:6px 16px;border-radius:4px;cursor:pointer;border:1px solid rgba(0,201,122,0.4);background:rgba(0,201,122,0.1);color:#00c97a;font-family:'Barlow Condensed',sans-serif;white-space:nowrap;}
-.eg-activate-btn:hover{background:rgba(0,201,122,0.2);}
-.eg-activate-btn.active-now{background:#e8b800;border-color:#e8b800;color:#000;}
-.eg-add-row{display:flex;gap:8px;align-items:flex-end;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;}
-.eg-inp{background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#eef0f5;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;padding:7px 10px;border-radius:4px;outline:none;}
-.eg-inp:focus{border-color:#e8b800;}
-.eg-inp-tag{width:80px;}
-.eg-inp-name{min-width:180px;flex:1;}
-.eg-logo-btn{background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#8a96a8;font-family:'Share Tech Mono',monospace;font-size:10px;padding:7px 12px;border-radius:4px;cursor:pointer;white-space:nowrap;}
-.eg-logo-preview{width:30px;height:30px;border-radius:50%;object-fit:cover;border:1px solid rgba(232,184,0,0.3);display:none;vertical-align:middle;margin-left:4px;}
-.eg-teams-list{display:flex;flex-direction:column;}
-.eg-team-row{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid rgba(255,255,255,0.05);}
-.eg-team-row:last-child{border-bottom:none;}
-.eg-team-logo{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.12);background:#161a1f;flex-shrink:0;}
-.eg-team-info{flex:1;min-width:0;}
-.eg-team-name{font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:0.04em;}
-.eg-team-tag{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:0.1em;margin-top:2px;}
-.eg-team-actions{display:flex;gap:6px;align-items:center;}
-.eg-push-btn{font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 10px;border-radius:3px;border:1px solid rgba(0,201,122,0.35);background:rgba(0,201,122,0.1);color:#00c97a;cursor:pointer;white-space:nowrap;}
-.eg-push-btn:hover{background:rgba(0,201,122,0.2);}
-.eg-del-btn{font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 10px;border-radius:3px;border:1px solid rgba(255,68,68,0.3);background:rgba(255,68,68,0.1);color:#ff6b6b;cursor:pointer;}
-.eg-empty{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;text-align:center;padding:20px;letter-spacing:0.08em;}
-.eg-session-info{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;padding:6px 18px;border-top:1px solid rgba(255,255,255,0.05);background:rgba(0,0,0,0.2);}
-.eg-session-info span{color:#e8b800;}
 </style>
 </head>
 <body>
@@ -211,22 +169,12 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
   <div id="nav-frame-wrap"><div style="display:flex;align-items:center;justify-content:space-between;background:#0f1115;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.1);"><div><button onclick="navBack()" style="background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#8a96a8;border-radius:4px;padding:4px 10px;">◀</button><button onclick="navForward()" style="background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#8a96a8;border-radius:4px;padding:4px 10px;margin-left:6px;">▶</button><span id="nav-current-lbl" style="margin-left:12px;font-family:'Share Tech Mono';font-size:10px;color:#e8b800;"></span></div><button onclick="closeNavFrame()" style="background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:#ff4444;border-radius:4px;padding:4px 12px;">✖ Close</button></div><iframe id="nav-frame" src="about:blank" style="width:100%;height:70vh;border:none;background:#0a0b0d;"></iframe></div>
 
-  <div class="section-tabs"><button class="stab active" onclick="showSection('teams')">🏢 Manage Teams</button><button class="stab" onclick="showSection('scores')">🎯 Enter Scores</button><button class="stab" onclick="showSection('eventgroup')">🏆 Event Group</button><button class="stab" onclick="showSection('forum')">💬 Forum</button></div>
+  <div class="section-tabs"><button class="stab active" onclick="showSection('teams')">🏢 Manage Teams</button><button class="stab" onclick="showSection('scores')">🎯 Enter Scores</button><button class="stab" onclick="showSection('forum')">💬 Forum</button></div>
 
   <div id="section-teams"><div class="teams-mgmt"><div class="mgmt-title">Add Team</div><div class="add-team-row"><div class="inp-wrap"><div class="inp-lbl">Team Name</div><input class="text-inp" id="new-team-name" placeholder="e.g. BLACK ZONE"></div><div><div class="inp-lbl">Team Logo</div><input type="file" id="new-team-logo" accept="image/*" style="display:none" onchange="previewLogo(this)"><button class="logo-inp-btn" onclick="document.getElementById('new-team-logo').click()">📷 Choose Logo</button><img id="logo-preview" class="logo-preview"><span id="logo-name" style="font-size:9px;"></span></div><button class="btn btn-primary" onclick="addTeam()">+ Add Team</button><span id="uploading-badge" class="uploading-badge">Uploading...</span></div><div class="csv-row"><div><div class="inp-lbl">Import CSV</div><div class="csv-note">One team name per line</div></div><input type="file" id="csv-file" accept=".csv,.txt" style="display:none" onchange="importCSV(this)"><button class="btn" onclick="document.getElementById('csv-file').click()">📄 Import CSV</button><button class="btn" onclick="fixAllLogos()" id="fix-logos-btn" style="background:linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.1));border-color:rgba(0,255,136,0.4);color:#00ff88;">🔧 Fix All Logos</button><button class="btn btn-primary" onclick="if(!isSuperAdmin){showToast('Super Admin required',false);return;}importFromRegistration()">📥 Import from Registration</button></div></div><div class="mgmt-title">Current Teams (<span id="team-count">0</span>)</div><div class="teams-list-mgmt" id="teams-list-mgmt"><div class="no-teams">No teams yet.</div></div></div>
 
   <div id="section-scores" style="display:none;"><div class="pts-info"><span class="pts-lbl">Points system</span><span class="pts-pill hi">#1=10</span><span class="pts-pill hi">#2=6</span><span class="pts-pill hi">#3=5</span><span class="pts-pill hi">#4=4</span><span class="pts-pill hi">#5=3</span><span class="pts-pill hi">#6=2</span><span class="pts-pill hi">#7=1</span><span class="pts-pill hi">#8=1</span><span class="pts-pill">#9+=0</span><span class="pts-pill">+1/kill</span></div><div class="match-tabs" id="match-tabs-scores"></div>
     <div class="team-grid" id="team-grid"><div class="no-teams">Go to "Manage Teams" tab first.</div></div>
-  </div>
-
-  <div id="section-eventgroup" style="display:none;">
-    <!-- Active session banner -->
-    <div id="eg-active-banner" class="eg-active-banner" style="display:none;">
-      <div class="eg-active-dot"></div>
-      <div class="eg-active-text" id="eg-active-text">No active session</div>
-      <span class="eg-active-clear" onclick="egClearActive()">✖ Deactivate</span>
-    </div>
-    <div class="eg-wrap" id="eg-wrap"></div>
   </div>
 
   <div id="section-forum"><div class="forum-wrap"><div class="forum-header"><div class="forum-live-dot"></div><div class="forum-header-title">💬 PMAC Live Forum</div><span class="forum-user-badge" id="forum-user-badge">ADMIN</span></div><div class="forum-admin-bar" style="background:rgba(232,184,0,0.06);padding:6px 16px;display:flex;justify-content:space-between;"><span>🔧 Admin Controls</span><span class="chat-clear-btn" onclick="clearAllChat()" style="cursor:pointer;color:#ff4444;">🗑 Clear All</span></div><div class="chat-messages" id="chat-messages"><div class="chat-empty">No messages yet.</div></div><div style="padding:8px 14px;display:flex;gap:6px;"><input class="chat-nick-inp" id="chat-nick" placeholder="Your name" value="Admin"><textarea class="chat-text-inp" id="chat-text" rows="1" placeholder="Type a message..."></textarea><button class="chat-send-btn" onclick="sendChatMessage()">➤ Send</button></div></div></div>
@@ -248,19 +196,19 @@ function placementPts(r) { const rank = parseInt(r); if(rank===1) return 10; if(
 function sanitizeKey(n){ return n.replace(/[\.\#\$\/\[\]]/g, "_"); }
 function showToast(msg, ok){ const t=document.getElementById("toast"); t.textContent=msg; t.className="toast show "+(ok?"toast-ok":"toast-err"); setTimeout(()=>t.classList.remove("show"),2800); }
 
-function showMainPage(){ document.getElementById("main-page").style.display="block"; loadFirebaseData(); loadEventGroups(); }
+function showMainPage(){ document.getElementById("main-page").style.display="block"; loadFirebaseData(); }
 function loadFirebaseData(){ dbTeamsRef.on("value",(s)=>{ teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : []; teams = teams.map(t => { if (!t.playerUIDs) t.playerUIDs = []; return t; }); renderTeamsMgmt(); renderScoreGrid(); document.getElementById("fb-status").className="fb-badge fb-ok"; document.getElementById("fb-status").textContent="● Connected"; }); dbScoresRef.on("value",(s)=>{ scores = s.val() || {}; renderScoreGrid(); }); initForum(); }
-function showSection(sec){ document.getElementById("section-teams").style.display = sec==="teams"?"block":"none"; document.getElementById("section-scores").style.display = sec==="scores"?"block":"none"; document.getElementById("section-eventgroup").style.display = sec==="eventgroup"?"block":"none"; document.getElementById("section-forum").style.display = sec==="forum"?"block":"none"; document.querySelectorAll(".stab").forEach((b,i)=>{ b.classList.toggle("active", (i===0&&sec==="teams")||(i===1&&sec==="scores")||(i===2&&sec==="eventgroup")||(i===3&&sec==="forum")); }); if(sec==="scores") renderScoreGrid(); if(sec==="eventgroup"){ renderEventGroups(); updateActiveBanner(); } if(sec==="forum") setTimeout(()=>{ const msgs=document.getElementById("chat-messages"); if(msgs) msgs.scrollTop=msgs.scrollHeight; },100); }
+function showSection(sec){ document.getElementById("section-teams").style.display = sec==="teams"?"block":"none"; document.getElementById("section-scores").style.display = sec==="scores"?"block":"none"; document.getElementById("section-forum").style.display = sec==="forum"?"block":"none"; document.querySelectorAll(".stab").forEach((b,i)=>{ b.classList.toggle("active", (i===0&&sec==="teams")||(i===1&&sec==="scores")||(i===2&&sec==="forum")); }); if(sec==="scores") renderScoreGrid(); if(sec==="forum") setTimeout(()=>{ const msgs=document.getElementById("chat-messages"); if(msgs) msgs.scrollTop=msgs.scrollHeight; },100); }
 function addTeam(){ const name=document.getElementById("new-team-name").value.trim().toUpperCase(); if(!name) return showToast("Enter team name",false); if(teams.find(t=>t.name===name)) return showToast("Team exists",false); const file=document.getElementById("new-team-logo").files[0]; if(file){ document.getElementById("uploading-badge").style.display="inline"; const reader=new FileReader(); reader.onload=e=>{ const img=new Image(); img.onload=()=>{ const c=document.createElement("canvas"); c.width=80; c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); const b64=c.toDataURL("image/jpeg",0.7); pushTeamToDb(name,b64); }; img.src=e.target.result; }; reader.readAsDataURL(file); } else pushTeamToDb(name,""); }
-function pushTeamToDb(name,logo){ const newTeam = { name, logo, playerUIDs: [] }; const newTeams = [...teams, newTeam]; _teamsRef().set(newTeams).then(()=>{ const safe=sanitizeKey(name); if(!scores[safe]){ scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); _scoresRef().set(scores); } showToast("Team added",true); document.getElementById("new-team-name").value=""; document.getElementById("new-team-logo").value=""; document.getElementById("logo-preview").style.display="none"; document.getElementById("uploading-badge").style.display="none"; }).catch(e=>showToast(e.message,false)); }
-function removeTeam(name){ if(!confirm(`Remove team "${name}"? This will also delete all their scores.`)) return; const newTeams=teams.filter(t=>t.name!==name); _teamsRef().set(newTeams).then(()=>{ delete scores[sanitizeKey(name)]; return _scoresRef().set(scores); }).then(()=>{ showToast(`Team "${name}" removed.`, true); }).catch(e=>showToast(e.message, false)); }
+function pushTeamToDb(name,logo){ const newTeam = { name, logo, playerUIDs: [] }; const newTeams = [...teams, newTeam]; dbTeamsRef.set(newTeams).then(()=>{ const safe=sanitizeKey(name); if(!scores[safe]){ scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); dbScoresRef.set(scores); } showToast("Team added",true); document.getElementById("new-team-name").value=""; document.getElementById("new-team-logo").value=""; document.getElementById("logo-preview").style.display="none"; document.getElementById("uploading-badge").style.display="none"; }).catch(e=>showToast(e.message,false)); }
+function removeTeam(name){ if(!confirm(`Remove team "${name}"? This will also delete all their scores.`)) return; const newTeams=teams.filter(t=>t.name!==name); dbTeamsRef.set(newTeams).then(()=>{ delete scores[sanitizeKey(name)]; return dbScoresRef.set(scores); }).then(()=>{ showToast(`Team "${name}" removed.`, true); }).catch(e=>showToast(e.message, false)); }
 function addPlayerUidSlot(teamName) { 
     const idx = teams.findIndex(t => t.name === teamName); 
     if (idx !== -1) {
         if (!teams[idx].playerUIDs) teams[idx].playerUIDs = [];
         if (teams[idx].playerUIDs.length < 4) { 
             teams[idx].playerUIDs.push(""); 
-            _teamsRef().set(teams).then(() => renderTeamsMgmt()); 
+            dbTeamsRef.set(teams).then(() => renderTeamsMgmt()); 
             showToast("Added new UID field", true);
         } else { 
             showToast("Maximum 4 UIDs per team", false); 
@@ -271,7 +219,7 @@ function removePlayerUidAt(teamName, uidIndex) {
     const idx = teams.findIndex(t => t.name === teamName); 
     if (idx !== -1 && teams[idx].playerUIDs && teams[idx].playerUIDs.length > uidIndex) { 
         teams[idx].playerUIDs.splice(uidIndex, 1); 
-        _teamsRef().set(teams).then(() => renderTeamsMgmt()); 
+        dbTeamsRef.set(teams).then(() => renderTeamsMgmt()); 
         showToast("UID removed", true);
     } 
 }
@@ -281,7 +229,7 @@ function updatePlayerUid(teamName, uidIndex, value) {
         if (!teams[idx].playerUIDs) teams[idx].playerUIDs = [];
         if (teams[idx].playerUIDs[uidIndex] !== undefined) { 
             teams[idx].playerUIDs[uidIndex] = value; 
-            _teamsRef().set(teams).catch(e => showToast(e.message, false)); 
+            dbTeamsRef.set(teams).catch(e => showToast(e.message, false)); 
         }
     }
 }
@@ -315,9 +263,9 @@ function renderTeamsMgmt(){
         `; 
     }); 
 }
-function fixAllLogos(){ const toFix=teams.filter(t=>t.logo && !t.logo.startsWith("data:")); if(!toFix.length){ showToast("All logos already fixed",true); return; } showToast(`Fixing ${toFix.length} logos...`,true); toFix.forEach(t=>{ const img=new Image(); img.crossOrigin="anonymous"; img.onload=()=>{ try{ const c=document.createElement("canvas"); c.width=80; c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); const b64=c.toDataURL("image/jpeg",0.7); const idx=teams.findIndex(x=>x.name===t.name); if(idx>-1) teams[idx].logo=b64; (_teamsRef()).set(teams); }catch(e){} }; img.src="https://images.weserv.nl/?url="+encodeURIComponent(t.logo); }); setTimeout(()=>showToast("Logos fixed (background)",true),2000); }
-function importCSV(input){ const file=input.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=e=>{ const names=e.target.result.split(/[,\n\r]+/).map(n=>n.trim().toUpperCase()).filter(n=>n); let newTeams=[...teams]; let added=0; names.forEach(name=>{ if(!newTeams.find(t=>t.name===name)){ newTeams.push({name,logo:"",playerUIDs:[]}); added++; const safe=sanitizeKey(name); if(!scores[safe]) scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); } }); _teamsRef().set(newTeams).then(()=>_scoresRef().set(scores)).then(()=>showToast(`${added} teams imported`,true)); }; reader.readAsText(file); }
-function importFromRegistration(){ db.ref("pmac/registrations").once("value").then(snap=>{ const regs=snap.val(); if(!regs) return showToast("No registrations",false); let list=Object.values(regs); const approved=list.filter(r=>r.status==="approved"); if(approved.length) list=approved; let newTeams=[...teams]; let counter=0; list.forEach(reg=>{ if(reg.name && !newTeams.find(t=>t.name===reg.name.toUpperCase())){ newTeams.push({name:reg.name.toUpperCase(),logo:reg.logo||"",playerUIDs:[]}); counter++; const safe=sanitizeKey(reg.name.toUpperCase()); if(!scores[safe]) scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); } }); if(counter) _teamsRef().set(newTeams).then(()=>_scoresRef().set(scores)).then(()=>showToast(`${counter} imported`,true)); else showToast("No new teams",false); }); }
+function fixAllLogos(){ const toFix=teams.filter(t=>t.logo && !t.logo.startsWith("data:")); if(!toFix.length){ showToast("All logos already fixed",true); return; } showToast(`Fixing ${toFix.length} logos...`,true); toFix.forEach(t=>{ const img=new Image(); img.crossOrigin="anonymous"; img.onload=()=>{ try{ const c=document.createElement("canvas"); c.width=80; c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); const b64=c.toDataURL("image/jpeg",0.7); const idx=teams.findIndex(x=>x.name===t.name); if(idx>-1) teams[idx].logo=b64; dbTeamsRef.set(teams); }catch(e){} }; img.src="https://images.weserv.nl/?url="+encodeURIComponent(t.logo); }); setTimeout(()=>showToast("Logos fixed (background)",true),2000); }
+function importCSV(input){ const file=input.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=e=>{ const names=e.target.result.split(/[,\n\r]+/).map(n=>n.trim().toUpperCase()).filter(n=>n); let newTeams=[...teams]; let added=0; names.forEach(name=>{ if(!newTeams.find(t=>t.name===name)){ newTeams.push({name,logo:"",playerUIDs:[]}); added++; const safe=sanitizeKey(name); if(!scores[safe]) scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); } }); dbTeamsRef.set(newTeams).then(()=>dbScoresRef.set(scores)).then(()=>showToast(`${added} teams imported`,true)); }; reader.readAsText(file); }
+function importFromRegistration(){ db.ref("pmac/registrations").once("value").then(snap=>{ const regs=snap.val(); if(!regs) return showToast("No registrations",false); let list=Object.values(regs); const approved=list.filter(r=>r.status==="approved"); if(approved.length) list=approved; let newTeams=[...teams]; let counter=0; list.forEach(reg=>{ if(reg.name && !newTeams.find(t=>t.name===reg.name.toUpperCase())){ newTeams.push({name:reg.name.toUpperCase(),logo:reg.logo||"",playerUIDs:[]}); counter++; const safe=sanitizeKey(reg.name.toUpperCase()); if(!scores[safe]) scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); } }); if(counter) dbTeamsRef.set(newTeams).then(()=>dbScoresRef.set(scores)).then(()=>showToast(`${counter} imported`,true)); else showToast("No new teams",false); }); }
 function switchMatch(idx){ saveAll(); currentMatch=idx; renderScoreGrid(); }
 function getUsedRanks(excludeTeam){ let used={}; teams.forEach(t=>{ if(t.name===excludeTeam) return; const m=scores[sanitizeKey(t.name)]?.[currentMatch]; if(m?.rank) used[m.rank]=t.name; }); return used; }
 function renderScoreGrid(){ 
@@ -344,13 +292,13 @@ function renderScoreGrid(){
         grid.appendChild(cardDiv); 
     }); 
 }
-function autoSave(team){ const rankEl=document.getElementById(`rank_${team}_${currentMatch}`); const killsEl=document.getElementById(`kills_${team}_${currentMatch}`); if(!rankEl||!killsEl) return; const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); scores[safe][currentMatch]={rank: rankEl.value?parseInt(rankEl.value):null, kills: killsEl.value?parseInt(killsEl.value):null}; _scoresRef().set(scores).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); const savedDiv=document.getElementById(`saved_${team}`); if(savedDiv){ savedDiv.classList.add("show"); setTimeout(()=>savedDiv.classList.remove("show"),1500); } renderScoreGrid(); }); }
-function clearTeamMatch(team){ const safe=sanitizeKey(team); if(scores[safe]) scores[safe][currentMatch]={rank:null,kills:null}; else scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); _scoresRef().set(scores); renderScoreGrid(); }
-function saveAll(){ teams.forEach(t=>{ const rankEl=document.getElementById(`rank_${t.name}_${currentMatch}`); const killsEl=document.getElementById(`kills_${t.name}_${currentMatch}`); if(rankEl&&killsEl){ const safe=sanitizeKey(t.name); if(!scores[safe]) scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); scores[safe][currentMatch]={rank: rankEl.value?parseInt(rankEl.value):null, kills: killsEl.value?parseInt(killsEl.value):null}; } }); _scoresRef().set(scores).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); showToast("All saved",true); }); }
-function confirmReset(){ if(!isSuperAdmin){ showToast("Super admin required",false); return; } if(confirm("⚠️ FULL RESET: Delete ALL teams and scores from current session? This cannot be undone.")){ _teamsRef().set([]).then(()=>_scoresRef().set({})).then(()=>{ teams=[]; scores={}; renderTeamsMgmt(); renderScoreGrid(); showToast("Hard reset completed",true); }); } }
+function autoSave(team){ const rankEl=document.getElementById(`rank_${team}_${currentMatch}`); const killsEl=document.getElementById(`kills_${team}_${currentMatch}`); if(!rankEl||!killsEl) return; const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); scores[safe][currentMatch]={rank: rankEl.value?parseInt(rankEl.value):null, kills: killsEl.value?parseInt(killsEl.value):null}; dbScoresRef.set(scores).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); const savedDiv=document.getElementById(`saved_${team}`); if(savedDiv){ savedDiv.classList.add("show"); setTimeout(()=>savedDiv.classList.remove("show"),1500); } renderScoreGrid(); }); }
+function clearTeamMatch(team){ const safe=sanitizeKey(team); if(scores[safe]) scores[safe][currentMatch]={rank:null,kills:null}; else scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); dbScoresRef.set(scores); renderScoreGrid(); }
+function saveAll(){ teams.forEach(t=>{ const rankEl=document.getElementById(`rank_${t.name}_${currentMatch}`); const killsEl=document.getElementById(`kills_${t.name}_${currentMatch}`); if(rankEl&&killsEl){ const safe=sanitizeKey(t.name); if(!scores[safe]) scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); scores[safe][currentMatch]={rank: rankEl.value?parseInt(rankEl.value):null, kills: killsEl.value?parseInt(killsEl.value):null}; } }); dbScoresRef.set(scores).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); showToast("All saved",true); }); }
+function confirmReset(){ if(!isSuperAdmin){ showToast("Super admin required",false); return; } if(confirm("⚠️ FULL RESET: Delete ALL teams and scores? This cannot be undone.")){ dbTeamsRef.set([]).then(()=>dbScoresRef.set({})).then(()=>{ teams=[]; scores={}; renderTeamsMgmt(); renderScoreGrid(); showToast("Hard reset completed",true); }); } }
 function openArchiveModal(){ document.getElementById("archive-date").valueAsDate=new Date(); document.getElementById("archive-name").value=""; document.getElementById("archive-modal").classList.add("show"); }
 function closeArchiveModal(){ document.getElementById("archive-modal").classList.remove("show"); }
-function confirmArchive(){ const name=document.getElementById("archive-name").value.trim(); const date=document.getElementById("archive-date").value; if(!name){ showToast("Enter tournament name",false); return; } db.ref("pmac/archive").child("t_"+Date.now()).set({name,date:new Date(date).getTime(),archivedAt:Date.now(),teams,scores}).then(()=>{ return Promise.all([_teamsRef().set([]), _scoresRef().set({})]); }).then(()=>{ closeArchiveModal(); showToast("Archived & reset",true); }).catch(e=>showToast(e.message,false)); }
+function confirmArchive(){ const name=document.getElementById("archive-name").value.trim(); const date=document.getElementById("archive-date").value; if(!name){ showToast("Enter tournament name",false); return; } db.ref("pmac/archive").child("t_"+Date.now()).set({name,date:new Date(date).getTime(),archivedAt:Date.now(),teams,scores}).then(()=>{ return Promise.all([dbTeamsRef.set([]), dbScoresRef.set({})]); }).then(()=>{ closeArchiveModal(); showToast("Archived & reset",true); }).catch(e=>showToast(e.message,false)); }
 
 // ========== GROQ BATCH ==========
 let groqAbort = false;
@@ -359,287 +307,9 @@ function closeGroqModal(){ document.getElementById("groq-modal").classList.remov
 async function analyzeBatchWithGroq() { const apiKey = document.getElementById("groq-api-key").value.trim(); if (!apiKey) { showToast("Enter Groq API Key", false); return; } groqApiKey = apiKey; localStorage.setItem("groq_api_key", apiKey); const fileInput = document.getElementById("groq-images"); const files = Array.from(fileInput.files); if (files.length === 0) { showToast("Select at least one screenshot", false); return; } const btn = document.getElementById("analyze-groq-btn"); const resultDiv = document.getElementById("groq-result-area"); const progressDiv = document.getElementById("groq-progress"); btn.disabled = true; btn.innerText = "Processing..."; resultDiv.innerHTML = ""; progressDiv.innerHTML = `📸 ${files.length} images found. Starting analysis...`; let allExtracted = []; let processed = 0; for (let i = 0; i < files.length; i++) { if (groqAbort) break; const file = files[i]; progressDiv.innerHTML = `🖼️ Analyzing image ${i+1}/${files.length}: ${file.name} ...`; try { const base64 = await fileToBase64(file); const extracted = await callGroqVision(apiKey, base64); if (extracted && extracted.length) { allExtracted.push(...extracted); resultDiv.innerHTML += `✅ ${file.name}: found ${extracted.length} entries.<br>`; } else { resultDiv.innerHTML += `⚠️ ${file.name}: no valid data extracted.<br>`; } } catch (err) { resultDiv.innerHTML += `❌ ${file.name}: error - ${err.message}<br>`; } processed++; progressDiv.innerHTML = `📊 Processed ${processed}/${files.length}. Merging results...`; } progressDiv.innerHTML = `✨ Matching against team names...`; if (allExtracted.length > 0) { const matchedCount = await applyGroqResults(allExtracted); resultDiv.innerHTML += `<br><strong>✅ Applied ${matchedCount} team entries to Match ${currentMatch+1}.</strong>`; showToast(`Groq applied ${matchedCount} scores from ${files.length} images`, true); } else { resultDiv.innerHTML += `<br><strong>⚠️ No usable scores extracted. Check your screenshots or API key.</strong>`; } btn.disabled = false; btn.innerText = "📡 Extract Scores from All Images"; progressDiv.innerHTML = "Done. You can close this window."; }
 function fileToBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = reject; reader.readAsDataURL(file); }); }
 async function callGroqVision(apiKey, base64Image) { const res = await fetch("https://api.groq.com/openai/v1/chat/completions", { method: "POST", headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model: "meta-llama/llama-4-scout-17b-16e-instruct", messages: [{ role: "user", content: [{ type: "text", text: `Extract match results from this PUBG scoreboard. The scoreboard shows TEAM NAMES. Return a JSON array where each object has keys: "team" (team name), "rank" (integer), "kills" (integer). Do not add extra text. Example: [{"team":"BLACK ZONE","rank":1,"kills":12}]` }, { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Image}` } }] }], temperature: 0.1, max_tokens: 1024 }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error?.message || "API error"); const content = data.choices[0].message.content; const match = content.match(/\[[\s\S]*\]/); if (match) return JSON.parse(match[0]); return []; }
-async function applyGroqResults(results) { if (!results.length) return 0; const matchIdx = currentMatch; const teamScoreMap = new Map(); for (const item of results) { let rawName = item.team?.trim().toUpperCase(); if (!rawName) continue; let matchedTeam = teams.find(t => t.name === rawName); if (!matchedTeam) matchedTeam = teams.find(t => t.name.includes(rawName) || rawName.includes(t.name)); if (matchedTeam) { const existing = teamScoreMap.get(matchedTeam.name); if (!existing || (item.rank && (!existing.rank || item.rank < existing.rank))) { teamScoreMap.set(matchedTeam.name, { rank: item.rank, kills: item.kills }); } } } for (const [teamName, data] of teamScoreMap.entries()) { const safe = sanitizeKey(teamName); if (!scores[safe]) scores[safe] = Array(10).fill().map(() => ({ rank: null, kills: null })); scores[safe][matchIdx] = { rank: data.rank || null, kills: data.kills || 0 }; } await _scoresRef().set(scores); renderScoreGrid(); return teamScoreMap.size; }
+async function applyGroqResults(results) { if (!results.length) return 0; const matchIdx = currentMatch; const teamScoreMap = new Map(); for (const item of results) { let rawName = item.team?.trim().toUpperCase(); if (!rawName) continue; let matchedTeam = teams.find(t => t.name === rawName); if (!matchedTeam) matchedTeam = teams.find(t => t.name.includes(rawName) || rawName.includes(t.name)); if (matchedTeam) { const existing = teamScoreMap.get(matchedTeam.name); if (!existing || (item.rank && (!existing.rank || item.rank < existing.rank))) { teamScoreMap.set(matchedTeam.name, { rank: item.rank, kills: item.kills }); } } } for (const [teamName, data] of teamScoreMap.entries()) { const safe = sanitizeKey(teamName); if (!scores[safe]) scores[safe] = Array(10).fill().map(() => ({ rank: null, kills: null })); scores[safe][matchIdx] = { rank: data.rank || null, kills: data.kills || 0 }; } await dbScoresRef.set(scores); renderScoreGrid(); return teamScoreMap.size; }
 
-// ========== EVENT GROUPS ==========
-const EG_GROUPS = [
-  { id:'A', label:'Group A', cls:'ga' },
-  { id:'B', label:'Group B', cls:'gb' },
-  { id:'C', label:'Group C', cls:'gc' },
-  { id:'D', label:'Group D', cls:'gd' },
-  { id:'E', label:'Group E', cls:'ge' },
-  { id:'F', label:'Group F', cls:'gf' },
-];
-
-// egData structure: { A: { "2025-05-09": [{name,tag,logo},...] }, B: {...}, ... }
-let egData = {};
-// Active session: { group: 'A', date: '2025-05-09' } or null
-let egActiveSession = JSON.parse(localStorage.getItem('eg_active_session') || 'null');
-
-const dbEgRef = db.ref("pmac/eventGroups");
-
-function egDateKey(d){ return d || new Date().toISOString().slice(0,10); }
-
-function loadEventGroups(){
-  dbEgRef.on("value", snap => {
-    egData = snap.val() || {};
-    renderEventGroups();
-    updateActiveBanner();
-    // If there's an active session, rebind the score/team refs
-    if(egActiveSession) applyActiveSession(egActiveSession.group, egActiveSession.date, false);
-  });
-}
-
-function egTodayStr(){
-  return new Date().toISOString().slice(0,10);
-}
-
-// ---- Active session controls ----
-function egActivate(gid){
-  const dateEl = document.getElementById(`eg-date-${gid}`);
-  const date = dateEl ? dateEl.value : egTodayStr();
-  if(!date){ showToast("Pick a date first", false); return; }
-  egActiveSession = { group: gid, date };
-  localStorage.setItem('eg_active_session', JSON.stringify(egActiveSession));
-  // Save to Firebase so OBS overlay can read it
-  db.ref("pmac/activeSession").set({ group: gid, date, activatedAt: Date.now() });
-  applyActiveSession(gid, date, true);
-  updateActiveBanner();
-  renderEventGroups();
-  showToast(`Group ${gid} · ${date} is now ACTIVE — Scores & OBS linked!`, true);
-}
-
-function egClearActive(){
-  egActiveSession = null;
-  localStorage.removeItem('eg_active_session');
-  db.ref("pmac/activeSession").remove();
-  // Restore default refs
-  dbTeamsRef.off();
-  dbScoresRef.off();
-  loadFirebaseData();
-  updateActiveBanner();
-  renderEventGroups();
-  showToast("Session deactivated — restored main data", true);
-}
-
-function applyActiveSession(gid, date, doToast){
-  // Re-point the live Firebase listeners to the group+date path
-  const basePath = `pmac/eventGroups/${gid}/sessions/${date}`;
-  dbTeamsRef.off();
-  dbScoresRef.off();
-
-  const sessionTeamsRef = db.ref(`${basePath}/teams`);
-  const sessionScoresRef = db.ref(`${basePath}/scores`);
-
-  sessionTeamsRef.on("value", s => {
-    teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : [];
-    teams = teams.map(t => { if(!t.playerUIDs) t.playerUIDs=[]; return t; });
-    renderTeamsMgmt();
-    renderScoreGrid();
-    document.getElementById("fb-status").className="fb-badge fb-ok";
-    document.getElementById("fb-status").textContent=`● Group ${gid} · ${date}`;
-  });
-  sessionScoresRef.on("value", s => {
-    scores = s.val() || {};
-    renderScoreGrid();
-  });
-
-  // Override the db refs so saveAll / addTeam / etc. write to correct path
-  window._activeTeamsRef = sessionTeamsRef;
-  window._activeScoresRef = sessionScoresRef;
-}
-
-function updateActiveBanner(){
-  const banner = document.getElementById("eg-active-banner");
-  const text = document.getElementById("eg-active-text");
-  if(egActiveSession){
-    banner.style.display = "flex";
-    text.textContent = `ACTIVE SESSION: Group ${egActiveSession.group}  ·  Date: ${egActiveSession.date}  —  Scoreboard, Scores & OBS Overlay are all linked to this session.`;
-  } else {
-    banner.style.display = "none";
-  }
-}
-
-// Patch dbTeamsRef / dbScoresRef usage to respect active session
-function _teamsRef(){ return window._activeTeamsRef || dbTeamsRef; }
-function _scoresRef(){ return window._activeScoresRef || dbScoresRef; }
-
-// ---- Render groups ----
-function renderEventGroups(){
-  const wrap = document.getElementById("eg-wrap");
-  if(!wrap) return;
-  wrap.innerHTML = "";
-  EG_GROUPS.forEach(g => {
-    const isActive = egActiveSession && egActiveSession.group === g.id;
-    const defaultDate = isActive ? egActiveSession.date : egTodayStr();
-    // Get teams for currently selected date (use today as default for display)
-    const sessions = (egData[g.id] && egData[g.id].sessions) || {};
-    const sessionDates = Object.keys(sessions).sort().reverse();
-    // Build sessions list HTML
-    const sessionsListHtml = sessionDates.length ? sessionDates.map(d => {
-      const teamList = sessions[d].teams || [];
-      const isThisActive = egActiveSession && egActiveSession.group===g.id && egActiveSession.date===d;
-      return `<div style="display:flex;align-items:center;gap:10px;padding:7px 18px;border-bottom:1px solid rgba(255,255,255,0.04);background:${isThisActive?'rgba(232,184,0,0.06)':'transparent'};">
-        <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:${isThisActive?'#e8b800':'#606878'};">📅 ${d}</span>
-        <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;">${teamList.length} team${teamList.length!==1?'s':''}</span>
-        <span class="eg-push-btn" onclick="egLoadDateIntoForm('${g.id}','${d}')">📂 Open</span>
-        ${isThisActive?'<span style="font-family:\'Share Tech Mono\',monospace;font-size:9px;color:#e8b800;padding:2px 6px;border:1px solid rgba(232,184,0,0.3);border-radius:3px;">ACTIVE</span>':''}
-      </div>`;
-    }).join("") : `<div class="eg-empty">No sessions yet for this group.</div>`;
-
-    // Current teams for the selected date
-    const curDateTeams = (sessions[defaultDate] && sessions[defaultDate].teams) || [];
-    const teamsHtml = curDateTeams.length ? curDateTeams.map((t,i)=>`
-      <div class="eg-team-row">
-        <img class="eg-team-logo" src="${t.logo||''}" onerror="this.style.opacity=0.15">
-        <div class="eg-team-info">
-          <div class="eg-team-name">${escapeHtml(t.name)}</div>
-          <div class="eg-team-tag">[${escapeHtml(t.tag||'')}]</div>
-        </div>
-        <div class="eg-team-actions">
-          <span class="eg-del-btn" onclick="egRemoveTeam('${g.id}','${defaultDate}',${i})">🗑️</span>
-        </div>
-      </div>`).join("") : `<div class="eg-empty">No teams added for ${defaultDate} yet.</div>`;
-
-    const card = document.createElement("div");
-    card.className = `eg-group-card${isActive?' is-active':''}`;
-    card.innerHTML = `
-      <div class="eg-group-header">
-        <span class="eg-group-badge ${g.cls}">${g.id}</span>
-        <div class="eg-group-title">${g.label}${isActive?' <span style="font-family:\'Share Tech Mono\',monospace;font-size:9px;color:#e8b800;margin-left:8px;">● ACTIVE</span>':''}</div>
-        <span class="eg-group-count">${sessionDates.length} session${sessionDates.length!==1?'s':''}</span>
-      </div>
-      <div class="eg-date-row">
-        <span class="eg-date-lbl">📅 Play Date</span>
-        <input type="date" class="eg-date-inp" id="eg-date-${g.id}" value="${defaultDate}" onchange="egRefreshGroupDisplay('${g.id}')">
-        <button class="eg-activate-btn${isActive?' active-now':''}" onclick="egActivate('${g.id}')">
-          ${isActive ? '✅ ACTIVE SESSION' : '▶ Activate — Link to Scoreboard & OBS'}
-        </button>
-      </div>
-      <div class="eg-add-row">
-        <div class="inp-wrap">
-          <div class="inp-lbl">Team Name</div>
-          <input class="eg-inp eg-inp-name" id="eg-name-${g.id}" placeholder="e.g. BLACK ZONE" list="eg-suggest-${g.id}">
-          <datalist id="eg-suggest-${g.id}">${teams.map(t=>`<option value="${escapeHtml(t.name)}">`).join("")}</datalist>
-        </div>
-        <div class="inp-wrap">
-          <div class="inp-lbl">Tag</div>
-          <input class="eg-inp eg-inp-tag" id="eg-tag-${g.id}" placeholder="BZ" maxlength="6">
-        </div>
-        <div>
-          <div class="inp-lbl">Logo</div>
-          <input type="file" id="eg-logo-file-${g.id}" accept="image/*" style="display:none" onchange="egPreviewLogo(this,'${g.id}')">
-          <button class="eg-logo-btn" onclick="document.getElementById('eg-logo-file-${g.id}').click()">📷 Logo</button>
-          <img id="eg-logo-prev-${g.id}" class="eg-logo-preview">
-        </div>
-        <button class="btn btn-primary" style="align-self:flex-end;" onclick="egAddTeam('${g.id}')">+ Add Team</button>
-      </div>
-      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;padding:6px 18px;border-bottom:1px solid rgba(255,255,255,0.06);">
-        TEAMS FOR ${defaultDate}:
-      </div>
-      <div class="eg-teams-list" id="eg-list-${g.id}">${teamsHtml}</div>
-      <div style="border-top:1px solid rgba(255,255,255,0.08);padding:8px 18px;font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;">PAST SESSIONS:</div>
-      <div>${sessionsListHtml}</div>
-      <div class="eg-session-info">Firebase path: <span>pmac/eventGroups/${g.id}/sessions/{date}</span> — Scoreboard & OBS auto-read from active session path.</div>
-    `;
-    wrap.appendChild(card);
-  });
-}
-
-function egRefreshGroupDisplay(gid){
-  renderEventGroups();
-}
-
-function egLoadDateIntoForm(gid, date){
-  const dateEl = document.getElementById(`eg-date-${gid}`);
-  if(dateEl) dateEl.value = date;
-  renderEventGroups();
-}
-
-function egPreviewLogo(input, gid){
-  const file = input.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const prev = document.getElementById(`eg-logo-prev-${gid}`);
-    if(prev){ prev.src=e.target.result; prev.style.display="inline-block"; }
-  };
-  reader.readAsDataURL(file);
-}
-
-function egAddTeam(gid){
-  const nameEl = document.getElementById(`eg-name-${gid}`);
-  const tagEl  = document.getElementById(`eg-tag-${gid}`);
-  const fileEl = document.getElementById(`eg-logo-file-${gid}`);
-  const dateEl = document.getElementById(`eg-date-${gid}`);
-  const name = (nameEl?.value||"").trim().toUpperCase();
-  const tag  = (tagEl?.value||"").trim().toUpperCase();
-  const date = dateEl?.value || egTodayStr();
-  if(!name){ showToast("Enter team name", false); return; }
-
-  const sessionPath = `pmac/eventGroups/${gid}/sessions/${date}/teams`;
-  const sessionRef = db.ref(sessionPath);
-
-  sessionRef.once("value").then(snap => {
-    let teamList = snap.val() ? (Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val())) : [];
-    if(teamList.find(t=>t.name===name)){ showToast("Team already in this group/date", false); return; }
-
-    const doSave = (logo) => {
-      // Also init scores path for this team
-      const scoresPath = `pmac/eventGroups/${gid}/sessions/${date}/scores`;
-      teamList.push({ name, tag, logo: logo||"" });
-      db.ref(sessionPath).set(teamList).then(()=>{
-        // Init score slot
-        const safe = sanitizeKey(name);
-        db.ref(`${scoresPath}/${safe}`).once("value").then(s=>{
-          if(!s.val()) db.ref(`${scoresPath}/${safe}`).set(Array(10).fill().map(()=>({rank:null,kills:null})));
-        });
-        showToast(`${name} added to Group ${gid} · ${date}`, true);
-        if(nameEl) nameEl.value="";
-        if(tagEl)  tagEl.value="";
-        if(fileEl) fileEl.value="";
-        const prev = document.getElementById(`eg-logo-prev-${gid}`);
-        if(prev){ prev.src=""; prev.style.display="none"; }
-      }).catch(e=>showToast(e.message,false));
-    };
-
-    const file = fileEl?.files[0];
-    if(file){
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = new Image();
-        img.onload = () => {
-          const c = document.createElement("canvas"); c.width=80; c.height=80;
-          c.getContext("2d").drawImage(img,0,0,80,80);
-          doSave(c.toDataURL("image/jpeg",0.7));
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    } else {
-      const existing = teams.find(t=>t.name===name);
-      doSave(existing?.logo||"");
-    }
-  });
-}
-
-function egRemoveTeam(gid, date, idx){
-  const sessionPath = `pmac/eventGroups/${gid}/sessions/${date}/teams`;
-  db.ref(sessionPath).once("value").then(snap=>{
-    let teamList = snap.val() ? (Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val())) : [];
-    if(!teamList[idx]) return;
-    const tname = teamList[idx].name;
-    if(!confirm(`Remove "${tname}" from Group ${gid} · ${date}?`)) return;
-    teamList.splice(idx,1);
-    db.ref(sessionPath).set(teamList).then(()=>showToast("Team removed",true));
-  });
-}
-
-// ---- Patch saveAll, addTeam, removeTeam, autoSave to use active refs ----
-// Override dbTeamsRef and dbScoresRef usage via helper functions above
-// The key bridge: when a session is active, _teamsRef() and _scoresRef() point to session paths
-
-// ========== FORUM ==========
+// Forum
 let forumRef=db.ref("pmac/forum/messages");
 function initForum(){ forumRef.limitToLast(100).on("child_added",(snap)=>{ const msg=snap.val(); if(!msg) return; const container=document.getElementById("chat-messages"); const empty=container.querySelector(".chat-empty"); if(empty) empty.style.display="none"; const div=document.createElement("div"); div.className=`chat-msg ${msg.nick==="Admin"||msg.isAdmin?"mine":"other"}`; div.innerHTML=`<div class="chat-meta">${msg.nick||"Guest"} · ${new Date(msg.ts).toLocaleTimeString()}</div><div class="chat-bubble">${escapeHtml(msg.text)}</div>`; container.appendChild(div); container.scrollTop=container.scrollHeight; }); }
 function sendChatMessage(){ const nick=document.getElementById("chat-nick").value.trim()||"Admin"; const text=document.getElementById("chat-text").value.trim(); if(!text) return; forumRef.push({nick,text,ts:Date.now(),isAdmin:true}); document.getElementById("chat-text").value=""; }
@@ -654,11 +324,8 @@ function navForward(){ if(navIndex<navHistory.length-1){ navIndex++; document.ge
 function closeNavFrame(){ document.getElementById("nav-frame-wrap").style.display="none"; document.getElementById("nav-frame").src="about:blank"; navHistory=[]; navIndex=-1; }
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
-    // Anyone who passes Firebase login is the admin — grant full rights
-    isSuperAdmin = true;
     showMainPage();
   } else {
-    isSuperAdmin = false;
     window.location.href = "index.html";
   }
 });
