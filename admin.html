@@ -431,25 +431,14 @@ function applyActiveSession(gid, date, doToast){
   const sessionTeamsRef = db.ref(`${basePath}/teams`);
   const sessionScoresRef = db.ref(`${basePath}/scores`);
 
-  // Force initial load of teams from the session
-  sessionTeamsRef.once("value", s => {
+  sessionTeamsRef.on("value", s => {
     teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : [];
     teams = teams.map(t => { if(!t.playerUIDs) t.playerUIDs=[]; return t; });
     renderTeamsMgmt();
     renderScoreGrid();
     document.getElementById("fb-status").className="fb-badge fb-ok";
     document.getElementById("fb-status").textContent=`● Group ${gid} · ${date}`;
-    
-    if(doToast) showToast(`Active session applied: ${teams.length} teams loaded`, true);
   });
-  
-  sessionTeamsRef.on("value", s => {
-    teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : [];
-    teams = teams.map(t => { if(!t.playerUIDs) t.playerUIDs=[]; return t; });
-    renderTeamsMgmt();
-    renderScoreGrid();
-  });
-  
   sessionScoresRef.on("value", s => {
     scores = s.val() || {};
     renderScoreGrid();
@@ -458,143 +447,22 @@ function applyActiveSession(gid, date, doToast){
   // Override the db refs so saveAll / addTeam / etc. write to correct path
   window._activeTeamsRef = sessionTeamsRef;
   window._activeScoresRef = sessionScoresRef;
-  
-  // IMPORTANT: Also save this info for OBS overlay to read
-  db.ref("pmac/activeSession").set({ 
-    group: gid, 
-    date: date, 
-    activatedAt: Date.now(),
-    teamsPath: `${basePath}/teams`,
-    scoresPath: `${basePath}/scores`
-  });
 }
 
-// Fix egActivate function to ensure proper loading
-function egActivate(gid){
-  const dateEl = document.getElementById(`eg-date-${gid}`);
-  const date = dateEl ? dateEl.value : egTodayStr();
-  if(!date){ showToast("Pick a date first", false); return; }
-  
-  // First, verify teams exist for this session
-  const checkPath = `pmac/eventGroups/${gid}/sessions/${date}/teams`;
-  db.ref(checkPath).once("value").then(snap => {
-    const teamList = snap.val() ? (Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val())) : [];
-    
-    if(teamList.length === 0) {
-      if(!confirm(`No teams found for Group ${gid} on ${date}. Do you want to activate an empty session?`)) {
-        return;
-      }
-    }
-    
-    // Set active session
-    egActiveSession = { group: gid, date };
-    localStorage.setItem('eg_active_session', JSON.stringify(egActiveSession));
-    
-    // Save to Firebase so OBS overlay can read it
-    db.ref("pmac/activeSession").set({ 
-      group: gid, 
-      date: date, 
-      activatedAt: Date.now(),
-      teamsPath: `pmac/eventGroups/${gid}/sessions/${date}/teams`,
-      scoresPath: `pmac/eventGroups/${gid}/sessions/${date}/scores`
-    });
-    
-    // Apply the session
-    applyActiveSession(gid, date, true);
-    updateActiveBanner();
-    renderEventGroups();
-    showToast(`Group ${gid} · ${date} is now ACTIVE — ${teamList.length} teams loaded!`, true);
-  }).catch(err => {
-    showToast(`Error: ${err.message}`, false);
-  });
+function updateActiveBanner(){
+  const banner = document.getElementById("eg-active-banner");
+  const text = document.getElementById("eg-active-text");
+  if(egActiveSession){
+    banner.style.display = "flex";
+    text.textContent = `ACTIVE SESSION: Group ${egActiveSession.group}  ·  Date: ${egActiveSession.date}  —  Scoreboard, Scores & OBS Overlay are all linked to this session.`;
+  } else {
+    banner.style.display = "none";
+  }
 }
 
-// Fix egAddTeam to ensure teams are immediately available
-function egAddTeam(gid){
-  const nameEl = document.getElementById(`eg-name-${gid}`);
-  const tagEl  = document.getElementById(`eg-tag-${gid}`);
-  const fileEl = document.getElementById(`eg-logo-file-${gid}`);
-  const dateEl = document.getElementById(`eg-date-${gid}`);
-  const name = (nameEl?.value||"").trim().toUpperCase();
-  const tag  = (tagEl?.value||"").trim().toUpperCase();
-  const date = dateEl?.value || egTodayStr();
-  if(!name){ showToast("Enter team name", false); return; }
-
-  const sessionPath = `pmac/eventGroups/${gid}/sessions/${date}/teams`;
-  const sessionRef = db.ref(sessionPath);
-
-  sessionRef.once("value").then(snap => {
-    let teamList = snap.val() ? (Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val())) : [];
-    if(teamList.find(t=>t.name===name)){ showToast("Team already in this group/date", false); return; }
-
-    const doSave = (logo) => {
-      // Also init scores path for this team
-      const scoresPath = `pmac/eventGroups/${gid}/sessions/${date}/scores`;
-      const newTeam = { 
-        name, 
-        tag: tag || name.substring(0, 3), 
-        logo: logo || "",
-        playerUIDs: []  // Add empty UIDs array
-      };
-      teamList.push(newTeam);
-      
-      db.ref(sessionPath).set(teamList).then(()=>{
-        // Init score slot
-        const safe = sanitizeKey(name);
-        const scoresRef = db.ref(`${scoresPath}/${safe}`);
-        scoresRef.once("value").then(s=>{
-          if(!s.val()) {
-            scoresRef.set(Array(10).fill().map(()=>({rank:null,kills:null})));
-          }
-        });
-        
-        showToast(`${name} added to Group ${gid} · ${date}`, true);
-        
-        // Clear inputs
-        if(nameEl) nameEl.value="";
-        if(tagEl)  tagEl.value="";
-        if(fileEl) fileEl.value="";
-        const prev = document.getElementById(`eg-logo-prev-${gid}`);
-        if(prev){ prev.src=""; prev.style.display="none"; }
-        
-        // If this session is currently active, refresh the admin view
-        if(egActiveSession && egActiveSession.group === gid && egActiveSession.date === date) {
-          applyActiveSession(gid, date, false);
-        }
-        
-        renderEventGroups();
-      }).catch(e=>showToast(e.message,false));
-    };
-
-    const file = fileEl?.files[0];
-    if(file){
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = new Image();
-        img.onload = () => {
-          const c = document.createElement("canvas"); c.width=80; c.height=80;
-          c.getContext("2d").drawImage(img,0,0,80,80);
-          doSave(c.toDataURL("image/jpeg",0.7));
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    } else {
-      const existing = teams.find(t=>t.name===name);
-      doSave(existing?.logo||"");
-    }
-  });
-}
-
-// Also fix the initial teamsRef function to properly handle active session
-function _teamsRef(){ 
-  if(window._activeTeamsRef) return window._activeTeamsRef;
-  return dbTeamsRef; 
-}
-function _scoresRef(){ 
-  if(window._activeScoresRef) return window._activeScoresRef;
-  return dbScoresRef; 
-}
+// Patch dbTeamsRef / dbScoresRef usage to respect active session
+function _teamsRef(){ return window._activeTeamsRef || dbTeamsRef; }
+function _scoresRef(){ return window._activeScoresRef || dbScoresRef; }
 
 // ---- Render groups ----
 function renderEventGroups(){
