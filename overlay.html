@@ -217,16 +217,55 @@ function escapeHtml(str) {
   });
 }
 
-db.ref("pmac/teams").on("value", snap => {
-  const val = snap.val();
-  currentTeams = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
-  render();
-});
-
-db.ref("pmac/matches").on("value", snap => {
-  currentScores = snap.val() || {};
-  render();
-});
+let liveTeamsRef=null, liveScoresRef=null;
+function activeSessions(session){
+  if(!session) return [];
+  if(Array.isArray(session.sessions)) return session.sessions.filter(s=>s&&s.group&&s.date);
+  if(session.group&&session.date) return [{group:session.group,date:session.date}];
+  return [];
+}
+function bindLiveSession(session){
+  if(liveTeamsRef) liveTeamsRef.off();
+  if(liveScoresRef) liveScoresRef.off();
+  const sessions = activeSessions(session);
+  const active = sessions.length>0;
+  if(sessions.length>1){ bindMultiLiveSession(sessions); return; }
+  const one = sessions[0];
+  liveTeamsRef = active ? db.ref(`pmac/eventGroups/${one.group}/sessions/${one.date}/teams`) : db.ref("pmac/teams");
+  liveScoresRef = active ? db.ref(`pmac/eventGroups/${one.group}/sessions/${one.date}/scores`) : db.ref("pmac/matches");
+  liveTeamsRef.on("value", snap => {
+    const val = snap.val();
+    currentTeams = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
+    render();
+  });
+  liveScoresRef.on("value", snap => {
+    currentScores = snap.val() || {};
+    render();
+  });
+}
+function bindMultiLiveSession(sessions){
+  const teamRefs=[], scoreRefs=[], teamBuckets={}, scoreBuckets={};
+  function combine(){
+    currentTeams=[]; currentScores={};
+    sessions.forEach(s=>{
+      const key=s.group+"|"+s.date;
+      (teamBuckets[key]||[]).forEach(t=>{ if(!currentTeams.find(x=>x.name===t.name)) currentTeams.push(t); });
+      Object.assign(currentScores, scoreBuckets[key]||{});
+    });
+    render();
+  }
+  sessions.forEach(s=>{
+    const key=s.group+"|"+s.date;
+    const tr=db.ref(`pmac/eventGroups/${s.group}/sessions/${s.date}/teams`), sr=db.ref(`pmac/eventGroups/${s.group}/sessions/${s.date}/scores`);
+    teamRefs.push(tr); scoreRefs.push(sr);
+    tr.on("value",snap=>{ const val=snap.val(); teamBuckets[key]=val?(Array.isArray(val)?val:Object.values(val)):[]; combine(); });
+    sr.on("value",snap=>{ scoreBuckets[key]=snap.val()||{}; combine(); });
+  });
+  liveTeamsRef={off:function(){teamRefs.forEach(r=>r.off());}};
+  liveScoresRef={off:function(){scoreRefs.forEach(r=>r.off());}};
+  const status=document.getElementById("fb-status"); if(status) status.textContent=`● ${sessions.length} Groups Active`;
+}
+db.ref("pmac/activeSession").on("value", snap => bindLiveSession(snap.val()));
 </script>
 </body>
 </html>

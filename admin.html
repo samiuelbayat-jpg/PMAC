@@ -138,7 +138,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .chat-nick-inp{background:#161a1f;border:1px solid rgba(255,255,255,0.1);color:#eef0f5;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;padding:5px 10px;border-radius:4px;width:120px;}
 .chat-text-inp{flex:1;background:#0f1115;border:1px solid rgba(255,255,255,0.12);color:#eef0f5;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;padding:8px 12px;border-radius:6px;resize:none;}
 .chat-send-btn{background:#e8b800;border:none;color:#000;font-weight:900;border-radius:6px;padding:8px 16px;cursor:pointer;}
-#nav-frame-wrap{display:none;margin-bottom:1.5rem;border:1px solid rgba(255,255,255,0.12);border-radius:8px;overflow:hidden;}
 .progress-text{font-family:'Share Tech Mono',monospace;font-size:11px;color:#00e5b0;margin-top:8px;}
 @media(max-width:600px){.team-grid{grid-template-columns:1fr;}.player-row{flex-wrap:wrap;}}
 
@@ -193,23 +192,21 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <div class="modal-bg" id="groq-modal"><div class="modal" style="width:540px;"><div class="modal-title">🤖 Groq Vision Score Reader (Batch)</div><div class="modal-sub">📸 Reads team names (ignores UIDs).</div><div class="modal-label">Groq API Key (get from console.groq.com)</div><input class="modal-input" type="password" id="groq-api-key" placeholder="gsk_..."><div class="modal-label">Screenshots (multiple allowed)</div><input type="file" id="groq-images" accept="image/jpeg,image/png" multiple style="margin-bottom:12px;"><div id="groq-progress" class="progress-text"></div><button class="btn btn-primary" id="analyze-groq-btn" onclick="analyzeBatchWithGroq()">📡 Extract Scores from All Images</button><div id="groq-result-area" style="margin-top:16px;font-size:12px;max-height:200px;overflow-y:auto;background:#161a1f;padding:8px;border-radius:4px;"></div><div class="modal-actions"><button class="btn" onclick="closeGroqModal()">Close</button></div></div></div>
 
 <div class="page" id="main-page" style="display:none;">
-  <div class="topbar"><div class="topbar-left"><img class="topbar-logo" src="data:image/jpeg;base64,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" alt=""><div><div class="topbar-title">PUBG Mobile Afghanistan</div><div class="topbar-sub">Admin — Player UID</div></div></div><div class="topbar-right"><span id="fb-status" class="fb-badge fb-connecting">● Connecting...</span><div class="badge-live"><div class="live-dot"></div>LIVE</div><button class="btn" onclick="window.open('https://samiuelbayat-jpg.github.io/PMAC/archive.html','_blank')">📁 View Archive</button><button class="btn btn-archive" onclick="openArchiveModal()">🗄️ Archive</button><button class="btn btn-danger" onclick="confirmReset()">⚠️ Full Reset</button><button class="btn btn-primary" onclick="saveAll()">💾 Save All</button><button class="btn" onclick="doSignOut()" style="background:rgba(255,68,68,0.12);border:1px solid rgba(255,68,68,0.4);color:#ff6b6b;margin-left:6px;">🚪 Sign Out</button></div></div>
+  <div class="topbar"><div class="topbar-left"><img class="topbar-logo" src="data:image/jpeg;base64,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" alt=""><div><div class="topbar-title">PUBG Mobile Afghanistan</div><div class="topbar-sub">Admin — Player UID</div></div></div><div class="topbar-right"><span id="fb-status" class="fb-badge fb-connecting">● Connecting...</span><div class="badge-live"><div class="live-dot"></div>LIVE</div><button class="btn" onclick="window.open('archive.html','_blank')">📁 View Archive</button><button class="btn btn-archive" onclick="openArchiveModal()">🗄️ Archive</button><button class="btn btn-danger" onclick="confirmReset()">⚠️ Full Reset</button><button class="btn btn-primary" onclick="saveAll()">💾 Save All</button><button class="btn" onclick="doSignOut()" style="background:rgba(255,68,68,0.12);border:1px solid rgba(255,68,68,0.4);color:#ff6b6b;margin-left:6px;">🚪 Sign Out</button></div></div>
 
-  <!-- Navigation Bar - absolute GitHub URLs -->
+  <!-- Admin shortcuts open standalone pages in a new browser tab/window. -->
   <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;">
-    <button class="btn" onclick="navTo('https://samiuelbayat-jpg.github.io/PMAC/scoreboard.html')">🏆 Scoreboard</button>
-    <button class="btn" onclick="navTo('https://samiuelbayat-jpg.github.io/PMAC/overlay.html')">🎥 OBS Overlay</button>
-    <button class="btn" onclick="navTo('https://samiuelbayat-jpg.github.io/PMAC/archive.html')">📦 Archive</button>
-    <button class="btn" onclick="window.open('https://samiuelbayat-jpg.github.io/PMAC/registration.html','_blank')">📝 PMAF Community</button>
-    <button class="btn" onclick="navTo('https://samiuelbayat-jpg.github.io/PMAC/lobby.html')">🏅 Top Teams Lobby</button>
-    <button class="btn" onclick="navTo('https://samiuelbayat-jpg.github.io/PMAC/gfx.html')">🖼️ GFX Board</button>
+    <button class="btn" onclick="openStandalone('registration.html')">📝 Public Community</button>
+    <button class="btn" onclick="openStandalone('promotions.html')">📢 Promotions</button>
+    <button class="btn" onclick="openStandalone('scoreboard.html')">🏆 Scoreboard</button>
+    <button class="btn" onclick="openStandalone('overlay.html')">🎥 OBS Overlay</button>
+    <button class="btn" onclick="openStandalone('archive.html')">📦 Archive</button>
+    <button class="btn" onclick="openStandalone('lobby.html')">🏅 Top Teams Lobby</button>
+    <button class="btn" onclick="openStandalone('scoreboard-gfx.html')">✨ GFX Board</button>
+    <button class="btn" onclick="openStandalone('screenshot-reader.html')">📸 Screenshot Reader</button>
     <button class="btn btn-groq" onclick="openGroqModal()">🤖 Groq Score Reader (Batch)</button>
-    <button class="btn" onclick="window.open('https://samiuelbayat-jpg.github.io/PMAC/promotions.html','_blank')">📢 Promotions</button>
-    <button class="btn" onclick="window.open('https://samiuelbayat-jpg.github.io/PMAC/scoreboard-gfx.html','_blank')">✨ GFX Board</button>
     <button class="btn" onclick="showSection('forum')" style="background:linear-gradient(135deg,rgba(232,184,0,0.18),rgba(232,184,0,0.08));border-color:rgba(232,184,0,0.4);color:#e8b800;">💬 Forum</button>
   </div>
-
-  <div id="nav-frame-wrap"><div style="display:flex;align-items:center;justify-content:space-between;background:#0f1115;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,0.1);"><div><button onclick="navBack()" style="background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#8a96a8;border-radius:4px;padding:4px 10px;">◀</button><button onclick="navForward()" style="background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#8a96a8;border-radius:4px;padding:4px 10px;margin-left:6px;">▶</button><span id="nav-current-lbl" style="margin-left:12px;font-family:'Share Tech Mono';font-size:10px;color:#e8b800;"></span></div><button onclick="closeNavFrame()" style="background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:#ff4444;border-radius:4px;padding:4px 12px;">✖ Close</button></div><iframe id="nav-frame" src="about:blank" style="width:100%;height:70vh;border:none;background:#0a0b0d;"></iframe></div>
 
   <div class="section-tabs"><button class="stab active" onclick="showSection('teams')">🏢 Manage Teams</button><button class="stab" onclick="showSection('scores')">🎯 Enter Scores</button><button class="stab" onclick="showSection('eventgroup')">🏆 Event Group</button><button class="stab" onclick="showSection('forum')">💬 Forum</button></div>
 
@@ -242,14 +239,56 @@ const db = firebase.database(), storage = firebase.storage(), auth = firebase.au
  
 let isSuperAdmin = false, currentMatch = 0, teams = [], scores = {};
 let groqApiKey = localStorage.getItem("groq_api_key") || "";
-const dbTeamsRef = db.ref("pmac/teams"), dbScoresRef = db.ref("pmac/matches");
+const dbTeamsRef = db.ref("pmac/teams"), dbScoresRef = db.ref("pmac/matches"), dbActiveSessionRef = db.ref("pmac/activeSession");
 
 function placementPts(r) { const rank = parseInt(r); if(rank===1) return 10; if(rank===2) return 6; if(rank===3) return 5; if(rank===4) return 4; if(rank===5) return 3; if(rank===6) return 2; if(rank===7||rank===8) return 1; return 0; }
 function sanitizeKey(n){ return n.replace(/[\.\#\$\/\[\]]/g, "_"); }
 function showToast(msg, ok){ const t=document.getElementById("toast"); t.textContent=msg; t.className="toast show "+(ok?"toast-ok":"toast-err"); setTimeout(()=>t.classList.remove("show"),2800); }
 
-function showMainPage(){ document.getElementById("main-page").style.display="block"; loadFirebaseData(); loadEventGroups(); }
-function loadFirebaseData(){ dbTeamsRef.on("value",(s)=>{ teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : []; teams = teams.map(t => { if (!t.playerUIDs) t.playerUIDs = []; return t; }); renderTeamsMgmt(); renderScoreGrid(); document.getElementById("fb-status").className="fb-badge fb-ok"; document.getElementById("fb-status").textContent="● Connected"; }); dbScoresRef.on("value",(s)=>{ scores = s.val() || {}; renderScoreGrid(); }); initForum(); }
+function showMainPage(){ document.getElementById("main-page").style.display="block"; loadEventGroups(); watchActiveSession(); initForum(); }
+function stopActiveRefs(){
+  (window._activeTeamRefs||[]).forEach(r=>r.off());
+  (window._activeScoreRefs||[]).forEach(r=>r.off());
+  if(window._activeTeamsRef) window._activeTeamsRef.off();
+  if(window._activeScoresRef) window._activeScoresRef.off();
+  window._activeTeamRefs=[]; window._activeScoreRefs=[];
+  window._activeTeamsRef=null; window._activeScoresRef=null;
+  window._teamSessionMap={};
+}
+function loadFirebaseData(){
+  stopActiveRefs();
+  dbTeamsRef.off();
+  dbScoresRef.off();
+  dbTeamsRef.on("value",(s)=>{ teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : []; teams = teams.map(t => { if (!t.playerUIDs) t.playerUIDs = []; return t; }); renderTeamsMgmt(); renderScoreGrid(); document.getElementById("fb-status").className="fb-badge fb-ok"; document.getElementById("fb-status").textContent="● Single Day Mode"; });
+  dbScoresRef.on("value",(s)=>{ scores = s.val() || {}; renderScoreGrid(); });
+}
+function egSessionsFromActive(active){
+  if(!active) return [];
+  if(Array.isArray(active.sessions)) return active.sessions.filter(s=>s&&s.group&&s.date).map(s=>({group:s.group,date:s.date}));
+  if(active.group&&active.date) return [{group:active.group,date:active.date}];
+  return [];
+}
+function egSessionKey(s){ return s.group+"|"+s.date; }
+function egActivePayload(list){ return list.length===1 ? {group:list[0].group,date:list[0].date,sessions:list,activatedAt:Date.now()} : {sessions:list,activatedAt:Date.now()}; }
+function egActiveLabel(){ const list=egSessionsFromActive(egActiveSession); return list.map(s=>`Group ${s.group} · ${s.date}`).join(" + "); }
+function watchActiveSession(){
+  dbActiveSessionRef.on("value", snap => {
+    const remote = snap.val();
+    const nextList = egSessionsFromActive(remote);
+    const currentKey = egSessionsFromActive(egActiveSession).map(egSessionKey).join(",");
+    const nextKey = nextList.map(egSessionKey).join(",");
+    egActiveSession = nextList.length ? egActivePayload(nextList) : null;
+    if(egActiveSession) localStorage.setItem('eg_active_session', JSON.stringify(egActiveSession));
+    else localStorage.removeItem('eg_active_session');
+    updateActiveBanner();
+    renderEventGroups();
+    if(nextList.length){
+      if(currentKey !== nextKey || !window._activeScoreRefs || !window._activeScoreRefs.length) applyActiveSessions(nextList, false);
+    } else {
+      loadFirebaseData();
+    }
+  });
+}
 function showSection(sec){ document.getElementById("section-teams").style.display = sec==="teams"?"block":"none"; document.getElementById("section-scores").style.display = sec==="scores"?"block":"none"; document.getElementById("section-eventgroup").style.display = sec==="eventgroup"?"block":"none"; document.getElementById("section-forum").style.display = sec==="forum"?"block":"none"; document.querySelectorAll(".stab").forEach((b,i)=>{ b.classList.toggle("active", (i===0&&sec==="teams")||(i===1&&sec==="scores")||(i===2&&sec==="eventgroup")||(i===3&&sec==="forum")); }); if(sec==="scores") renderScoreGrid(); if(sec==="eventgroup"){ renderEventGroups(); updateActiveBanner(); } if(sec==="forum") setTimeout(()=>{ const msgs=document.getElementById("chat-messages"); if(msgs) msgs.scrollTop=msgs.scrollHeight; },100); }
 function addTeam(){ const name=document.getElementById("new-team-name").value.trim().toUpperCase(); if(!name) return showToast("Enter team name",false); if(teams.find(t=>t.name===name)) return showToast("Team exists",false); const file=document.getElementById("new-team-logo").files[0]; if(file){ document.getElementById("uploading-badge").style.display="inline"; const reader=new FileReader(); reader.onload=e=>{ const img=new Image(); img.onload=()=>{ const c=document.createElement("canvas"); c.width=80; c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); const b64=c.toDataURL("image/jpeg",0.7); pushTeamToDb(name,b64); }; img.src=e.target.result; }; reader.readAsDataURL(file); } else pushTeamToDb(name,""); }
 function pushTeamToDb(name,logo){ const newTeam = { name, logo, playerUIDs: [] }; const newTeams = [...teams, newTeam]; _teamsRef().set(newTeams).then(()=>{ const safe=sanitizeKey(name); if(!scores[safe]){ scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); _scoresRef().set(scores); } showToast("Team added",true); document.getElementById("new-team-name").value=""; document.getElementById("new-team-logo").value=""; document.getElementById("logo-preview").style.display="none"; document.getElementById("uploading-badge").style.display="none"; }).catch(e=>showToast(e.message,false)); }
@@ -395,82 +434,138 @@ function egTodayStr(){
 }
 
 // ---- Active session controls ----
+function egDateForGroup(gid){ const dateEl = document.getElementById(`eg-date-${gid}`); return dateEl ? dateEl.value : egTodayStr(); }
 function egActivate(gid){
-  const dateEl = document.getElementById(`eg-date-${gid}`);
-  const date = dateEl ? dateEl.value : egTodayStr();
+  const date = egDateForGroup(gid);
   if(!date){ showToast("Pick a date first", false); return; }
-  egActiveSession = { group: gid, date };
+  const list = [{ group: gid, date }];
+  egActiveSession = egActivePayload(list);
   localStorage.setItem('eg_active_session', JSON.stringify(egActiveSession));
-  // Save to Firebase so OBS overlay can read it
-  db.ref("pmac/activeSession").set({ group: gid, date, activatedAt: Date.now() });
-  applyActiveSession(gid, date, true);
+  dbActiveSessionRef.set(egActiveSession);
+  applyActiveSessions(list, true);
   updateActiveBanner();
   renderEventGroups();
-  showToast(`Group ${gid} · ${date} is now ACTIVE — Scores & OBS linked!`, true);
+  showToast(`Active lobby: Group ${gid} · ${date}`, true);
 }
-
+function egAddToActive(gid){
+  const date = egDateForGroup(gid);
+  if(!date){ showToast("Pick a date first", false); return; }
+  const list = egSessionsFromActive(egActiveSession);
+  const item = { group: gid, date };
+  if(!list.find(s=>egSessionKey(s)===egSessionKey(item))) list.push(item);
+  egActiveSession = egActivePayload(list);
+  localStorage.setItem('eg_active_session', JSON.stringify(egActiveSession));
+  dbActiveSessionRef.set(egActiveSession);
+  applyActiveSessions(list, true);
+  updateActiveBanner();
+  renderEventGroups();
+  showToast(`Active lobby: ${egActiveLabel()}`, true);
+}
+function egRemoveFromActive(gid,date){
+  const list = egSessionsFromActive(egActiveSession).filter(s=>!(s.group===gid&&s.date===date));
+  if(!list.length){ egClearActive(); return; }
+  egActiveSession = egActivePayload(list);
+  localStorage.setItem('eg_active_session', JSON.stringify(egActiveSession));
+  dbActiveSessionRef.set(egActiveSession);
+  applyActiveSessions(list, true);
+  updateActiveBanner();
+  renderEventGroups();
+  showToast(`Active lobby: ${egActiveLabel()}`, true);
+}
 function egClearActive(){
   egActiveSession = null;
   localStorage.removeItem('eg_active_session');
-  db.ref("pmac/activeSession").remove();
-  // Restore default refs
-  dbTeamsRef.off();
-  dbScoresRef.off();
+  dbActiveSessionRef.remove();
   loadFirebaseData();
   updateActiveBanner();
   renderEventGroups();
   showToast("Session deactivated — restored main data", true);
 }
-
-function applyActiveSession(gid, date, doToast){
-  // Re-point the live Firebase listeners to the group+date path
-  const basePath = `pmac/eventGroups/${gid}/sessions/${date}`;
-  dbTeamsRef.off();
-  dbScoresRef.off();
-
-  const sessionTeamsRef = db.ref(`${basePath}/teams`);
-  const sessionScoresRef = db.ref(`${basePath}/scores`);
-
-  sessionTeamsRef.on("value", s => {
-    teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : [];
-    teams = teams.map(t => { if(!t.playerUIDs) t.playerUIDs=[]; return t; });
-    renderTeamsMgmt();
-    renderScoreGrid();
-    document.getElementById("fb-status").className="fb-badge fb-ok";
-    document.getElementById("fb-status").textContent=`● Group ${gid} · ${date}`;
+function applyActiveSession(gid, date, doToast){ applyActiveSessions([{group:gid,date}], doToast); }
+function applyActiveSessions(sessionList, doToast){
+  dbTeamsRef.off(); dbScoresRef.off(); stopActiveRefs();
+  const sessions = sessionList.filter(s=>s&&s.group&&s.date);
+  const teamBuckets = {}, scoreBuckets = {};
+  window._teamSessionMap = {};
+  window._activeTeamRefs = [];
+  window._activeScoreRefs = [];
+  sessions.forEach(s => {
+    const key = egSessionKey(s);
+    const basePath = `pmac/eventGroups/${s.group}/sessions/${s.date}`;
+    const teamRef = db.ref(`${basePath}/teams`);
+    const scoreRef = db.ref(`${basePath}/scores`);
+    window._activeTeamRefs.push(teamRef);
+    window._activeScoreRefs.push(scoreRef);
+    teamRef.on("value", snap => {
+      const val = snap.val();
+      const list = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
+      teamBuckets[key] = list.map(t => { if(!t.playerUIDs) t.playerUIDs=[]; return {...t,__egGroup:s.group,__egDate:s.date}; });
+      combineActiveBuckets(teamBuckets, scoreBuckets, sessions);
+    });
+    scoreRef.on("value", snap => {
+      scoreBuckets[key] = snap.val() || {};
+      combineActiveBuckets(teamBuckets, scoreBuckets, sessions);
+    });
   });
-  sessionScoresRef.on("value", s => {
-    scores = s.val() || {};
-    renderScoreGrid();
-  });
-
-  // Override the db refs so saveAll / addTeam / etc. write to correct path
-  window._activeTeamsRef = sessionTeamsRef;
-  window._activeScoresRef = sessionScoresRef;
+  window._activeTeamsRef = {
+    off:function(){ (window._activeTeamRefs||[]).forEach(r=>r.off()); },
+    set:function(){ showToast("Edit group teams inside the Event Group cards, not Manage Teams, while multiple groups are active.", false); return Promise.reject(new Error("Multiple groups active")); }
+  };
+  window._activeScoresRef = {
+    off:function(){ (window._activeScoreRefs||[]).forEach(r=>r.off()); },
+    set:function(nextScores){ return saveScoresToActiveSessions(nextScores, sessions); }
+  };
 }
-
+function combineActiveBuckets(teamBuckets, scoreBuckets, sessions){
+  const combinedTeams = [], combinedScores = {};
+  window._teamSessionMap = {};
+  sessions.forEach(s=>{
+    const key = egSessionKey(s);
+    (teamBuckets[key]||[]).forEach(t=>{
+      const safe = sanitizeKey(t.name);
+      if(!combinedTeams.find(x=>sanitizeKey(x.name)===safe)) combinedTeams.push(t);
+      window._teamSessionMap[safe] = s;
+    });
+    Object.assign(combinedScores, scoreBuckets[key]||{});
+  });
+  teams = combinedTeams;
+  scores = combinedScores;
+  renderTeamsMgmt(); renderScoreGrid();
+  document.getElementById("fb-status").className="fb-badge fb-ok";
+  document.getElementById("fb-status").textContent = sessions.length>1 ? `● ${sessions.length} Groups Active` : `● Group ${sessions[0].group} · ${sessions[0].date}`;
+}
+function saveScoresToActiveSessions(nextScores, sessions){
+  const updates = sessions.map(s=>{
+    const chunk = {};
+    Object.keys(nextScores||{}).forEach(safe=>{
+      const owner = window._teamSessionMap && window._teamSessionMap[safe];
+      if(owner && owner.group===s.group && owner.date===s.date) chunk[safe] = nextScores[safe];
+    });
+    return db.ref(`pmac/eventGroups/${s.group}/sessions/${s.date}/scores`).set(chunk);
+  });
+  return Promise.all(updates);
+}
 function updateActiveBanner(){
   const banner = document.getElementById("eg-active-banner");
   const text = document.getElementById("eg-active-text");
-  if(egActiveSession){
+  const list = egSessionsFromActive(egActiveSession);
+  if(list.length){
     banner.style.display = "flex";
-    text.textContent = `ACTIVE SESSION: Group ${egActiveSession.group}  ·  Date: ${egActiveSession.date}  —  Scoreboard, Scores & OBS Overlay are all linked to this session.`;
+    text.textContent = `ACTIVE LOBBY: ${egActiveLabel()} — Manage Teams is overridden for scoring, scoreboard, GFX and OBS.`;
   } else {
     banner.style.display = "none";
   }
 }
-
-// Patch dbTeamsRef / dbScoresRef usage to respect active session
 function _teamsRef(){ return window._activeTeamsRef || dbTeamsRef; }
 function _scoresRef(){ return window._activeScoresRef || dbScoresRef; }
-
 // ---- Render groups ----
 function renderEventGroups(){
   const wrap = document.getElementById("eg-wrap");
   if(!wrap) return;
   wrap.innerHTML = "";
   EG_GROUPS.forEach(g => {
-    const isActive = egActiveSession && egActiveSession.group === g.id;
+    const activeSessions = egSessionsFromActive(egActiveSession);
+    const isActive = activeSessions.some(s => s.group === g.id);
     const defaultDate = isActive ? egActiveSession.date : egTodayStr();
     // Get teams for currently selected date (use today as default for display)
     const sessions = (egData[g.id] && egData[g.id].sessions) || {};
@@ -478,7 +573,7 @@ function renderEventGroups(){
     // Build sessions list HTML
     const sessionsListHtml = sessionDates.length ? sessionDates.map(d => {
       const teamList = sessions[d].teams || [];
-      const isThisActive = egActiveSession && egActiveSession.group===g.id && egActiveSession.date===d;
+      const isThisActive = activeSessions.some(s => s.group===g.id && s.date===d);
       return `<div style="display:flex;align-items:center;gap:10px;padding:7px 18px;border-bottom:1px solid rgba(255,255,255,0.04);background:${isThisActive?'rgba(232,184,0,0.06)':'transparent'};">
         <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:${isThisActive?'#e8b800':'#606878'};">📅 ${d}</span>
         <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;">${teamList.length} team${teamList.length!==1?'s':''}</span>
@@ -513,8 +608,9 @@ function renderEventGroups(){
         <span class="eg-date-lbl">📅 Play Date</span>
         <input type="date" class="eg-date-inp" id="eg-date-${g.id}" value="${defaultDate}" onchange="egRefreshGroupDisplay('${g.id}')">
         <button class="eg-activate-btn${isActive?' active-now':''}" onclick="egActivate('${g.id}')">
-          ${isActive ? '✅ ACTIVE SESSION' : '▶ Activate — Link to Scoreboard & OBS'}
+          ${isActive ? '✅ Set Only This Group' : '▶ Activate This Group'}
         </button>
+        <button class="eg-activate-btn" onclick="egAddToActive('${g.id}')">➕ Add To Active Lobby</button>
       </div>
       <div class="eg-add-row">
         <div class="inp-wrap">
@@ -646,12 +742,7 @@ function sendChatMessage(){ const nick=document.getElementById("chat-nick").valu
 function clearAllChat(){ if(confirm("Clear all chat messages?")) forumRef.remove().then(()=>{ const container=document.getElementById("chat-messages"); container.innerHTML='<div class="chat-empty">Chat cleared.</div>'; }); }
 function escapeHtml(str){ return String(str).replace(/[&<>]/g,function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
 function previewLogo(input){ const file=input.files[0]; if(file){ const reader=new FileReader(); reader.onload=e=>{ document.getElementById("logo-preview").src=e.target.result; document.getElementById("logo-preview").style.display="block"; }; reader.readAsDataURL(file); } }
-// iframe navigation
-let navHistory=[], navIndex=-1;
-function navTo(url){ if(!url || url==="") return; navHistory=navHistory.slice(0,navIndex+1); navHistory.push(url); navIndex=navHistory.length-1; document.getElementById("nav-frame-wrap").style.display="block"; document.getElementById("nav-frame").src=url; const lbl=url.split('/').pop().replace('.html','').toUpperCase(); document.getElementById("nav-current-lbl").innerText=lbl; }
-function navBack(){ if(navIndex>0){ navIndex--; document.getElementById("nav-frame").src=navHistory[navIndex]; const lbl=navHistory[navIndex].split('/').pop().replace('.html','').toUpperCase(); document.getElementById("nav-current-lbl").innerText=lbl; } }
-function navForward(){ if(navIndex<navHistory.length-1){ navIndex++; document.getElementById("nav-frame").src=navHistory[navIndex]; const lbl=navHistory[navIndex].split('/').pop().replace('.html','').toUpperCase(); document.getElementById("nav-current-lbl").innerText=lbl; } }
-function closeNavFrame(){ document.getElementById("nav-frame-wrap").style.display="none"; document.getElementById("nav-frame").src="about:blank"; navHistory=[]; navIndex=-1; }
+function openStandalone(url){ if(!url || url==="") return; window.open(url, "_blank", "noopener"); }
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
     // Anyone who passes Firebase login is the admin — grant full rights

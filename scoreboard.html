@@ -281,16 +281,34 @@ function render(){
   });
 }
 
-db.ref("pmac/teams").on("value",snap=>{
-  document.getElementById("fb-status").textContent="\u25CF Live";
-  const val=snap.val();
-  currentTeams=val?(Array.isArray(val)?val:Object.values(val)):[];
-  render();
-});
-db.ref("pmac/matches").on("value",snap=>{
-  currentScores=snap.val()||{};
-  render();
-});
+let liveTeamsRef=null, liveScoresRef=null;
+function activeSessions(session){
+  if(!session) return [];
+  if(Array.isArray(session.sessions)) return session.sessions.filter(s=>s&&s.group&&s.date);
+  if(session.group&&session.date) return [{group:session.group,date:session.date}];
+  return [];
+}
+function bindLiveSession(session){
+  if(liveTeamsRef) liveTeamsRef.off();
+  if(liveScoresRef) liveScoresRef.off();
+  const sessions = activeSessions(session);
+  const active = sessions.length>0;
+  if(sessions.length>1){ bindMultiLiveSession(sessions); return; }
+  const one = sessions[0];
+  liveTeamsRef = active ? db.ref(`pmac/eventGroups/${one.group}/sessions/${one.date}/teams`) : db.ref("pmac/teams");
+  liveScoresRef = active ? db.ref(`pmac/eventGroups/${one.group}/sessions/${one.date}/scores`) : db.ref("pmac/matches");
+  document.getElementById("fb-status").textContent = active ? `● Group ${one.group} · ${one.date}` : "● Single Day";
+  liveTeamsRef.on("value",snap=>{
+    const val=snap.val();
+    currentTeams=val?(Array.isArray(val)?val:Object.values(val)):[];
+    render();
+  });
+  liveScoresRef.on("value",snap=>{
+    currentScores=snap.val()||{};
+    render();
+  });
+}
+db.ref("pmac/activeSession").on("value",snap=>bindLiveSession(snap.val()));
 </script>
 </body>
 </html>
