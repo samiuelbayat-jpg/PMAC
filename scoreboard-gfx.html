@@ -98,7 +98,7 @@ canvas{display:block;border-radius:4px;}
         <label class="range-row"><span class="cl">Panels</span><input type="range" id="inp-panel-alpha" min="20" max="90" value="55"><span class="range-val" id="val-panel-alpha">55%</span></label>
       </div>
     </div>
-    <button class="btn" id="refresh-btn" style="align-self:flex-end;">↺ Refresh</button>
+    <button class="btn" id="refresh-btn" style="align-self:flex-end;">↺ Refresh</button><button class="btn" id="clear-setup-btn" style="align-self:flex-end;">Clear Setup</button>
   </div>
   <div class="status" id="status">Connecting...</div>
   <div id="canvas-wrap"><canvas id="gfx" width="1920" height="1080"></canvas></div>
@@ -121,6 +121,49 @@ var teams = [], scores = {}, eventInfo = {};
 var teamsReady = false, scoresReady = false;
 var EVENT_LOGO = null;
 var BG_IMAGE = null;
+var EVENT_LOGO_DATA = "";
+var BG_IMAGE_DATA = "";
+var EVENT_LOGO_NAME = "";
+var BG_IMAGE_NAME = "";
+var GFX_SETUP_KEY = "pmac_gfx_generator_setup_v2";
+var gfxRestoringSetup = false;
+function gfxInputIds(){return ["inp-title","inp-title-size","inp-title-font","inp-sub","inp-design","inp-bg","inp-accent","inp-light","inp-secondary","inp-stage","inp-qualify","inp-group","inp-date","inp-time","inp-matches","inp-bg-bright","inp-bg-contrast","inp-bg-blur","inp-bg-tint","inp-panel-alpha"];}
+function saveGfxSetup(){
+  if(gfxRestoringSetup) return;
+  var fields={};
+  gfxInputIds().forEach(function(id){var el=document.getElementById(id); if(el) fields[id]=el.value;});
+  try{localStorage.setItem(GFX_SETUP_KEY,JSON.stringify({fields:fields,eventLogoData:EVENT_LOGO_DATA,eventLogoName:EVENT_LOGO_NAME,bgImageData:BG_IMAGE_DATA,bgImageName:BG_IMAGE_NAME}));}catch(e){console.warn("GFX setup could not be saved",e);}
+}
+function imageFromDataUrl(data,done){
+  if(!data){done(null);return;}
+  var img=new Image();
+  img.onload=function(){done(img);};
+  img.onerror=function(){done(null);};
+  img.src=data;
+}
+function restoreGfxSetup(){
+  var raw=null;
+  try{raw=localStorage.getItem(GFX_SETUP_KEY);}catch(e){}
+  if(!raw){updateRangeLabels();return;}
+  var saved=null;
+  try{saved=JSON.parse(raw);}catch(e){return;}
+  gfxRestoringSetup=true;
+  Object.keys(saved.fields||{}).forEach(function(id){var el=document.getElementById(id); if(el) el.value=saved.fields[id];});
+  EVENT_LOGO_DATA=saved.eventLogoData||""; EVENT_LOGO_NAME=saved.eventLogoName||"";
+  BG_IMAGE_DATA=saved.bgImageData||""; BG_IMAGE_NAME=saved.bgImageName||"";
+  if(EVENT_LOGO_DATA){document.getElementById("event-logo-name").textContent=EVENT_LOGO_NAME||"Saved logo";document.getElementById("event-logo-clear").style.display="inline-block";imageFromDataUrl(EVENT_LOGO_DATA,function(img){EVENT_LOGO=img;build();});}
+  if(BG_IMAGE_DATA){document.getElementById("bg-image-name").textContent=BG_IMAGE_NAME||"Saved background";document.getElementById("bg-image-clear").style.display="inline-block";imageFromDataUrl(BG_IMAGE_DATA,function(img){BG_IMAGE=img;build();});}
+  updateRangeLabels();
+  gfxRestoringSetup=false;
+}
+function clearGfxSetup(){
+  try{localStorage.removeItem(GFX_SETUP_KEY);}catch(e){}
+  EVENT_LOGO=null; BG_IMAGE=null; EVENT_LOGO_DATA=""; BG_IMAGE_DATA=""; EVENT_LOGO_NAME=""; BG_IMAGE_NAME="";
+  document.getElementById("inp-event-logo").value=""; document.getElementById("inp-bg-image").value="";
+  document.getElementById("event-logo-name").textContent="Using site logo"; document.getElementById("bg-image-name").textContent="Using color";
+  document.getElementById("event-logo-clear").style.display="none"; document.getElementById("bg-image-clear").style.display="none";
+  build(); toast("Saved GFX setup cleared",true);
+}
 var GFX_PRESETS = {
   battle:{label:"Battle Form",bg:"#120707",accent:"#ff1808",bright:48,contrast:128,blur:2,tint:76,panel:70,header:"battle",rows:"battle",pattern:"slashes",layout:"battle"},
   bluecompact:{label:"Blue Compact",bg:"#082a4d",accent:"#50d8ff",bright:58,contrast:118,blur:1,tint:66,panel:66,header:"blue",rows:"blue",pattern:"grid",layout:"bluecompact"},
@@ -192,6 +235,7 @@ function bindMultiLiveSession(sessions){
 db.ref("pmac/activeSession").on("value",function(s){ bindLiveSession(s.val()); });
 
 document.getElementById("refresh-btn").onclick = build;
+document.getElementById("clear-setup-btn").onclick = clearGfxSetup;
 document.getElementById("inp-title").oninput = build;
 document.getElementById("inp-title-size").onchange = build;
 document.getElementById("inp-title-font").onchange = build;
@@ -206,11 +250,14 @@ document.getElementById("inp-design").onchange = function(){ applyPreset(this.va
   document.getElementById("inp-"+id).oninput = function(){ updateRangeLabels(); build(); };
 });
 updateRangeLabels();
+restoreGfxSetup();
 document.getElementById("event-logo-btn").onclick = function(){
   document.getElementById("inp-event-logo").click();
 };
 document.getElementById("event-logo-clear").onclick = function(){
   EVENT_LOGO = null;
+  EVENT_LOGO_DATA = "";
+  EVENT_LOGO_NAME = "";
   document.getElementById("inp-event-logo").value = "";
   document.getElementById("event-logo-name").textContent = "Using site logo";
   document.getElementById("event-logo-clear").style.display = "none";
@@ -224,6 +271,8 @@ document.getElementById("inp-event-logo").onchange = function(){
     var img = new Image();
     img.onload = function(){
       EVENT_LOGO = img;
+      EVENT_LOGO_DATA = e.target.result;
+      EVENT_LOGO_NAME = file.name;
       document.getElementById("event-logo-name").textContent = file.name;
       document.getElementById("event-logo-clear").style.display = "inline-block";
       build();
@@ -239,6 +288,8 @@ document.getElementById("bg-image-btn").onclick = function(){
 };
 document.getElementById("bg-image-clear").onclick = function(){
   BG_IMAGE = null;
+  BG_IMAGE_DATA = "";
+  BG_IMAGE_NAME = "";
   document.getElementById("inp-bg-image").value = "";
   document.getElementById("bg-image-name").textContent = "Using color";
   document.getElementById("bg-image-clear").style.display = "none";
@@ -252,6 +303,8 @@ document.getElementById("inp-bg-image").onchange = function(){
     var img = new Image();
     img.onload = function(){
       BG_IMAGE = img;
+      BG_IMAGE_DATA = e.target.result;
+      BG_IMAGE_NAME = file.name;
       document.getElementById("bg-image-name").textContent = file.name;
       document.getElementById("bg-image-clear").style.display = "inline-block";
       build();
@@ -463,6 +516,7 @@ function drawBlueCompactCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBri
 }
 
 function build(){
+  saveGfxSetup();
   if(!teamsReady||!scoresReady) return;
   var st=getStandings();
   if(!st.length){document.getElementById("status").textContent="No teams.";return;}
