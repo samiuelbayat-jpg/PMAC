@@ -170,7 +170,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .eg-inp:focus{border-color:#e8b800;}
 .eg-inp-tag{width:80px;}
 .eg-inp-name{min-width:180px;flex:1;}
-.eg-logo-btn{background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#8a96a8;font-family:'Share Tech Mono',monospace;font-size:10px;padding:7px 12px;border-radius:4px;cursor:pointer;white-space:nowrap;}
+.eg-logo-btn{background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#8a96a8;font-family:'Share Tech Mono',monospace;font-size:10px;padding:7px 12px;border-radius:4px;cursor:pointer;white-space:nowrap;}.eg-logo-btn.saved{display:none;color:#00c97a;border-color:rgba(0,201,122,0.35);background:rgba(0,201,122,0.1);}
 .eg-logo-preview{width:30px;height:30px;border-radius:50%;object-fit:cover;border:1px solid rgba(232,184,0,0.3);display:none;vertical-align:middle;margin-left:4px;}
 .eg-teams-list{display:flex;flex-direction:column;}
 .eg-team-row{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid rgba(255,255,255,0.05);}
@@ -443,6 +443,7 @@ const EG_GROUPS = [
 let egData = {};
 // Active session: { group: 'A', date: '2025-05-09' } or null
 let egActiveSession = JSON.parse(localStorage.getItem('eg_active_session') || 'null');
+let egSelectedDates = JSON.parse(localStorage.getItem('eg_selected_dates') || '{}');
 
 const dbEgRef = db.ref("pmac/eventGroups");
 
@@ -454,7 +455,7 @@ function loadEventGroups(){
     renderEventGroups();
     updateActiveBanner();
     // If there's an active session, rebind the score/team refs
-    if(egActiveSession) applyActiveSession(egActiveSession.group, egActiveSession.date, false);
+    if(egActiveSession) applyActiveSessions(egSessionsFromActive(egActiveSession), false);
   });
 }
 
@@ -463,7 +464,8 @@ function egTodayStr(){
 }
 
 // ---- Active session controls ----
-function egDateForGroup(gid){ const dateEl = document.getElementById(`eg-date-${gid}`); return dateEl ? dateEl.value : egTodayStr(); }
+function egDateForGroup(gid){ const dateEl = document.getElementById(`eg-date-${gid}`); const v = dateEl ? dateEl.value : egSelectedDates[gid]; if(v){ egSelectedDates[gid]=v; localStorage.setItem('eg_selected_dates', JSON.stringify(egSelectedDates)); } return v || egTodayStr(); }
+function egSetSelectedDate(gid,date){ if(!date) return; egSelectedDates[gid]=date; localStorage.setItem('eg_selected_dates', JSON.stringify(egSelectedDates)); }
 function egActivate(gid){
   const date = egDateForGroup(gid);
   if(!date){ showToast("Pick a date first", false); return; }
@@ -594,11 +596,12 @@ function renderEventGroups(){
   wrap.innerHTML = "";
   EG_GROUPS.forEach(g => {
     const activeSessions = egSessionsFromActive(egActiveSession);
-    const isActive = activeSessions.some(s => s.group === g.id);
-    const defaultDate = isActive ? egActiveSession.date : egTodayStr();
-    // Get teams for currently selected date (use today as default for display)
+    const activeForGroup = activeSessions.find(s => s.group === g.id);
+    const isActive = !!activeForGroup;
     const sessions = (egData[g.id] && egData[g.id].sessions) || {};
     const sessionDates = Object.keys(sessions).sort().reverse();
+    const defaultDate = egSelectedDates[g.id] || (activeForGroup && activeForGroup.date) || sessionDates[0] || egTodayStr();
+    egSelectedDates[g.id] = defaultDate;
     // Build sessions list HTML
     const sessionsListHtml = sessionDates.length ? sessionDates.map(d => {
       const teamList = sessions[d].teams || [];
@@ -607,6 +610,9 @@ function renderEventGroups(){
         <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:${isThisActive?'#e8b800':'#606878'};">📅 ${d}</span>
         <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;">${teamList.length} team${teamList.length!==1?'s':''}</span>
         <span class="eg-push-btn" onclick="egLoadDateIntoForm('${g.id}','${d}')">📂 Open</span>
+        <span class="eg-push-btn" onclick="egActivateDate('${g.id}','${d}')">▶ Activate</span>
+        <span class="eg-push-btn" onclick="egAddDateToActive('${g.id}','${d}')">➕ Add Active</span>
+        <span class="eg-push-btn" onclick="egCopySessionToSelected('${g.id}','${d}')">↩ Restore</span>
         ${isThisActive?'<span style="font-family:\'Share Tech Mono\',monospace;font-size:9px;color:#e8b800;padding:2px 6px;border:1px solid rgba(232,184,0,0.3);border-radius:3px;">ACTIVE</span>':''}
       </div>`;
     }).join("") : `<div class="eg-empty">No sessions yet for this group.</div>`;
@@ -644,7 +650,7 @@ function renderEventGroups(){
       <div class="eg-add-row">
         <div class="inp-wrap">
           <div class="inp-lbl">Team Name</div>
-          <input class="eg-inp eg-inp-name" id="eg-name-${g.id}" placeholder="e.g. BLACK ZONE" list="eg-suggest-${g.id}">
+          <input class="eg-inp eg-inp-name" id="eg-name-${g.id}" placeholder="e.g. BLACK ZONE" list="eg-suggest-${g.id}" oninput="egSuggestSavedLogo('${g.id}')" onchange="egSuggestSavedLogo('${g.id}')">
           <datalist id="eg-suggest-${g.id}">${teams.map(t=>`<option value="${escapeHtml(t.name)}">`).join("")}</datalist>
         </div>
         <div class="inp-wrap">
@@ -654,7 +660,8 @@ function renderEventGroups(){
         <div>
           <div class="inp-lbl">Logo</div>
           <input type="file" id="eg-logo-file-${g.id}" accept="image/*" style="display:none" onchange="egPreviewLogo(this,'${g.id}')">
-          <button class="eg-logo-btn" onclick="document.getElementById('eg-logo-file-${g.id}').click()">📷 Logo</button>
+          <button class="eg-logo-btn" onclick="document.getElementById('eg-logo-file-${g.id}').click()">Upload Logo</button>
+          <button class="eg-logo-btn saved" id="eg-use-saved-logo-${g.id}" onclick="egUseSavedLogo('${g.id}')">Use Saved Logo</button>
           <img id="eg-logo-prev-${g.id}" class="eg-logo-preview">
         </div>
         <button class="btn btn-primary" style="align-self:flex-end;" onclick="egAddTeam('${g.id}')">+ Add Team</button>
@@ -672,22 +679,82 @@ function renderEventGroups(){
 }
 
 function egRefreshGroupDisplay(gid){
+  const dateEl = document.getElementById(`eg-date-${gid}`);
+  if(dateEl) egSetSelectedDate(gid,dateEl.value);
   renderEventGroups();
 }
 
 function egLoadDateIntoForm(gid, date){
+  egSetSelectedDate(gid,date);
   const dateEl = document.getElementById(`eg-date-${gid}`);
   if(dateEl) dateEl.value = date;
   renderEventGroups();
+  showToast(`Opened Group ${gid} · ${date}`, true);
+}
+function egActivateDate(gid,date){ egSetSelectedDate(gid,date); egActivate(gid); }
+function egAddDateToActive(gid,date){ egSetSelectedDate(gid,date); egAddToActive(gid); }
+function egCopySessionToSelected(gid, fromDate){
+  const toDate = egDateForGroup(gid);
+  if(!fromDate || !toDate) return;
+  if(fromDate===toDate){ showToast("That session is already open", false); return; }
+  if(!confirm(`Restore Group ${gid} teams and scores from ${fromDate} into ${toDate}? This replaces the teams/scores on ${toDate}.`)) return;
+  const fromPath = `pmac/eventGroups/${gid}/sessions/${fromDate}`;
+  const toPath = `pmac/eventGroups/${gid}/sessions/${toDate}`;
+  db.ref(fromPath).once("value").then(snap=>{
+    const data = snap.val() || {};
+    const teamsCopy = data.teams ? (Array.isArray(data.teams) ? data.teams : Object.values(data.teams)) : [];
+    const scoresCopy = data.scores || {};
+    if(!teamsCopy.length){ showToast("No teams found in that session", false); return; }
+    return db.ref(toPath).set({teams:teamsCopy,scores:scoresCopy,restoredFrom:fromDate,restoredAt:Date.now()}).then(()=>{
+      egSetSelectedDate(gid,toDate);
+      showToast(`Restored Group ${gid} from ${fromDate} to ${toDate}`, true);
+      renderEventGroups();
+    });
+  }).catch(e=>showToast(e.message,false));
 }
 
+function egFindSavedTeamByName(name){
+  const clean = (name||"").trim().toUpperCase();
+  if(!clean) return null;
+  return teams.find(t=>String(t.name||"").toUpperCase()===clean) || null;
+}
+function egSetLogoPreview(gid, logo, showButton){
+  const prev = document.getElementById(`eg-logo-prev-${gid}`);
+  const btn = document.getElementById(`eg-use-saved-logo-${gid}`);
+  if(prev){
+    if(logo){ prev.src=logo; prev.style.display="inline-block"; prev.dataset.savedLogo=logo; }
+    else { prev.src=""; prev.style.display="none"; prev.dataset.savedLogo=""; }
+  }
+  if(btn) btn.style.display = (showButton && logo) ? "inline-block" : "none";
+}
+function egSuggestSavedLogo(gid){
+  const nameEl = document.getElementById(`eg-name-${gid}`);
+  const fileEl = document.getElementById(`eg-logo-file-${gid}`);
+  if(fileEl && fileEl.files && fileEl.files.length) return;
+  const saved = egFindSavedTeamByName(nameEl ? nameEl.value : "");
+  egSetLogoPreview(gid, saved && saved.logo ? saved.logo : "", !!(saved && saved.logo));
+}
+function egUseSavedLogo(gid){
+  const nameEl = document.getElementById(`eg-name-${gid}`);
+  const saved = egFindSavedTeamByName(nameEl ? nameEl.value : "");
+  if(saved && saved.logo){
+    const fileEl = document.getElementById(`eg-logo-file-${gid}`);
+    if(fileEl) fileEl.value="";
+    egSetLogoPreview(gid, saved.logo, true);
+    showToast("Saved team logo selected", true);
+  } else {
+    showToast("No saved logo found for this team", false);
+  }
+}
 function egPreviewLogo(input, gid){
   const file = input.files[0];
   if(!file) return;
   const reader = new FileReader();
   reader.onload = e => {
     const prev = document.getElementById(`eg-logo-prev-${gid}`);
-    if(prev){ prev.src=e.target.result; prev.style.display="inline-block"; }
+    if(prev){ prev.src=e.target.result; prev.style.display="inline-block"; prev.dataset.savedLogo=""; }
+    const btn = document.getElementById(`eg-use-saved-logo-${gid}`);
+    if(btn) btn.style.display="none";
   };
   reader.readAsDataURL(file);
 }
@@ -724,7 +791,7 @@ function egAddTeam(gid){
         if(tagEl)  tagEl.value="";
         if(fileEl) fileEl.value="";
         const prev = document.getElementById(`eg-logo-prev-${gid}`);
-        if(prev){ prev.src=""; prev.style.display="none"; }
+        if(prev){ prev.src=""; prev.style.display="none"; prev.dataset.savedLogo=""; }
       }).catch(e=>showToast(e.message,false));
     };
 
