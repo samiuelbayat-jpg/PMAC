@@ -285,7 +285,27 @@ function render(){
   });
 }
 
-let liveTeamsRef=null, liveScoresRef=null;
+let liveTeamsRef=null, liveScoresRef=null, fallbackTeamsRef=null, fallbackScoresRef=null;
+function stopFallbackRefs(){
+  if(fallbackTeamsRef) fallbackTeamsRef.off();
+  if(fallbackScoresRef) fallbackScoresRef.off();
+  fallbackTeamsRef=null;
+  fallbackScoresRef=null;
+}
+function loadMainFallback(){
+  if(fallbackTeamsRef || fallbackScoresRef) return;
+  fallbackTeamsRef=db.ref(eventPath("teams"));
+  fallbackScoresRef=db.ref(eventPath("matches"));
+  fallbackTeamsRef.on("value",snap=>{
+    const val=snap.val();
+    currentTeams=val?(Array.isArray(val)?val:Object.values(val)):[];
+    render();
+  });
+  fallbackScoresRef.on("value",snap=>{
+    currentScores=snap.val()||{};
+    render();
+  });
+}
 function activeSessions(session){
   if(!session) return [];
   if(Array.isArray(session.sessions)) return session.sessions.filter(s=>s&&s.group&&s.date);
@@ -295,6 +315,7 @@ function activeSessions(session){
 function bindLiveSession(session){
   if(liveTeamsRef) liveTeamsRef.off();
   if(liveScoresRef) liveScoresRef.off();
+  stopFallbackRefs();
   const sessions = activeSessions(session);
   const active = sessions.length>0;
   if(sessions.length>1){ bindMultiLiveSession(sessions); return; }
@@ -304,13 +325,55 @@ function bindLiveSession(session){
   document.getElementById("fb-status").textContent = active ? `● Group ${one.group} · ${one.date}` : "● Single Day";
   liveTeamsRef.on("value",snap=>{
     const val=snap.val();
-    currentTeams=val?(Array.isArray(val)?val:Object.values(val)):[];
+    const list=val?(Array.isArray(val)?val:Object.values(val)):[];
+    if(active && list.length===0){
+      loadMainFallback();
+      return;
+    }
+    stopFallbackRefs();
+    currentTeams=list;
     render();
   });
   liveScoresRef.on("value",snap=>{
     currentScores=snap.val()||{};
     render();
   });
+}
+function bindMultiLiveSession(sessions){
+  const teamRefs=[], scoreRefs=[], teamBuckets={}, scoreBuckets={};
+  function combine(){
+    currentTeams=[];
+    currentScores={};
+    sessions.forEach(s=>{
+      const key=s.group+"|"+s.date;
+      (teamBuckets[key]||[]).forEach(t=>{
+        if(!currentTeams.find(x=>x.name===t.name)) currentTeams.push(t);
+      });
+      Object.assign(currentScores, scoreBuckets[key]||{});
+    });
+    if(currentTeams.length===0) loadMainFallback();
+    else stopFallbackRefs();
+    render();
+  }
+  sessions.forEach(s=>{
+    const key=s.group+"|"+s.date;
+    const tr=db.ref(`${eventPath("eventGroups")}/${s.group}/sessions/${s.date}/teams`);
+    const sr=db.ref(`${eventPath("eventGroups")}/${s.group}/sessions/${s.date}/scores`);
+    teamRefs.push(tr);
+    scoreRefs.push(sr);
+    tr.on("value",snap=>{
+      const val=snap.val();
+      teamBuckets[key]=val?(Array.isArray(val)?val:Object.values(val)):[];
+      combine();
+    });
+    sr.on("value",snap=>{
+      scoreBuckets[key]=snap.val()||{};
+      combine();
+    });
+  });
+  liveTeamsRef={off:function(){teamRefs.forEach(r=>r.off());}};
+  liveScoresRef={off:function(){scoreRefs.forEach(r=>r.off());}};
+  document.getElementById("fb-status").textContent = `● ${sessions.length} Groups Active`;
 }
 db.ref(eventPath("activeSession")).on("value",snap=>bindLiveSession(snap.val()));
 </script>
