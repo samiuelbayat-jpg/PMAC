@@ -8,8 +8,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{width:1920px;height:1080px;overflow:hidden;background:transparent;font-family:'Barlow Condensed',sans-serif;--ov-accent:#e8b800;--ov-bg:rgba(10,11,13,0.96);--ov-text:#eef0f5;}
-.panel{position:absolute;right:0;bottom:0;width:260px;background:var(--ov-bg);border-left:3px solid var(--ov-accent);border-top:3px solid var(--ov-accent);display:flex;flex-direction:column;}
+html,body{width:1920px;height:1080px;min-width:1920px;min-height:1080px;overflow:hidden;background:transparent;font-family:'Barlow Condensed',sans-serif;--ov-accent:#e8b800;--ov-bg:rgba(10,11,13,0.96);--ov-text:#eef0f5;}
+.panel{position:fixed;right:0;bottom:0;width:260px;background:var(--ov-bg);border-left:3px solid var(--ov-accent);border-top:3px solid var(--ov-accent);display:flex;flex-direction:column;}
 .panel-top{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(10,11,13,0.70);border-bottom:2px solid var(--ov-accent);flex-shrink:0;}
 .panel-logo{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--ov-accent);flex-shrink:0;}
 .panel-title-text{font-weight:900;font-size:14px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ov-accent);flex:1;}
@@ -24,13 +24,13 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:transparent;font
 .teams-list{display:flex;flex-direction:column;}
 .team-row{align-items:center;padding:3px 6px;border-bottom:1px solid rgba(255,255,255,0.04);border-left:3px solid transparent;}
 .team-row.gold{background:color-mix(in srgb,var(--ov-accent) 16%,transparent);border-left-color:var(--ov-accent);}.team-row.silver{background:rgba(168,184,200,0.06);border-left-color:#a8b8c8;}.team-row.bronze{background:rgba(212,131,90,0.06);border-left-color:#d4835a;}
-.pos{font-weight:900;font-size:12px;text-align:center;}.pos.g{color:var(--ov-accent);}.pos.s{color:#a8b8c8;}.pos.b{color:#d4835a;}.pos.x{color:#8a96a8;font-size:10px;}
+.pos{font-weight:900;font-size:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:0.9;min-height:22px;}.pos.g{color:var(--ov-accent);}.pos.s{color:#a8b8c8;}.pos.b{color:#d4835a;}.pos.x{color:#8a96a8;font-size:10px;}.rank-move{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:900;margin-top:2px;letter-spacing:0;}.rank-move.up{color:#00ff88;text-shadow:0 0 5px rgba(0,255,136,.65);}.rank-move.down{color:#ff9d00;text-shadow:0 0 5px rgba(255,157,0,.55);}.rank-move.bigdown{color:#ff3535;text-shadow:0 0 5px rgba(255,53,53,.70);}.rank-move.kill{color:#e8d02b;text-shadow:0 0 5px rgba(232,208,43,.65);}
 .t-logo{width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid var(--ov-accent);background:rgba(255,255,255,0.05);}
 .t-info{min-width:0;width:100%;}.t-name{font-weight:900;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;color:var(--ov-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.t-played{font-family:'Share Tech Mono',monospace;font-size:7px;color:#8a96a8;margin-top:1px;}
 .t-kills,.t-place{font-weight:700;color:#8a96a8;text-align:center;}.t-kills{font-size:13px;}.t-place{font-size:12px;}.t-pts{font-weight:900;font-size:15px;color:var(--ov-accent);text-align:center;}.score-block{display:none;}
-.ticker{position:absolute;bottom:0;left:0;right:260px;height:44px;background:var(--ov-bg);border-top:3px solid var(--ov-accent);display:flex;align-items:center;overflow:hidden;}.ticker-label{background:var(--ov-accent);color:#000;font-weight:900;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;padding:0 14px;height:100%;display:flex;align-items:center;flex-shrink:0;}.ticker-track{flex:1;overflow:hidden;height:100%;}.ticker-inner{display:flex;align-items:center;height:100%;white-space:nowrap;animation:tick 50s linear infinite;}@keyframes tick{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+.ticker{position:fixed;bottom:0;left:0;right:260px;height:44px;background:var(--ov-bg);border-top:3px solid var(--ov-accent);display:flex;align-items:center;overflow:hidden;}.ticker-label{background:var(--ov-accent);color:#000;font-weight:900;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;padding:0 14px;height:100%;display:flex;align-items:center;flex-shrink:0;}.ticker-track{flex:1;overflow:hidden;height:100%;}.ticker-inner{display:flex;align-items:center;height:100%;white-space:nowrap;animation:tick 50s linear infinite;}@keyframes tick{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
 .ti{display:inline-flex;align-items:center;gap:8px;margin-right:40px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:0.08em;}.ti-pos{color:var(--ov-accent);font-weight:700;min-width:24px;}.ti-name{color:var(--ov-text);font-weight:700;}.ti-sep{color:#444;}.ti-val{color:#8a96a8;}.ti-pts{color:var(--ov-accent);font-weight:700;}.no-data{padding:20px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#8a96a8;text-align:center;}
-.streamer-card{position:absolute;left:32px;top:32px;display:none;align-items:center;gap:12px;background:var(--ov-bg);border:2px solid var(--ov-accent);padding:10px 16px;min-width:260px;}.streamer-logo{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--ov-accent);background:rgba(255,255,255,0.08);}.streamer-name{font-weight:900;font-size:24px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ov-text);}
+.streamer-card{position:fixed;left:32px;top:32px;display:none;align-items:center;gap:12px;background:var(--ov-bg);border:2px solid var(--ov-accent);padding:10px 16px;min-width:260px;}.streamer-logo{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--ov-accent);background:rgba(255,255,255,0.08);}.streamer-name{font-weight:900;font-size:24px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ov-text);}
 body.design-neon .panel,body.design-neon .ticker{box-shadow:0 0 24px var(--ov-accent);}body.design-neon .team-row{margin:2px 6px;border:1px solid color-mix(in srgb,var(--ov-accent) 22%,transparent);border-radius:4px;background:linear-gradient(90deg,color-mix(in srgb,var(--ov-accent) 12%,transparent),rgba(255,255,255,0.02));}body.design-neon .t-pts{color:#ffffff;background:rgba(0,0,0,0.52);border:1px solid color-mix(in srgb,var(--ov-accent) 45%,rgba(255,255,255,0.18));border-radius:3px;padding:1px 3px;text-shadow:0 1px 3px #000;}body.design-neon .col-h.acc{color:#ffffff;text-shadow:0 0 5px var(--ov-accent);}
 body.design-minimal .panel{border-width:2px;background:rgba(0,0,0,0.66);}body.design-minimal .panel-logo,.design-minimal .live-pill{display:none!important;}body.design-minimal .team-row{padding:2px 6px;border-left:0;background:transparent;}body.design-minimal .ticker{height:38px;border-width:2px;}
 body.design-broadcast .panel{border-left-width:8px;}body.design-broadcast .panel-top{background:linear-gradient(90deg,var(--ov-accent),rgba(10,11,13,0.85));}body.design-broadcast .panel-title-text{font-size:18px;color:#050505;}body.design-broadcast .team-row{margin:2px 5px;padding-top:5px;padding-bottom:5px;border:1px solid rgba(255,255,255,0.10);border-left:5px solid var(--ov-accent);}body.design-broadcast .ticker{height:52px;}
@@ -100,6 +100,10 @@ const FB_CONFIG = {
 };
 if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
 const db = firebase.database();
+const EVENT_ID = new URLSearchParams(location.search).get("event") || "default";
+function eventBasePath(){ return EVENT_ID==="default" ? "pmac" : "pmac/events/"+EVENT_ID; }
+function eventPath(child){ return eventBasePath()+"/"+child; }
+localStorage.setItem("pmac_active_event", EVENT_ID);
 
 // Official PUBG Points System - Placement Points
 function placementPts(rank) {
@@ -118,6 +122,8 @@ function placementPts(rank) {
 
 let currentTeams = [];
 let currentScores = {};
+let lastStandingSnapshot = null;
+let renderCount = 0;
 let overlaySettings = { design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"" };
 function hexToRgba(hex,a){
   const v=(hex||"#0a0b0d").replace("#","");
@@ -135,7 +141,7 @@ function applyOverlaySettings(){
   if(s.streamerLogo){ panelLogo.src=s.streamerLogo; panelLogo.style.display="block"; }
   panelTitle.textContent=(s.design==="redlive"?(s.streamerName||"LIVE STANDING"):(s.streamerName||"Standings"));
 }
-db.ref("pmac/overlaySettings").on("value",snap=>{ overlaySettings=Object.assign({},overlaySettings,snap.val()||{}); applyOverlaySettings(); });
+db.ref(eventPath("overlaySettings")).on("value",snap=>{ overlaySettings=Object.assign({},overlaySettings,snap.val()||{}); applyOverlaySettings(); });
 function sanitizeKey(n){ return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_"); }
 
 // Calculate team totals across all matches
@@ -169,6 +175,31 @@ function calculateTeamStats(team, matches) {
 // 1. Total Points (higher is better)
 // 2. Placement Points (higher is better) - when total points are equal
 // 3. Kills (higher is better) - when both total and placement points are equal
+function teamKey(team){ return sanitizeKey(team.name || ""); }
+function buildStandingSnapshot(sortedTeams){
+  const snap = {};
+  sortedTeams.forEach((team,index)=>{ snap[teamKey(team)] = { rank:index+1, kills:team.kills||0, total:team.total||0 }; });
+  return snap;
+}
+function movementFor(team, position){
+  if(!lastStandingSnapshot) return { html:"", rowClass:"" };
+  const prev = lastStandingSnapshot[teamKey(team)];
+  if(!prev) return { html:"", rowClass:"" };
+  const rankDelta = prev.rank - position;
+  const killDelta = (team.kills||0) - (prev.kills||0);
+  const totalDelta = (team.total||0) - (prev.total||0);
+  if(rankDelta > 0){
+    return { html:'<span class="rank-move up">+'+rankDelta+'</span>', rowClass:"rank-up" };
+  }
+  if(rankDelta < 0){
+    const drop = Math.abs(rankDelta);
+    return { html:'<span class="rank-move '+(drop>=6?'bigdown':'down')+'">-'+drop+'</span>', rowClass:drop>=6?"rank-bigdown":"rank-down" };
+  }
+  if(killDelta > 0 || totalDelta > 0){
+    return { html:'<span class="rank-move kill">+'+(killDelta>0?killDelta:totalDelta)+'</span>', rowClass:"rank-kill" };
+  }
+  return { html:"", rowClass:"" };
+}
 function sortTeams(teams) {
   return teams.sort((a, b) => {
     // Primary: Total Points (higher is better)
@@ -209,8 +240,9 @@ function render() {
     const rankClass = position === 1 ? "gold" : position === 2 ? "silver" : position === 3 ? "bronze" : "";
     const posColorClass = position === 1 ? "g" : position === 2 ? "s" : position === 3 ? "b" : "x";
     
+    const move = movementFor(team, position);
     const row = document.createElement("div");
-    row.className = "team-row " + rankClass;
+    row.className = "team-row " + rankClass + " " + move.rowClass;
     
     // Logo handling
     const logoHtml = team.logo ? 
@@ -218,7 +250,7 @@ function render() {
       '<div class="t-logo" style="background:#2d3748; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--ov-accent);">?</div>';
     
     row.innerHTML =
-      '<div class="pos ' + posColorClass + '">' + position + '</div>' +
+      '<div class="pos ' + posColorClass + '">' + position + move.html + '</div>' +
       logoHtml +
       '<div class="t-info"><div class="t-name">' + escapeHtml(team.name) + '</div><div class="t-played">' + team.played + 'M</div></div>' +
       '<div class="t-kills">' + team.kills + '</div>' +
@@ -228,6 +260,8 @@ function render() {
   });
   
   // Render ticker
+  lastStandingSnapshot = buildStandingSnapshot(teams);
+  renderCount++;
   document.getElementById("ticker-inner").innerHTML = teams.map((team, index) =>
     '<div class="ti"><span class="ti-pos">#' + (index + 1) + '</span><span class="ti-name">' + escapeHtml(team.name) + '</span><span class="ti-sep">|</span><span class="ti-val">' + team.kills + ' kills</span><span class="ti-sep">·</span><span class="ti-val">' + team.placePoints + ' place</span><span class="ti-sep">·</span><span class="ti-pts">' + team.total + ' pts</span></div>'
   ).join("");
@@ -243,7 +277,14 @@ function escapeHtml(str) {
   });
 }
 
-let liveTeamsRef=null, liveScoresRef=null;
+let liveTeamsRef=null, liveScoresRef=null, fallbackTeamsRef=null, fallbackScoresRef=null;
+function stopFallbackRefs(){ if(fallbackTeamsRef) fallbackTeamsRef.off(); if(fallbackScoresRef) fallbackScoresRef.off(); fallbackTeamsRef=null; fallbackScoresRef=null; }
+function loadMainFallback(){
+  if(fallbackTeamsRef || fallbackScoresRef) return;
+  fallbackTeamsRef=db.ref(eventPath("teams")); fallbackScoresRef=db.ref(eventPath("matches"));
+  fallbackTeamsRef.on("value", snap=>{ const val=snap.val(); currentTeams=val?(Array.isArray(val)?val:Object.values(val)):[]; render(); });
+  fallbackScoresRef.on("value", snap=>{ currentScores=snap.val()||{}; render(); });
+}
 function activeSessions(session){
   if(!session) return [];
   if(Array.isArray(session.sessions)) return session.sessions.filter(s=>s&&s.group&&s.date);
@@ -253,15 +294,19 @@ function activeSessions(session){
 function bindLiveSession(session){
   if(liveTeamsRef) liveTeamsRef.off();
   if(liveScoresRef) liveScoresRef.off();
+  stopFallbackRefs();
   const sessions = activeSessions(session);
   const active = sessions.length>0;
   if(sessions.length>1){ bindMultiLiveSession(sessions); return; }
   const one = sessions[0];
-  liveTeamsRef = active ? db.ref(`pmac/eventGroups/${one.group}/sessions/${one.date}/teams`) : db.ref("pmac/teams");
-  liveScoresRef = active ? db.ref(`pmac/eventGroups/${one.group}/sessions/${one.date}/scores`) : db.ref("pmac/matches");
+  liveTeamsRef = active ? db.ref(`${eventPath("eventGroups")}/${one.group}/sessions/${one.date}/teams`) : db.ref(eventPath("teams"));
+  liveScoresRef = active ? db.ref(`${eventPath("eventGroups")}/${one.group}/sessions/${one.date}/scores`) : db.ref(eventPath("matches"));
   liveTeamsRef.on("value", snap => {
     const val = snap.val();
-    currentTeams = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
+    const list = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
+    if(active && list.length===0){ loadMainFallback(); return; }
+    stopFallbackRefs();
+    currentTeams = list;
     render();
   });
   liveScoresRef.on("value", snap => {
@@ -282,7 +327,7 @@ function bindMultiLiveSession(sessions){
   }
   sessions.forEach(s=>{
     const key=s.group+"|"+s.date;
-    const tr=db.ref(`pmac/eventGroups/${s.group}/sessions/${s.date}/teams`), sr=db.ref(`pmac/eventGroups/${s.group}/sessions/${s.date}/scores`);
+    const tr=db.ref(`${eventPath("eventGroups")}/${s.group}/sessions/${s.date}/teams`), sr=db.ref(`${eventPath("eventGroups")}/${s.group}/sessions/${s.date}/scores`);
     teamRefs.push(tr); scoreRefs.push(sr);
     tr.on("value",snap=>{ const val=snap.val(); teamBuckets[key]=val?(Array.isArray(val)?val:Object.values(val)):[]; combine(); });
     sr.on("value",snap=>{ scoreBuckets[key]=snap.val()||{}; combine(); });
@@ -291,7 +336,7 @@ function bindMultiLiveSession(sessions){
   liveScoresRef={off:function(){scoreRefs.forEach(r=>r.off());}};
   const status=document.getElementById("fb-status"); if(status) status.textContent=`● ${sessions.length} Groups Active`;
 }
-db.ref("pmac/activeSession").on("value", snap => bindLiveSession(snap.val()));
+db.ref(eventPath("activeSession")).on("value", snap => bindLiveSession(snap.val()));
 </script>
 </body>
 </html>

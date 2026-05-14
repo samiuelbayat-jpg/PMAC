@@ -140,6 +140,10 @@ firebase.initializeApp({
   appId: "1:279105805502:web:8def653069d0b3d73bd2ef"
 });
 const db = firebase.database();
+const EVENT_ID = new URLSearchParams(location.search).get("event") || "default";
+function eventBasePath(){ return EVENT_ID==="default" ? "pmac" : "pmac/events/"+EVENT_ID; }
+function eventPath(child){ return eventBasePath()+"/"+child; }
+localStorage.setItem("pmac_active_event", EVENT_ID);
 
 var rowCount = 0;
 
@@ -217,7 +221,7 @@ function processTeams(t) {
   return teams;
 }
 
-db.ref("pmac/archive").on("value", function(snap) {
+db.ref(eventPath("archive")).on("value", function(snap) {
   var archive = snap.val();
   var content = document.getElementById("content");
 

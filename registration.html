@@ -742,6 +742,10 @@ firebase.initializeApp({
   appId:"1:279105805502:web:8def653069d0b3d73bd2ef"
 });
 var db = firebase.database();
+var EVENT_ID = new URLSearchParams(location.search).get("event") || "default";
+function eventBasePath(){ return EVENT_ID==="default" ? "pmac" : "pmac/events/"+EVENT_ID; }
+function eventPath(child){ return eventBasePath()+"/"+child; }
+localStorage.setItem("pmac_active_event", EVENT_ID);
 var storage = firebase.storage();
 
 // STATE - read session FIRST before anything else
@@ -771,13 +775,13 @@ var streamersList = [];
 applyAdminUI();
 
 // Firebase listeners
-db.ref("pmac/event").on("value", function(s) {
+db.ref(eventPath("event")).on("value", function(s) {
   eventInfo = s.val() || {};
   evStatus = eventInfo.regStatus || "open";
   evMax = parseInt(eventInfo.maxTeams) || 24;
   updateCard();
 });
-db.ref("pmac/registrations").on("value", function(s) {
+db.ref(eventPath("registrations")).on("value", function(s) {
   regs = s.val() || {};
   updateCard();
   renderTeams();
@@ -900,14 +904,14 @@ document.getElementById("save-ev-btn").onclick = function() {
   function save(burl) {
     var d={name:document.getElementById("ei-name").value.trim()||"PMAC Tournament",date:document.getElementById("ei-date").value,maxTeams:parseInt(document.getElementById("ei-max").value)||24,prize:document.getElementById("ei-prize").value.trim(),platform:document.getElementById("ei-platform").value.trim(),description:document.getElementById("ei-desc").value.trim(),regStatus:editEvStatus};
     if(burl) d.banner=burl; else if(eventInfo.banner) d.banner=eventInfo.banner;
-    db.ref("pmac/event").set(d).then(function(){document.getElementById("edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
+    db.ref(eventPath("event")).set(d).then(function(){document.getElementById("edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
   }
   if(bf){storage.ref("pmac/event-banner/"+Date.now()+"_"+bf.name.replace(/ /g,"_")).put(bf).then(function(s){return s.ref.getDownloadURL();}).then(function(u){save(u);}).catch(function(){save(null);});}else{save(null);}
 };
 
 document.getElementById("toggle-reg-btn").onclick = function() {
   var ns=evStatus==="open"?"closed":"open";
-  db.ref("pmac/event/regStatus").set(ns).then(function(){toast("Registration "+ns,true);}).catch(function(e){toast("Error: "+e.message,false);});
+  db.ref(eventPath("event/regStatus")).set(ns).then(function(){toast("Registration "+ns,true);}).catch(function(e){toast("Error: "+e.message,false);});
 };
 
 document.getElementById("save-reset-btn").onclick = function() {
@@ -915,7 +919,7 @@ document.getElementById("save-reset-btn").onclick = function() {
   if(!count){toast("No registrations to save",false);return;}
   if(!confirm("Save "+count+" teams to archive and clear all registrations?")) return;
   db.ref("pmac/event_archive/ev_"+Date.now()).set({name:eventInfo.name||"PMAC",date:eventInfo.date||"",savedAt:Date.now(),teams:regs}).then(function(){
-    return Promise.all([db.ref("pmac/registrations").remove(),db.ref("pmac/event/regStatus").set("closed")]);
+    return Promise.all([db.ref(eventPath("registrations")).remove(),db.ref(eventPath("event/regStatus")).set("closed")]);
   }).then(function(){toast("Saved and reset!",true);}).catch(function(e){toast("Error: "+e.message,false);});
 };
 
@@ -1074,7 +1078,7 @@ function showTab(tab){
 
 // GFX
 function loadGFX(){
-  db.ref("pmac/gfx").once("value").then(function(s){
+  db.ref(eventPath("gfx")).once("value").then(function(s){
     var v=s.val();gfxList=v?(Array.isArray(v)?v:Object.values(v)):[];gfxList.sort(function(a,b){return b.uploadedAt-a.uploadedAt;});gfxLoaded=true;gfxIdx=0;renderGFX();
   });
 }
@@ -1092,7 +1096,7 @@ var lobbyCurrentPage = 0;
 var LOBBY_PER_PAGE = 20;
 
 function loadLobby(){
-  db.ref("pmac/lobby_teams").once("value").then(function(s){
+  db.ref(eventPath("lobby_teams")).once("value").then(function(s){
     var v=s.val();var raw=v?(Array.isArray(v)?v:Object.values(v)):[];
     lobbyAllTeams=raw.sort(function(a,b){return (a.addedAt||0)-(b.addedAt||0);});
     lobbyLoaded=true;
@@ -1148,7 +1152,7 @@ function importToLobby() {
   var label = approved.length > 0 ? approved.length + " approved" : regKeys.length + " all";
   if (!confirm("Import " + src.length + " " + (approved.length > 0 ? "approved" : "") + " teams to Best Teams Lobby?")) return;
 
-  db.ref("pmac/lobby_teams").once("value").then(function(snap) {
+  db.ref(eventPath("lobby_teams")).once("value").then(function(snap) {
     var existing = snap.val() || {};
     var existingNames = Object.values(existing).map(function(t){ return t.name; });
     var toAdd = src.filter(function(k){ return regs[k].name && existingNames.indexOf(regs[k].name) === -1; });
@@ -1258,9 +1262,9 @@ function pubSortBy(mode){
 function loadScoreboard(){
   scoresLoaded=true;
   var pubTeams=[],pubScores={};
-  db.ref("pmac/teams").once("value").then(function(s){
+  db.ref(eventPath("teams")).once("value").then(function(s){
     var v=s.val()||[];pubTeamsGlobal=Array.isArray(v)?v:Object.values(v);
-    db.ref("pmac/matches").once("value").then(function(s2){
+    db.ref(eventPath("matches")).once("value").then(function(s2){
       pubScoresGlobal=s2.val()||{};
       renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
     });
@@ -1326,7 +1330,7 @@ function renderPubScoreboard(pubTeams,pubScores){
 
 function loadPubArchive(){
   archiveLoaded = true;
-  db.ref("pmac/archive").once("value").then(function(s){
+  db.ref(eventPath("archive")).once("value").then(function(s){
     var v = s.val() || {};
     var list = Object.values(v).sort(function(a,b){return (b.archivedAt||0)-(a.archivedAt||0);});
     pubArchiveList = list;
@@ -1568,7 +1572,7 @@ document.getElementById("s-add-btn").onclick = function(){
 
 function loadStreamers(){
   streamersLoaded = true;
-  db.ref("pmac/streamers").once("value").then(function(s){
+  db.ref(eventPath("streamers")).once("value").then(function(s){
     var v = s.val() || {};
     streamersList = Object.entries(v).map(function(e){ return Object.assign({key:e[0]},e[1]); });
     if(!streamersList.length){
@@ -1684,13 +1688,13 @@ var scrimFilterMode = "all";
 var scrimLogoFile = null;
 var scrimEditStatus = "open";
 
-db.ref("pmac/scrim/event").on("value", function(s) {
+db.ref(eventPath("scrim/event")).on("value", function(s) {
   scrimInfo = s.val() || {};
   scrimStatus = scrimInfo.regStatus || "open";
   scrimMax = parseInt(scrimInfo.maxTeams) || 24;
   scrimUpdateCard();
 });
-db.ref("pmac/scrim/registrations").on("value", function(s) {
+db.ref(eventPath("scrim/registrations")).on("value", function(s) {
   scrimRegs = s.val() || {};
   scrimUpdateCard();
   scrimRenderTeams();
@@ -1768,14 +1772,14 @@ document.getElementById("scrim-save-ev-btn").onclick = function() {
   function save(burl) {
     var d={name:document.getElementById("scrim-ei-name").value.trim()||"PMAF Daily Scrim",date:document.getElementById("scrim-ei-date").value,maxTeams:parseInt(document.getElementById("scrim-ei-max").value)||24,prize:document.getElementById("scrim-ei-prize").value.trim(),platform:document.getElementById("scrim-ei-platform").value.trim(),description:document.getElementById("scrim-ei-desc").value.trim(),regStatus:scrimEditStatus};
     if(burl) d.banner=burl; else if(scrimInfo.banner) d.banner=scrimInfo.banner;
-    db.ref("pmac/scrim/event").set(d).then(function(){document.getElementById("scrim-edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
+    db.ref(eventPath("scrim/event")).set(d).then(function(){document.getElementById("scrim-edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
   }
   if(bf){storage.ref("pmac/scrim-banner/"+Date.now()+"_"+bf.name.replace(/ /g,"_")).put(bf).then(function(s){return s.ref.getDownloadURL();}).then(function(u){save(u);}).catch(function(){save(null);});}else{save(null);}
 };
 
 document.getElementById("scrim-toggle-reg-btn").onclick = function() {
   var ns=scrimStatus==="open"?"closed":"open";
-  db.ref("pmac/scrim/event/regStatus").set(ns).then(function(){toast("Registration "+ns,true);}).catch(function(e){toast("Error: "+e.message,false);});
+  db.ref(eventPath("scrim/event/regStatus")).set(ns).then(function(){toast("Registration "+ns,true);}).catch(function(e){toast("Error: "+e.message,false);});
 };
 
 document.getElementById("scrim-save-reset-btn").onclick = function() {
@@ -1783,7 +1787,7 @@ document.getElementById("scrim-save-reset-btn").onclick = function() {
   if(!count){toast("No registrations to save",false);return;}
   if(!confirm("Save "+count+" teams to archive and clear all registrations?")) return;
   db.ref("pmac/scrim/archive/ev_"+Date.now()).set({name:scrimInfo.name||"PMAF Daily Scrim",date:scrimInfo.date||"",savedAt:Date.now(),teams:scrimRegs}).then(function(){
-    return Promise.all([db.ref("pmac/scrim/registrations").remove(),db.ref("pmac/scrim/event/regStatus").set("closed")]);
+    return Promise.all([db.ref(eventPath("scrim/registrations")).remove(),db.ref(eventPath("scrim/event/regStatus")).set("closed")]);
   }).then(function(){toast("Saved and reset!",true);}).catch(function(e){toast("Error: "+e.message,false);});
 };
 

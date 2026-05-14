@@ -159,6 +159,10 @@ const FB_CONFIG = {
 };
 if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
 const db = firebase.database();
+const EVENT_ID = new URLSearchParams(location.search).get("event") || "default";
+function eventBasePath(){ return EVENT_ID==="default" ? "pmac" : "pmac/events/"+EVENT_ID; }
+function eventPath(child){ return eventBasePath()+"/"+child; }
+localStorage.setItem("pmac_active_event", EVENT_ID);
 
 
 function placementPts(rank) {
@@ -295,8 +299,8 @@ function bindLiveSession(session){
   const active = sessions.length>0;
   if(sessions.length>1){ bindMultiLiveSession(sessions); return; }
   const one = sessions[0];
-  liveTeamsRef = active ? db.ref(`pmac/eventGroups/${one.group}/sessions/${one.date}/teams`) : db.ref("pmac/teams");
-  liveScoresRef = active ? db.ref(`pmac/eventGroups/${one.group}/sessions/${one.date}/scores`) : db.ref("pmac/matches");
+  liveTeamsRef = active ? db.ref(`${eventPath("eventGroups")}/${one.group}/sessions/${one.date}/teams`) : db.ref(eventPath("teams"));
+  liveScoresRef = active ? db.ref(`${eventPath("eventGroups")}/${one.group}/sessions/${one.date}/scores`) : db.ref(eventPath("matches"));
   document.getElementById("fb-status").textContent = active ? `● Group ${one.group} · ${one.date}` : "● Single Day";
   liveTeamsRef.on("value",snap=>{
     const val=snap.val();
@@ -308,7 +312,7 @@ function bindLiveSession(session){
     render();
   });
 }
-db.ref("pmac/activeSession").on("value",snap=>bindLiveSession(snap.val()));
+db.ref(eventPath("activeSession")).on("value",snap=>bindLiveSession(snap.val()));
 </script>
 </body>
 </html>

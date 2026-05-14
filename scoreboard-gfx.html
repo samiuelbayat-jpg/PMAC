@@ -116,6 +116,10 @@ firebase.initializeApp({
   appId:"1:279105805502:web:8def653069d0b3d73bd2ef"
 });
 var db = firebase.database();
+var EVENT_ID = new URLSearchParams(location.search).get("event") || "default";
+function eventBasePath(){ return EVENT_ID==="default" ? "pmac" : "pmac/events/"+EVENT_ID; }
+function eventPath(child){ return eventBasePath()+"/"+child; }
+localStorage.setItem("pmac_active_event", EVENT_ID);
 var RANK_PTS = [10,6,5,4,3,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 var teams = [], scores = {}, eventInfo = {};
 var teamsReady = false, scoresReady = false;
@@ -183,7 +187,7 @@ var GFX_PRESETS = {
 var PMAC_LOGO = new Image();
 PMAC_LOGO.src = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAA8ADwDASIAAhEBAxEB/8QAGwAAAgIDAQAAAAAAAAAAAAAAAwYCBAABBQf/xAAxEAACAQMCBAQFAgcAAAAAAAABAgMABBEFIRITMUEGUYGhFCIycZFh0RVCgrHB0uH/xAAaAQACAwEBAAAAAAAAAAAAAAABAgADBQQG/8QAJBEAAgMAAgECBwAAAAAAAAAAAQIAAxESITEE8CJRYXGB0fH/2gAMAwEAAhEDEQA/AEgVICtCiwwyTyLHEjO7bBQMk0YJCmDQPDc2okTTAx24743b7VK20y20wh7/AIZbrAKQH6Ez0Ln3x1NEvdXmMmEmn4B9JyV/CqQB9vc0jNkuqpaw9RzjitNLsifkggiXLMdgBVmORJYkkiYOjgMrDoQe9eX3uualfWwtJ7h3iB3QgEnfIyeppt0QanP4dtIbZorJAm0zDmO4yTkL0HrUyIejGQitbVWsorqGJvjLv4mRmzkRhAo8gB/mqtzrVrbzGNnyR1xQJyKWA8zzvTdMuNRnEUCZ82PRfvTBq9rH4c0lIrfmfF3R4TOu3CBgnB7Z296bLCxgsYFigQKg6+ZpQ8Sy3GpTi3nEURtZHXKZIbpuc+lEsB5jLWzHFnILTanCZZw00ith3d8EnGB27ACgmFol5YQrk5O+aK1m7YV5EymPmKnftgj9MdaDDayTSSKX5So3DjcjP5qvkD3s661ZMUp2dkGkPNV0AwuAuOprvaV4iudGEVtdWji1VT8hGH4ic5BPbfpXHsLd1kS4jdA8ch4QyZBI/wC1hin1J3uriUcbnB28tvSjyAP0lRSxwOvPf7jbqevtNBGtsrRiWNXPF1AIziuASSck5NGnZZlMwXgYEKyg5HTbGd/5SMGqxcA/tSE7Mx6brLCmdiejk7Uia6Y/4hfGYZjEzZHqKesjvSbrmkzrJxySmcXDu8nAqoE3BG7Hp+1Ow2aNVgrJJ+U5VvdCYyyKhwg7jrsxoqMvGqqv1jjz5jI3/t+KqXKQ6fIqmAsssecCfPfGTj1qsbq3MilLQDf6Q53G+3v7VWa98CdC+sIA3v8AvsToxDkxojNws+cAnHETk49xQpo2+EmSNSSXLKAPNgaG/LSZY5LPMq9VjmyVPlt0Oe1W/hZ+JhGJeYSBwiVJMHYbjOdqnEg7ILwy8SOgM6+2Q9xyRavyedkyLx81gT0bGCNvOqBNHuXVOOCMswD/ADOwAzjIGAOg3P5qsTUM7aVCL738x11PWY7MFIyHl9hStc3ElzKZJWLMfPtQmYsck5JrVEnZ5SyxnMLzhlDNDBMEwBzYwdh0GetSJEmGtZY4DnJHBGjD+rG/3G/6HrVNiSd62KnIibvpvQgV/GdJhlaK2GLbd+8v+ud/U7/agkDyFZWjQ3ZpIi1rizRNRzWE1A0REZp//9k=";
 
-db.ref("pmac/event").once("value").then(function(s){
+db.ref(eventPath("event")).once("value").then(function(s){
   eventInfo = s.val()||{};
   if(eventInfo.name) document.getElementById("inp-title").value = eventInfo.name;
 });
@@ -201,8 +205,8 @@ function bindLiveSession(session){
   var sessions=activeSessions(session), active=sessions.length>0;
   if(sessions.length>1){ bindMultiLiveSession(sessions); return; }
   var one=sessions[0];
-  liveTeamsRef = active ? db.ref("pmac/eventGroups/"+one.group+"/sessions/"+one.date+"/teams") : db.ref("pmac/teams");
-  liveScoresRef = active ? db.ref("pmac/eventGroups/"+one.group+"/sessions/"+one.date+"/scores") : db.ref("pmac/matches");
+  liveTeamsRef = active ? db.ref(eventPath("eventGroups")+"/"+one.group+"/sessions/"+one.date+"/teams") : db.ref(eventPath("teams"));
+  liveScoresRef = active ? db.ref(eventPath("eventGroups")+"/"+one.group+"/sessions/"+one.date+"/scores") : db.ref(eventPath("matches"));
   liveTeamsRef.on("value",function(s){
     var v=s.val()||[]; teams=Array.isArray(v)?v:Object.values(v);
     teamsReady=true; if(scoresReady) build();
@@ -224,7 +228,7 @@ function bindMultiLiveSession(sessions){
   }
   sessions.forEach(function(s){
     var key=s.group+"|"+s.date;
-    var tr=db.ref("pmac/eventGroups/"+s.group+"/sessions/"+s.date+"/teams"),sr=db.ref("pmac/eventGroups/"+s.group+"/sessions/"+s.date+"/scores");
+    var tr=db.ref(eventPath("eventGroups")+"/"+s.group+"/sessions/"+s.date+"/teams"),sr=db.ref(eventPath("eventGroups")+"/"+s.group+"/sessions/"+s.date+"/scores");
     teamRefs.push(tr);scoreRefs.push(sr);
     tr.on("value",function(snap){var v=snap.val()||[];teamBuckets[key]=Array.isArray(v)?v:Object.values(v);combine();});
     sr.on("value",function(snap){scoreBuckets[key]=snap.val()||{};combine();});
@@ -232,7 +236,7 @@ function bindMultiLiveSession(sessions){
   liveTeamsRef={off:function(){teamRefs.forEach(function(r){r.off();});}};
   liveScoresRef={off:function(){scoreRefs.forEach(function(r){r.off();});}};
 }
-db.ref("pmac/activeSession").on("value",function(s){ bindLiveSession(s.val()); });
+db.ref(eventPath("activeSession")).on("value",function(s){ bindLiveSession(s.val()); });
 
 document.getElementById("refresh-btn").onclick = build;
 document.getElementById("clear-setup-btn").onclick = clearGfxSetup;
