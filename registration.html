@@ -159,6 +159,10 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .gfx-thumb.on{border-color:#e8b800;}
 .gfx-thumb img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;}
 .gfx-thumb-l{font-family:'Share Tech Mono',monospace;font-size:8px;color:#606878;padding:3px 4px;background:#0f1115;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gfx-admin-upload{display:none;background:#0f1115;border:1px solid rgba(232,184,0,0.22);border-radius:10px;padding:1rem;margin-bottom:1rem;}
+.gfx-upload-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;}
+.gfx-upload-status{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;min-height:14px;margin-top:8px;}
+.gfx-upload-preview{height:42px;aspect-ratio:16/9;object-fit:cover;border-radius:4px;border:1px solid rgba(232,184,0,0.25);display:none;}
 
 /* LOBBY */
 .lobby-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;}
@@ -585,6 +589,23 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 
 <!-- GFX SECTION -->
 <div class="section" id="sec-gfx">
+  <div class="gfx-admin-upload" id="gfx-admin-upload">
+    <div class="lobby-add-title" style="margin-bottom:.75rem;">Upload GFX Result</div>
+    <div class="gfx-upload-row">
+      <div class="lf" style="min-width:180px;flex:1;">
+        <div class="ll">Label</div>
+        <input class="li" id="gfx-upload-label" placeholder="e.g. Group A Overall Rankings">
+      </div>
+      <div class="lf">
+        <div class="ll">Image</div>
+        <input type="file" id="gfx-upload-file" accept="image/*" style="display:none" onchange="previewGfxUpload(this)">
+        <button class="btn" type="button" onclick="document.getElementById('gfx-upload-file').click()">Upload GFX</button>
+      </div>
+      <img class="gfx-upload-preview" id="gfx-upload-preview" alt="">
+      <button class="btn btn-gold" type="button" id="gfx-save-btn" onclick="saveGfxUpload()">Save GFX</button>
+    </div>
+    <div class="gfx-upload-status" id="gfx-upload-status"></div>
+  </div>
   <div class="gfx-viewer">
     <div class="gfx-img-area" id="gfx-img-area"><div class="empty">Loading...</div></div>
     <div class="gfx-bar">
@@ -764,6 +785,7 @@ var editEvStatus = "open";
 var gfxList = [];
 var gfxIdx = 0;
 var gfxLoaded = false;
+var gfxUploadData = "";
 var lobbyLoaded = false;
 var scoresLoaded = false;
 var archiveLoaded = false;
@@ -797,6 +819,8 @@ function applyAdminUI() {
     document.getElementById("hdr-login-row").style.display = "flex";
     document.getElementById("hdr-admin-row").style.display = "none";
   }
+  var gfxUpload=document.getElementById("gfx-admin-upload");
+  if(gfxUpload) gfxUpload.style.display = isAdmin ? "block" : "none";
 }
 
 // LOGIN
@@ -1089,6 +1113,59 @@ function renderGFX(){
   thumbs.innerHTML="";gfxList.forEach(function(g,i){var div=document.createElement("div");div.className="gfx-thumb"+(i===gfxIdx?" on":"");div.innerHTML='<img src="'+g.url+'" alt="'+(g.label||"")+'"><div class="gfx-thumb-l">'+(g.label||"Image "+(i+1))+"</div>";div.onclick=(function(idx){return function(){gfxIdx=idx;renderGFX();};})(i);thumbs.appendChild(div);});
 }
 function gfxNav(dir){gfxIdx=Math.max(0,Math.min(gfxList.length-1,gfxIdx+dir));renderGFX();}
+function previewGfxUpload(input){
+  var file=input.files&&input.files[0];
+  var prev=document.getElementById("gfx-upload-preview");
+  var status=document.getElementById("gfx-upload-status");
+  gfxUploadData="";
+  if(!file){if(prev) prev.style.display="none";return;}
+  if(status) status.textContent="Preparing image...";
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var maxW=1920, maxH=1080;
+      var scale=Math.min(1,maxW/img.width,maxH/img.height);
+      var w=Math.round(img.width*scale), h=Math.round(img.height*scale);
+      var c=document.createElement("canvas");
+      c.width=w; c.height=h;
+      var ctx=c.getContext("2d");
+      ctx.fillStyle="#0a0b0d";
+      ctx.fillRect(0,0,w,h);
+      ctx.drawImage(img,0,0,w,h);
+      gfxUploadData=c.toDataURL("image/jpeg",0.86);
+      if(prev){prev.src=gfxUploadData;prev.style.display="block";}
+      if(status) status.textContent=file.name+" ready";
+    };
+    img.onerror=function(){if(status) status.textContent="Could not read this image";};
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function saveGfxUpload(){
+  if(!isAdmin){toast("Admin login required",false);return;}
+  if(!gfxUploadData){toast("Choose a GFX image first",false);return;}
+  var btn=document.getElementById("gfx-save-btn");
+  var status=document.getElementById("gfx-upload-status");
+  var label=(document.getElementById("gfx-upload-label").value||"GFX Result").trim();
+  if(btn){btn.disabled=true;btn.textContent="Saving...";}
+  if(status) status.textContent="Saving GFX result...";
+  db.ref(eventPath("gfx")).push({label:label,url:gfxUploadData,uploadedAt:Date.now()}).then(function(){
+    gfxUploadData="";
+    document.getElementById("gfx-upload-label").value="";
+    document.getElementById("gfx-upload-file").value="";
+    document.getElementById("gfx-upload-preview").style.display="none";
+    gfxLoaded=false;
+    loadGFX();
+    toast("GFX uploaded",true);
+    if(status) status.textContent="Uploaded successfully";
+  }).catch(function(e){
+    toast("Upload failed: "+e.message,false);
+    if(status) status.textContent="Upload failed: "+e.message;
+  }).finally(function(){
+    if(btn){btn.disabled=false;btn.textContent="Save GFX";}
+  });
+}
 
 // LOBBY
 var lobbyAllTeams = [];
