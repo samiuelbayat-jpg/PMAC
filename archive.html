@@ -314,7 +314,7 @@ function toggleCard(key) { document.getElementById("tc_"+key).classList.toggle("
 
 function deleteTournament(key) {
   if (!confirm("Delete this tournament from the archive?")) return;
-  db.ref("pmac/archive/"+key).remove()
+  db.ref(eventPath("archive")+"/"+key).remove()
     .then(function(){showToast("Deleted",true);})
     .catch(function(e){showToast("Error: "+e.message,false);});
 }

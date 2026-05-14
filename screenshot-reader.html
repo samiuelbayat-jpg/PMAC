@@ -144,13 +144,17 @@ firebase.initializeApp({
   appId:"1:279105805502:web:8def653069d0b3d73bd2ef"
 });
 var db = firebase.database();
+var EVENT_ID = new URLSearchParams(location.search).get("event") || "default";
+function eventBasePath(){ return EVENT_ID==="default" ? "pmac" : "pmac/events/"+EVENT_ID; }
+function eventPath(child){ return eventBasePath()+"/"+child; }
+localStorage.setItem("pmac_active_event", EVENT_ID);
 var currentMatch = 0;
 var teams = [];
 var files = [];
 var allResults = [];
 var RANK_PTS = [10,6,5,4,3,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
-db.ref("pmac/teams").once("value").then(function(s) {
+db.ref(eventPath("teams")).once("value").then(function(s) {
   var v = s.val() || [];
   teams = Array.isArray(v) ? v : Object.values(v);
 });
@@ -383,7 +387,7 @@ function saveScores() {
     var teamName = document.getElementById("sel-" + idx).value;
     if (!teamName) { skipped++; return; }
     var kills = parseInt(document.getElementById("kills-" + idx).value) || 0;
-    updates["pmac/matches/" + sanitize(teamName) + "/" + currentMatch] = { rank: r.rank, kills: kills };
+    updates[eventPath("matches") + "/" + sanitize(teamName) + "/" + currentMatch] = { rank: r.rank, kills: kills };
     saved++;
   });
   if (!saved) { toast("No teams selected — use dropdowns to match teams", false); return; }

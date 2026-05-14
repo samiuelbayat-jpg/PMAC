@@ -180,6 +180,10 @@ firebase.initializeApp({
   appId:"1:279105805502:web:8def653069d0b3d73bd2ef"
 });
 var db = firebase.database();
+var EVENT_ID = new URLSearchParams(location.search).get("event") || "default";
+function eventBasePath(){ return EVENT_ID==="default" ? "pmac" : "pmac/events/"+EVENT_ID; }
+function eventPath(child){ return eventBasePath()+"/"+child; }
+localStorage.setItem("pmac_active_event", EVENT_ID);
 var storage = firebase.storage();
 var isAdmin = false;
 var posterFile = null;
@@ -190,7 +194,7 @@ var _s = sessionStorage.getItem("promo_adm");
 if (_s === "1" || _s === "super") { isAdmin = true; applyAdminUI(); }
 
 // Load events
-db.ref("pmac/promotions").on("value", function(s) {
+db.ref(eventPath("promotions")).on("value", function(s) {
   events = s.val() || {};
   renderEvents();
 });
@@ -285,7 +289,7 @@ document.getElementById("save-event-btn").onclick = function() {
       poster: posterUrl,
       createdAt: Date.now()
     };
-    db.ref("pmac/promotions/ev_" + Date.now()).set(ev).then(function() {
+    db.ref(eventPath("promotions")+"/ev_" + Date.now()).set(ev).then(function() {
       btn.textContent = "💾 Save Event"; btn.disabled = false;
       status.style.display = "none";
       document.getElementById("add-form").style.display = "none";
@@ -419,7 +423,7 @@ function sendNotifications(evName, teams, key) {
 // DELETE EVENT
 function deleteEvent(key) {
   if (!confirm("Delete this event?")) return;
-  db.ref("pmac/promotions/" + key).remove().then(function() {
+  db.ref(eventPath("promotions")+"/"+key).remove().then(function() {
     toast("Event deleted", true);
   }).catch(function(e){ toast("Error: " + e.message, false); });
 }

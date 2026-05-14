@@ -135,7 +135,7 @@ function doImport() {
     if (!confirm("Import " + fresh.length + " team(s)?" + (skip ? " " + skip + " duplicate(s) skipped." : ""))) return;
     var ps = fresh.map(function(r) {
       var key = "t" + Date.now() + Math.floor(Math.random() * 9999);
-      return db.ref("pmac/lobby_teams/" + key).set({
+      return db.ref(eventPath("lobby_teams")+"/"+key).set({
         name: r.name||"", tag: r.tag||"", manager: r.manager||"",
         phone: "", logo: r.logo||"", code: genCode(), addedAt: Date.now()
       });
@@ -173,7 +173,7 @@ function doAdd() {
   document.getElementById("code-box").style.display="none";
   var code = genCode();
   function doSave(url) {
-    db.ref("pmac/lobby_teams/t"+Date.now()).set({
+    db.ref(eventPath("lobby_teams")+"/t"+Date.now()).set({
       name:name,tag:tag,manager:mgr,phone:phone,logo:url,code:code,addedAt:Date.now()
     }).then(function() {
       document.getElementById("a-name").value="";
@@ -233,7 +233,7 @@ function verifyEditCode() {
 function saveEdit() {
   var key=document.getElementById("edit-key").value;
   var t=teams[key]; if(!t) return;
-  db.ref("pmac/lobby_teams/"+key).update({
+  db.ref(eventPath("lobby_teams")+"/"+key).update({
     name:document.getElementById("e-name").value.trim().toUpperCase()||t.name,
     tag:document.getElementById("e-tag").value.trim().toUpperCase()||t.tag,
     manager:document.getElementById("e-mgr").value.trim()||t.manager,
@@ -265,14 +265,14 @@ function confirmRemove() {
   if (!t) { closeRemove(); return; }
   if (isAdmin) {
     if (!confirm("Remove "+t.name+"?")) return;
-    db.ref("pmac/lobby_teams/"+key).remove().then(function(){closeRemove();toast("Removed",true);})
+    db.ref(eventPath("lobby_teams")+"/"+key).remove().then(function(){closeRemove();toast("Removed",true);})
       .catch(function(e){toast("Error: "+e.message,false);});
     return;
   }
   var typed=document.getElementById("rem-code").value.trim().toUpperCase();
   if (!typed) { document.getElementById("rem-err").textContent="Enter your code"; return; }
   if (t.code!==typed) { document.getElementById("rem-err").textContent="Wrong code"; return; }
-  db.ref("pmac/lobby_teams/"+key).remove().then(function(){closeRemove();toast("Team removed",true);})
+  db.ref(eventPath("lobby_teams")+"/"+key).remove().then(function(){closeRemove();toast("Team removed",true);})
     .catch(function(e){toast("Error: "+e.message,false);});
 }
 

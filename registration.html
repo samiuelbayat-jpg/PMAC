@@ -918,7 +918,7 @@ document.getElementById("save-reset-btn").onclick = function() {
   var count=Object.keys(regs).length;
   if(!count){toast("No registrations to save",false);return;}
   if(!confirm("Save "+count+" teams to archive and clear all registrations?")) return;
-  db.ref("pmac/event_archive/ev_"+Date.now()).set({name:eventInfo.name||"PMAC",date:eventInfo.date||"",savedAt:Date.now(),teams:regs}).then(function(){
+  db.ref(eventPath("event_archive")+"/ev_"+Date.now()).set({name:eventInfo.name||"PMAC",date:eventInfo.date||"",savedAt:Date.now(),teams:regs}).then(function(){
     return Promise.all([db.ref(eventPath("registrations")).remove(),db.ref(eventPath("event/regStatus")).set("closed")]);
   }).then(function(){toast("Saved and reset!",true);}).catch(function(e){toast("Error: "+e.message,false);});
 };
@@ -954,7 +954,7 @@ document.getElementById("reg-btn").onclick = function() {
   for(var c=0;c<6;c++) code+=chars[Math.floor(Math.random()*chars.length)];
   btn.textContent="Registering...";btn.disabled=true;msg.textContent="Saving...";msg.style.color="#e8b800";
   function doSave(logoUrl){
-    db.ref("pmac/registrations/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code}).then(function(){
+    db.ref(eventPath("registrations")+"/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code}).then(function(){
       document.getElementById("reg-name").value="";document.getElementById("reg-tag").value="";document.getElementById("reg-manager").value="";document.getElementById("reg-mgr-phone").value="";document.getElementById("reg-logo-file").value="";document.getElementById("reg-logo-prev").style.display="none";regLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_reg_code",code);localStorage.setItem("pmac_reg_name",name);
@@ -1013,7 +1013,7 @@ function renderTeams() {
     list.appendChild(row);
   });
   list.querySelectorAll(".ta-ok,.ta-no").forEach(function(btn){
-    btn.onclick=function(){db.ref("pmac/registrations/"+this.dataset.key+"/status").set(this.dataset.status).then(function(){toast("Updated!",true);}).catch(function(e){toast("Error: "+e.message,false);});};
+    btn.onclick=function(){db.ref(eventPath("registrations")+"/"+this.dataset.key+"/status").set(this.dataset.status).then(function(){toast("Updated!",true);}).catch(function(e){toast("Error: "+e.message,false);});};
   });
   list.querySelectorAll(".ta-wa").forEach(function(btn){
     btn.onclick=function(){
@@ -1025,7 +1025,7 @@ function renderTeams() {
     };
   });
   list.querySelectorAll(".ta-del").forEach(function(btn){
-    btn.onclick=function(){if(!confirm("Delete this registration?")) return;db.ref("pmac/registrations/"+this.dataset.key).remove().then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
+    btn.onclick=function(){if(!confirm("Delete this registration?")) return;db.ref(eventPath("registrations")+"/"+this.dataset.key).remove().then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
   });
   list.querySelectorAll("[data-act=rem]").forEach(function(btn){
     btn.onclick=function(){document.getElementById("confirm-key").value=this.dataset.key;document.getElementById("confirm-code").value="";document.getElementById("confirm-err").textContent="";document.getElementById("overlay").style.display="flex";setTimeout(function(){document.getElementById("confirm-code").focus();},100);};
@@ -1038,10 +1038,10 @@ document.getElementById("confirm-del-btn").onclick=function(){
   var key=document.getElementById("confirm-key").value;
   var typed=document.getElementById("confirm-code").value.trim().toUpperCase();
   if(!typed){document.getElementById("confirm-err").textContent="Enter your delete code";return;}
-  db.ref("pmac/registrations/"+key).once("value").then(function(snap){
+  db.ref(eventPath("registrations")+"/"+key).once("value").then(function(snap){
     var reg=snap.val();if(!reg){document.getElementById("overlay").style.display="none";return;}
     if(reg.deleteCode!==typed){document.getElementById("confirm-err").textContent="Wrong delete code";return;}
-    return db.ref("pmac/registrations/"+key).remove().then(function(){document.getElementById("overlay").style.display="none";toast("Registration removed",true);});
+    return db.ref(eventPath("registrations")+"/"+key).remove().then(function(){document.getElementById("overlay").style.display="none";toast("Registration removed",true);});
   }).catch(function(e){toast("Error: "+e.message,false);});
 };
 
@@ -1162,7 +1162,7 @@ function importToLobby() {
     var promises = toAdd.map(function(k) {
       var r = regs[k];
       var key = "t" + Date.now() + Math.floor(Math.random() * 9999);
-      return db.ref("pmac/lobby_teams/" + key).set({
+      return db.ref(eventPath("lobby_teams")+"/"+key).set({
         name: r.name, tag: r.tag || "", manager: r.manager || "",
         phone: r.managerPhone || "", logo: r.logo || "",
         code: (function(){ var c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",r=""; for(var i=0;i<6;i++) r+=c[Math.floor(Math.random()*c.length)]; return r; })(),
@@ -1201,7 +1201,7 @@ document.getElementById("lb-add-btn").onclick = function(){
   var chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; var code="";
   for(var i=0;i<6;i++) code+=chars[Math.floor(Math.random()*chars.length)];
   function doSave(logoB64){
-    db.ref("pmac/lobby_teams/t"+Date.now()).set({
+    db.ref(eventPath("lobby_teams")+"/t"+Date.now()).set({
       name:name, tag:tag, manager:manager, phone:phone,
       logo:logoB64, code:code, addedAt:Date.now()
     }).then(function(){
@@ -1550,7 +1550,7 @@ document.getElementById("s-add-btn").onclick = function(){
   if(!ytId){toast("Enter YouTube Channel ID",false);return;}
   var btn=this; btn.textContent="Adding..."; btn.disabled=true;
   function doSave(photoB64){
-    db.ref("pmac/streamers/s"+Date.now()).set({
+    db.ref(eventPath("streamers")+"/s"+Date.now()).set({
       name:name, ytId:ytId, ttUser:ttUser, photo:photoB64, addedAt:Date.now()
     }).then(function(){
       btn.textContent="Add Streamer"; btn.disabled=false;
@@ -1590,13 +1590,26 @@ function loadStreamers(){
   document.getElementById("streamer-add-form").style.display = isAdmin ? "block" : "none";
 }
 
+function finishStreamerCheck(results){
+  results.sort(function(a,b){ return (b.live?1:0)-(a.live?1:0) || (a.name||"").localeCompare(b.name||""); });
+  renderStreamers(results);
+  document.getElementById("streamers-last-check").textContent = "Last checked: "+new Date().toLocaleTimeString("en-GB");
+}
 function checkLiveStatus(streamers){
   document.getElementById("streamers-last-check").textContent = "Checking live status...";
   var results = [];
   var pending = streamers.length;
+  if(!pending){ finishStreamerCheck(results); return; }
   streamers.forEach(function(streamer){
-    var url = "https://www.googleapis.com/youtube/v3/search?part=snippet&channelId="+streamer.ytId+"&eventType=live&type=video&key="+YT_API_KEY;
-    fetch(url).then(function(r){return r.json();}).then(function(data){
+    var channelId = String(streamer.ytId||"").trim();
+    if(!channelId){
+      results.push(Object.assign({},streamer,{live:false,title:"",thumb:"",videoId:"",statusNote:"Missing channel ID"}));
+      pending--; if(pending===0) finishStreamerCheck(results); return;
+    }
+    var url = "https://www.googleapis.com/youtube/v3/search?part=snippet&channelId="+encodeURIComponent(channelId)+"&eventType=live&type=video&key="+YT_API_KEY;
+    fetch(url).then(function(r){return r.json().then(function(data){return {ok:r.ok,data:data};});}).then(function(res){
+      var data = res.data || {};
+      if(!res.ok || data.error){ throw new Error((data.error && data.error.message) || "YouTube API error"); }
       var liveItem = data.items && data.items[0];
       results.push(Object.assign({},streamer,{
         live: !!liveItem,
@@ -1605,15 +1618,11 @@ function checkLiveStatus(streamers){
         videoId: liveItem ? liveItem.id.videoId : ""
       }));
       pending--;
-      if(pending===0){
-        results.sort(function(a,b){ return (b.live?1:0)-(a.live?1:0); });
-        renderStreamers(results);
-        document.getElementById("streamers-last-check").textContent = "Last checked: "+new Date().toLocaleTimeString("en-GB");
-      }
-    }).catch(function(){
-      results.push(Object.assign({},streamer,{live:false,title:"",thumb:"",videoId:""}));
+      if(pending===0) finishStreamerCheck(results);
+    }).catch(function(err){
+      results.push(Object.assign({},streamer,{live:false,title:"",thumb:"",videoId:"",statusNote:err.message||"Status unavailable"}));
       pending--;
-      if(pending===0){ renderStreamers(results); }
+      if(pending===0) finishStreamerCheck(results);
     });
   });
 }
@@ -1663,7 +1672,7 @@ function renderStreamers(streamers){
 
 function deleteStreamer(key){
   if(!confirm("Remove this streamer?")) return;
-  db.ref("pmac/streamers/"+key).remove().then(function(){ streamersLoaded=false; loadStreamers(); toast("Removed",true); });
+  db.ref(eventPath("streamers")+"/"+key).remove().then(function(){ streamersLoaded=false; loadStreamers(); toast("Removed",true); });
 }
 
 function refreshStreamers(){
@@ -1786,7 +1795,7 @@ document.getElementById("scrim-save-reset-btn").onclick = function() {
   var count=Object.keys(scrimRegs).length;
   if(!count){toast("No registrations to save",false);return;}
   if(!confirm("Save "+count+" teams to archive and clear all registrations?")) return;
-  db.ref("pmac/scrim/archive/ev_"+Date.now()).set({name:scrimInfo.name||"PMAF Daily Scrim",date:scrimInfo.date||"",savedAt:Date.now(),teams:scrimRegs}).then(function(){
+  db.ref(eventPath("scrim/archive")+"/ev_"+Date.now()).set({name:scrimInfo.name||"PMAF Daily Scrim",date:scrimInfo.date||"",savedAt:Date.now(),teams:scrimRegs}).then(function(){
     return Promise.all([db.ref(eventPath("scrim/registrations")).remove(),db.ref(eventPath("scrim/event/regStatus")).set("closed")]);
   }).then(function(){toast("Saved and reset!",true);}).catch(function(e){toast("Error: "+e.message,false);});
 };
@@ -1820,7 +1829,7 @@ document.getElementById("scrim-reg-btn").onclick = function() {
   for(var c=0;c<6;c++) code+=chars[Math.floor(Math.random()*chars.length)];
   btn.textContent="Registering...";btn.disabled=true;msg.textContent="Saving...";msg.style.color="#e8b800";
   function doSave(logoUrl){
-    db.ref("pmac/scrim/registrations/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code}).then(function(){
+    db.ref(eventPath("scrim/registrations")+"/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code}).then(function(){
       document.getElementById("scrim-reg-name").value="";document.getElementById("scrim-reg-tag").value="";document.getElementById("scrim-reg-manager").value="";document.getElementById("scrim-reg-mgr-phone").value="";document.getElementById("scrim-reg-logo-file").value="";document.getElementById("scrim-reg-logo-prev").style.display="none";scrimLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_scrim_code",code);localStorage.setItem("pmac_scrim_name",name);
@@ -1876,7 +1885,7 @@ function scrimRenderTeams() {
     list.appendChild(row);
   });
   list.querySelectorAll(".ta-ok,.ta-no").forEach(function(btn){
-    btn.onclick=function(){db.ref("pmac/scrim/registrations/"+this.dataset.key+"/status").set(this.dataset.status).then(function(){toast("Updated!",true);}).catch(function(e){toast("Error: "+e.message,false);});};
+    btn.onclick=function(){db.ref(eventPath("scrim/registrations")+"/"+this.dataset.key+"/status").set(this.dataset.status).then(function(){toast("Updated!",true);}).catch(function(e){toast("Error: "+e.message,false);});};
   });
   list.querySelectorAll(".ta-wa").forEach(function(btn){
     btn.onclick=function(){
@@ -1888,7 +1897,7 @@ function scrimRenderTeams() {
     };
   });
   list.querySelectorAll(".ta-del").forEach(function(btn){
-    btn.onclick=function(){if(!confirm("Delete this registration?")) return;db.ref("pmac/scrim/registrations/"+this.dataset.key).remove().then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
+    btn.onclick=function(){if(!confirm("Delete this registration?")) return;db.ref(eventPath("scrim/registrations")+"/"+this.dataset.key).remove().then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
   });
 }
 
