@@ -205,6 +205,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="btn btn-primary" onclick="createPmacEvent()">+ Create Event</button>
     <button class="btn" onclick="duplicateCurrentEvent()">Duplicate Current</button>
     <span id="event-path-label" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;"></span>
+    <span id="event-user-label" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;"></span>
   </div>
   <!-- Admin shortcuts open standalone pages in a new browser tab/window. -->
   <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;">
@@ -222,7 +223,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
   <div class="section-tabs"><button class="stab active" onclick="showSection('teams')">🏢 Manage Teams</button><button class="stab" onclick="showSection('scores')">🎯 Enter Scores</button><button class="stab" onclick="showSection('eventgroup')">🏆 Event Group</button><button class="stab" onclick="showSection('overlay')">🎥 Overlay Settings</button><button class="stab" onclick="showSection('gfx')">✨ PMAC GFX</button><button class="stab" onclick="showSection('forum')">💬 Forum</button></div>
 
-  <div id="section-teams"><div class="teams-mgmt"><div class="mgmt-title">Add Team</div><div class="add-team-row"><div class="inp-wrap"><div class="inp-lbl">Team Name</div><input class="text-inp" id="new-team-name" placeholder="e.g. BLACK ZONE"></div><div><div class="inp-lbl">Team Logo</div><input type="file" id="new-team-logo" accept="image/*" style="display:none" onchange="previewLogo(this)"><button class="logo-inp-btn" onclick="document.getElementById('new-team-logo').click()">📷 Choose Logo</button><img id="logo-preview" class="logo-preview"><span id="logo-name" style="font-size:9px;"></span></div><button class="btn btn-primary" onclick="addTeam()">+ Add Team</button><span id="uploading-badge" class="uploading-badge">Uploading...</span></div><div class="csv-row"><div><div class="inp-lbl">Import CSV</div><div class="csv-note">One team name per line</div></div><input type="file" id="csv-file" accept=".csv,.txt" style="display:none" onchange="importCSV(this)"><button class="btn" onclick="document.getElementById('csv-file').click()">📄 Import CSV</button><button class="btn" onclick="fixAllLogos()" id="fix-logos-btn" style="background:linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.1));border-color:rgba(0,255,136,0.4);color:#00ff88;">🔧 Fix All Logos</button><button class="btn btn-primary" onclick="if(!isSuperAdmin){showToast('Super Admin required',false);return;}importFromRegistration()">📥 Import from Registration</button></div></div><div class="mgmt-title">Current Teams (<span id="team-count">0</span>)</div><div class="teams-list-mgmt" id="teams-list-mgmt"><div class="no-teams">No teams yet.</div></div></div>
+  <div id="section-teams"><div class="teams-mgmt"><div class="mgmt-title">Add Team</div><div class="add-team-row"><div class="inp-wrap"><div class="inp-lbl">Team Name</div><input class="text-inp" id="new-team-name" placeholder="e.g. BLACK ZONE" list="team-logo-suggest" oninput="updateManageSavedLogo()" onchange="updateManageSavedLogo()"><datalist id="team-logo-suggest"></datalist></div><div><div class="inp-lbl">Team Logo</div><input type="file" id="new-team-logo" accept="image/*" style="display:none" onchange="previewLogo(this)"><button class="logo-inp-btn" onclick="document.getElementById('new-team-logo').click()">📷 Choose Logo</button><button class="logo-inp-btn" id="use-saved-team-logo-btn" style="display:none" onclick="useSavedTeamLogo()">Use Saved Logo</button><img id="logo-preview" class="logo-preview"><span id="logo-name" style="font-size:9px;"></span></div><button class="btn btn-primary" onclick="addTeam()">+ Add Team</button><span id="uploading-badge" class="uploading-badge">Uploading...</span></div><div class="csv-row"><div><div class="inp-lbl">Import CSV</div><div class="csv-note">One team name per line</div></div><input type="file" id="csv-file" accept=".csv,.txt" style="display:none" onchange="importCSV(this)"><button class="btn" onclick="document.getElementById('csv-file').click()">📄 Import CSV</button><button class="btn" onclick="fixAllLogos()" id="fix-logos-btn" style="background:linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.1));border-color:rgba(0,255,136,0.4);color:#00ff88;">🔧 Fix All Logos</button><button class="btn btn-primary" onclick="if(!isSuperAdmin){showToast('Super Admin required',false);return;}importFromRegistration()">📥 Import from Registration</button></div></div><div class="mgmt-title">Current Teams (<span id="team-count">0</span>)</div><div class="teams-list-mgmt" id="teams-list-mgmt"><div class="no-teams">No teams yet.</div></div></div>
 
   <div id="section-scores" style="display:none;"><div class="pts-info"><span class="pts-lbl">Points system</span><span class="pts-pill hi">#1=10</span><span class="pts-pill hi">#2=6</span><span class="pts-pill hi">#3=5</span><span class="pts-pill hi">#4=4</span><span class="pts-pill hi">#5=3</span><span class="pts-pill hi">#6=2</span><span class="pts-pill hi">#7=1</span><span class="pts-pill hi">#8=1</span><span class="pts-pill">#9+=0</span><span class="pts-pill">+1/kill</span></div><div class="match-tabs" id="match-tabs-scores"></div>
     <div class="team-grid" id="team-grid"><div class="no-teams">Go to "Manage Teams" tab first.</div></div>
@@ -275,6 +276,9 @@ if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
 const db = firebase.database(), storage = firebase.storage(), auth = firebase.auth();
  
 let isSuperAdmin = false, currentMatch = 0, teams = [], scores = {};
+let currentAdminUid = "";
+let teamLogoLibrary = {};
+const TEAM_LOGO_LIBRARY_KEY = "pmac_team_logo_library_v1";
 let groqApiKey = localStorage.getItem("groq_api_key") || "";
 let activeEventId = new URLSearchParams(location.search).get("event") || localStorage.getItem("pmac_active_event") || "default";
 let dbTeamsRef, dbScoresRef, dbActiveSessionRef, dbEgRef, overlaySettingsRef, forumRef;
@@ -284,33 +288,99 @@ function eventPath(child){ return eventBasePath()+"/"+child; }
 function eventUrl(url){ const sep=url.indexOf("?")>-1?"&":"?"; return url+sep+"event="+encodeURIComponent(activeEventId); }
 function resetEventRefs(){ dbTeamsRef=db.ref(eventPath("teams")); dbScoresRef=db.ref(eventPath("matches")); dbActiveSessionRef=db.ref(eventPath("activeSession")); dbEgRef=db.ref(eventPath("eventGroups")); overlaySettingsRef=db.ref(eventPath("overlaySettings")); forumRef=db.ref(eventPath("forum/messages")); localStorage.setItem("pmac_active_event", activeEventId); const lbl=document.getElementById("event-path-label"); if(lbl) lbl.textContent=eventBasePath(); }
 
+function canEditEvent(meta){
+  if(isSuperAdmin) return true;
+  if(!currentAdminUid) return false;
+  if(meta && meta.ownerUid === currentAdminUid) return true;
+  return !!(meta && meta.admins && meta.admins[currentAdminUid] === true);
+}
+function eventMetaDefaults(name, extra){
+  const uid=currentAdminUid || (auth.currentUser && auth.currentUser.uid) || "";
+  const data=Object.assign({name,createdAt:Date.now(),ownerUid:uid,admins:{}}, extra||{});
+  if(uid) data.admins[uid]=true;
+  return data;
+}
+function copyMyAdminUid(){
+  if(!currentAdminUid){ showToast("No admin UID found yet", false); return; }
+  navigator.clipboard.writeText(currentAdminUid).then(()=>showToast("Admin UID copied", true)).catch(()=>showToast(currentAdminUid, true));
+}
+function showAccessDenied(){
+  document.getElementById("main-page").style.display="block";
+  resetEventRefs();
+  const sel=document.getElementById("event-select");
+  if(sel) sel.innerHTML=`<option>${escapeHtml(activeEventId)}</option>`;
+  const userLabel=document.getElementById("event-user-label");
+  if(userLabel) userLabel.innerHTML=`UID: ${escapeHtml(currentAdminUid)} <button class="btn" style="font-size:10px;padding:3px 8px;margin-left:5px;" onclick="copyMyAdminUid()">Copy UID</button>`;
+  const sections=document.querySelectorAll("#section-teams,#section-scores,#section-eventgroup,#section-overlay,#section-gfx,#section-forum");
+  sections.forEach(s=>s.style.display="none");
+  const tabs=document.querySelector(".section-tabs");
+  if(tabs) tabs.style.display="none";
+  showToast("You do not have admin access to this event", false);
+}
+
 function loadEventList(){
   const sel=document.getElementById("event-select"); if(!sel) return;
   db.ref("pmac/eventsMeta").on("value", snap=>{
     const meta=snap.val()||{};
-    const items=[{id:"default",name:"Default Event"}].concat(Object.keys(meta).sort().map(id=>({id,name:meta[id].name||id})));
+    const items=[{id:"default",name:(meta.default&&meta.default.name)||"Default Event",meta:meta.default||{}}]
+      .concat(Object.keys(meta).filter(id=>id!=="default").sort().map(id=>({id,name:meta[id].name||id,meta:meta[id]})))
+      .filter(e=>canEditEvent(e.meta));
     sel.innerHTML=items.map(e=>`<option value="${e.id}">${escapeHtml(e.name)}${e.id==="default"?"":" — "+e.id}</option>`).join("");
+    if(!items.find(e=>e.id===activeEventId) && items.length){
+      switchEvent(items[0].id);
+      return;
+    }
     sel.value=activeEventId;
   });
 }
 function switchEvent(id){ if(!id || id===activeEventId) return; localStorage.setItem("pmac_active_event", id); location.href=location.pathname+"?event="+encodeURIComponent(id); }
 function createPmacEvent(){
   const inp=document.getElementById("new-event-name"); const name=(inp&&inp.value.trim())||"New Event"; const id=cleanEventId(name);
-  db.ref("pmac/eventsMeta/"+id).set({name,createdAt:Date.now()}).then(()=>{ localStorage.setItem("pmac_active_event", id); location.href=location.pathname+"?event="+encodeURIComponent(id); }).catch(e=>showToast(e.message,false));
+  db.ref("pmac/eventsMeta/"+id).set(eventMetaDefaults(name)).then(()=>{ localStorage.setItem("pmac_active_event", id); location.href=location.pathname+"?event="+encodeURIComponent(id); }).catch(e=>showToast(e.message,false));
 }
 function duplicateCurrentEvent(){
   const inp=document.getElementById("new-event-name"); const name=(inp&&inp.value.trim())||("Copy of "+(document.getElementById("event-select")?.selectedOptions[0]?.textContent||"Event")); const id=cleanEventId(name);
   if(!confirm(`Duplicate current event into "${name}"?`)) return;
   db.ref(eventBasePath()).once("value").then(snap=>{
     const data=snap.val()||{};
-    return db.ref("pmac/events/"+id).set(data).then(()=>db.ref("pmac/eventsMeta/"+id).set({name,createdAt:Date.now(),duplicatedFrom:activeEventId}));
+    return db.ref("pmac/events/"+id).set(data).then(()=>db.ref("pmac/eventsMeta/"+id).set(eventMetaDefaults(name,{duplicatedFrom:activeEventId})));
   }).then(()=>{ localStorage.setItem("pmac_active_event", id); location.href=location.pathname+"?event="+encodeURIComponent(id); }).catch(e=>showToast(e.message,false));
 }
 function placementPts(r) { const rank = parseInt(r); if(rank===1) return 10; if(rank===2) return 6; if(rank===3) return 5; if(rank===4) return 4; if(rank===5) return 3; if(rank===6) return 2; if(rank===7||rank===8) return 1; return 0; }
 function sanitizeKey(n){ return n.replace(/[\.\#\$\/\[\]]/g, "_"); }
 function showToast(msg, ok){ const t=document.getElementById("toast"); t.textContent=msg; t.className="toast show "+(ok?"toast-ok":"toast-err"); setTimeout(()=>t.classList.remove("show"),2800); }
 
-function showMainPage(){ document.getElementById("main-page").style.display="block"; resetEventRefs(); loadEventList(); loadEventGroups(); watchActiveSession(); loadOverlaySettings(); initForum(); loadFirebaseData(); }
+function showMainPage(){
+  document.getElementById("main-page").style.display="block";
+  const userLabel=document.getElementById("event-user-label");
+  if(userLabel) userLabel.innerHTML=`UID: ${escapeHtml(currentAdminUid)} <button class="btn" style="font-size:10px;padding:3px 8px;margin-left:5px;" onclick="copyMyAdminUid()">Copy UID</button>`;
+  resetEventRefs();
+  loadEventList();
+  loadEventGroups();
+  watchActiveSession();
+  loadOverlaySettings();
+  initForum();
+  loadFirebaseData();
+}
+function startAdminForUser(user){
+  currentAdminUid = user.uid;
+  Promise.all([
+    db.ref("pmac/superAdmins/"+user.uid).once("value").then(s=>s.val()===true).catch(()=>false),
+    db.ref("pmac/eventsMeta/"+activeEventId).once("value").then(s=>s.val()).catch(()=>null)
+  ]).then(([superAllowed, meta])=>{
+    const legacyDefault = activeEventId==="default" && !meta;
+    isSuperAdmin = superAllowed || legacyDefault;
+    if(!legacyDefault && !canEditEvent(meta)){
+      showAccessDenied();
+      loadEventList();
+      return;
+    }
+    showMainPage();
+  }).catch(e=>{
+    showToast(e.message, false);
+    showAccessDenied();
+  });
+}
 function stopActiveRefs(){
   (window._activeTeamRefs||[]).forEach(r=>r.off());
   (window._activeScoreRefs||[]).forEach(r=>r.off());
@@ -321,10 +391,11 @@ function stopActiveRefs(){
   window._teamSessionMap={};
 }
 function loadFirebaseData(){
+  loadTeamLogoLibrary();
   stopActiveRefs();
   dbTeamsRef.off();
   dbScoresRef.off();
-  dbTeamsRef.on("value",(s)=>{ teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : []; teams = teams.map(t => { if (!t.playerUIDs) t.playerUIDs = []; return t; }); renderTeamsMgmt(); renderScoreGrid(); document.getElementById("fb-status").className="fb-badge fb-ok"; document.getElementById("fb-status").textContent="● Single Day Mode"; });
+  dbTeamsRef.on("value",(s)=>{ teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : []; teams = teams.map(t => { if (!t.playerUIDs) t.playerUIDs = []; return t; }); seedTeamLogoLibrary(teams); renderTeamsMgmt(); renderScoreGrid(); document.getElementById("fb-status").className="fb-badge fb-ok"; document.getElementById("fb-status").textContent="● Single Day Mode"; });
   dbScoresRef.on("value",(s)=>{ scores = s.val() || {}; renderScoreGrid(); });
 }
 function egSessionsFromActive(active){
@@ -355,8 +426,57 @@ function watchActiveSession(){
   });
 }
 function showSection(sec){ document.getElementById("section-teams").style.display = sec==="teams"?"block":"none"; document.getElementById("section-scores").style.display = sec==="scores"?"block":"none"; document.getElementById("section-eventgroup").style.display = sec==="eventgroup"?"block":"none"; document.getElementById("section-overlay").style.display = sec==="overlay"?"block":"none"; document.getElementById("section-gfx").style.display = sec==="gfx"?"block":"none"; document.getElementById("section-forum").style.display = sec==="forum"?"block":"none"; const order=["teams","scores","eventgroup","overlay","gfx","forum"]; document.querySelectorAll(".stab").forEach((b,i)=>{ b.classList.toggle("active", order[i]===sec); }); if(sec==="scores") renderScoreGrid(); if(sec==="eventgroup"){ renderEventGroups(); updateActiveBanner(); } if(sec==="overlay") fillOverlaySettingsForm(); if(sec==="forum") setTimeout(()=>{ const msgs=document.getElementById("chat-messages"); if(msgs) msgs.scrollTop=msgs.scrollHeight; },100); }
-function addTeam(){ const name=document.getElementById("new-team-name").value.trim().toUpperCase(); if(!name) return showToast("Enter team name",false); if(teams.find(t=>t.name===name)) return showToast("Team exists",false); const file=document.getElementById("new-team-logo").files[0]; if(file){ document.getElementById("uploading-badge").style.display="inline"; const reader=new FileReader(); reader.onload=e=>{ const img=new Image(); img.onload=()=>{ const c=document.createElement("canvas"); c.width=80; c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); const b64=c.toDataURL("image/jpeg",0.7); pushTeamToDb(name,b64); }; img.src=e.target.result; }; reader.readAsDataURL(file); } else pushTeamToDb(name,""); }
-function pushTeamToDb(name,logo){ const newTeam = { name, logo, playerUIDs: [] }; const newTeams = [...teams, newTeam]; _teamsRef().set(newTeams).then(()=>{ const safe=sanitizeKey(name); if(!scores[safe]){ scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); _scoresRef().set(scores); } showToast("Team added",true); document.getElementById("new-team-name").value=""; document.getElementById("new-team-logo").value=""; document.getElementById("logo-preview").style.display="none"; document.getElementById("uploading-badge").style.display="none"; }).catch(e=>showToast(e.message,false)); }
+function logoKey(name){ return String(name||"").trim().toUpperCase(); }
+function loadTeamLogoLibrary(){ try{ teamLogoLibrary = JSON.parse(localStorage.getItem(TEAM_LOGO_LIBRARY_KEY)||"{}") || {}; }catch(e){ teamLogoLibrary={}; } }
+function saveTeamLogoLibrary(){ try{ localStorage.setItem(TEAM_LOGO_LIBRARY_KEY, JSON.stringify(teamLogoLibrary)); }catch(e){} }
+function rememberTeamLogo(name, logo){
+  const key = logoKey(name);
+  if(!key || !logo) return;
+  teamLogoLibrary[key] = { name:key, logo:logo, savedAt:Date.now() };
+  saveTeamLogoLibrary();
+}
+function seedTeamLogoLibrary(list){
+  (list||[]).forEach(t=>{ if(t && t.name && t.logo) rememberTeamLogo(t.name,t.logo); });
+  refreshManageTeamSuggestions();
+}
+function findSavedLogo(name){
+  const key = logoKey(name);
+  if(!key) return null;
+  if(teamLogoLibrary[key] && teamLogoLibrary[key].logo) return teamLogoLibrary[key].logo;
+  const existing = teams.find(t=>logoKey(t.name)===key);
+  return existing && existing.logo ? existing.logo : null;
+}
+function refreshManageTeamSuggestions(){
+  const dl=document.getElementById("team-logo-suggest");
+  if(!dl) return;
+  const names = Array.from(new Set(Object.keys(teamLogoLibrary).concat((teams||[]).map(t=>logoKey(t.name)).filter(Boolean)))).sort();
+  dl.innerHTML = names.map(n=>`<option value="${escapeHtml(n)}">`).join("");
+}
+function updateManageSavedLogo(){
+  const nameEl=document.getElementById("new-team-name");
+  const fileEl=document.getElementById("new-team-logo");
+  const btn=document.getElementById("use-saved-team-logo-btn");
+  const prev=document.getElementById("logo-preview");
+  if(fileEl && fileEl.files && fileEl.files.length) return;
+  const logo=findSavedLogo(nameEl ? nameEl.value : "");
+  if(btn) btn.style.display = logo ? "inline-block" : "none";
+  if(prev){
+    if(logo){ prev.src=logo; prev.style.display="block"; prev.dataset.savedLogo=logo; }
+    else { prev.src=""; prev.style.display="none"; prev.dataset.savedLogo=""; }
+  }
+}
+function useSavedTeamLogo(){
+  const nameEl=document.getElementById("new-team-name");
+  const logo=findSavedLogo(nameEl ? nameEl.value : "");
+  if(!logo){ showToast("No saved logo found for this team",false); return; }
+  const fileEl=document.getElementById("new-team-logo");
+  const prev=document.getElementById("logo-preview");
+  if(fileEl) fileEl.value="";
+  if(prev){ prev.src=logo; prev.style.display="block"; prev.dataset.savedLogo=logo; }
+  showToast("Saved logo selected",true);
+}
+function addTeam(){ const name=document.getElementById("new-team-name").value.trim().toUpperCase(); if(!name) return showToast("Enter team name",false); if(teams.find(t=>t.name===name)) return showToast("Team exists",false); const file=document.getElementById("new-team-logo").files[0]; const savedLogo=document.getElementById("logo-preview")?.dataset?.savedLogo || findSavedLogo(name) || ""; if(file){ document.getElementById("uploading-badge").style.display="inline"; const reader=new FileReader(); reader.onload=e=>{ const img=new Image(); img.onload=()=>{ const c=document.createElement("canvas"); c.width=80; c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); const b64=c.toDataURL("image/jpeg",0.7); pushTeamToDb(name,b64); }; img.src=e.target.result; }; reader.readAsDataURL(file); } else pushTeamToDb(name,savedLogo); }
+function pushTeamToDb(name,logo){ if(logo) rememberTeamLogo(name,logo); const newTeam = { name, logo, playerUIDs: [] }; const newTeams = [...teams, newTeam]; _teamsRef().set(newTeams).then(()=>{ const safe=sanitizeKey(name); if(!scores[safe]){ scores[safe]=Array(10).fill().map(()=>({rank:null,kills:null})); _scoresRef().set(scores); } showToast("Team added",true); document.getElementById("new-team-name").value=""; document.getElementById("new-team-logo").value=""; document.getElementById("logo-preview").style.display="none"; document.getElementById("logo-preview").dataset.savedLogo=""; const btn=document.getElementById("use-saved-team-logo-btn"); if(btn) btn.style.display="none"; document.getElementById("uploading-badge").style.display="none"; refreshManageTeamSuggestions(); }).catch(e=>showToast(e.message,false)); }
 function removeTeam(name){ if(!confirm(`Remove team "${name}"? This will also delete all their scores.`)) return; const newTeams=teams.filter(t=>t.name!==name); _teamsRef().set(newTeams).then(()=>{ delete scores[sanitizeKey(name)]; return _scoresRef().set(scores); }).then(()=>{ showToast(`Team "${name}" removed.`, true); }).catch(e=>showToast(e.message, false)); }
 function addPlayerUidSlot(teamName) { 
     const idx = teams.findIndex(t => t.name === teamName); 
@@ -711,6 +831,7 @@ function renderEventGroups(){
         <button class="eg-activate-btn${isActive?' active-now':''}" onclick="egActivate('${g.id}')">Activate Selected</button>
         <button class="eg-activate-btn" onclick="egAddToActive('${g.id}')">Add Selected To Active</button>
         <button class="eg-activate-btn" onclick="egRestoreSelectedToToday('${g.id}')">Copy Selected To Today</button>
+        <button class="eg-active-clear" onclick="egClearGroup('${g.id}','${defaultDate}')">Clear Group</button>
       </div>
       <div class="eg-session-info">Firebase path: <span>pmac/eventGroups/${g.id}/sessions/{date}</span> — Scoreboard & OBS auto-read from active session path.</div>
     `;
@@ -756,7 +877,10 @@ function egCopySessionToSelected(gid, fromDate){
 function egFindSavedTeamByName(name){
   const clean = (name||"").trim().toUpperCase();
   if(!clean) return null;
-  return teams.find(t=>String(t.name||"").toUpperCase()===clean) || null;
+  const existing = teams.find(t=>String(t.name||"").toUpperCase()===clean);
+  if(existing && existing.logo) return existing;
+  const savedLogo = findSavedLogo(clean);
+  return savedLogo ? {name:clean, logo:savedLogo} : (existing || null);
 }
 function egSetLogoPreview(gid, logo, showButton){
   const prev = document.getElementById(`eg-logo-prev-${gid}`);
@@ -839,6 +963,7 @@ function egAddTeam(gid){
     const doSave = (logo) => {
       // Also init scores path for this team
       const scoresPath = `${eventPath("eventGroups")}/${gid}/sessions/${date}/scores`;
+      if(logo) rememberTeamLogo(name, logo);
       teamList.push({ name, tag, logo: logo||"" });
       db.ref(sessionPath).set(teamList).then(()=>{
         // Init score slot
@@ -869,8 +994,8 @@ function egAddTeam(gid){
       };
       reader.readAsDataURL(file);
     } else {
-      const existing = teams.find(t=>t.name===name);
-      doSave(existing?.logo||"");
+      const prev = document.getElementById(`eg-logo-prev-${gid}`);
+      doSave(prev?.dataset?.savedLogo || findSavedLogo(name) || "");
     }
   });
 }
@@ -885,6 +1010,14 @@ function egRemoveTeam(gid, date, idx){
     teamList.splice(idx,1);
     db.ref(sessionPath).set(teamList).then(()=>showToast("Team removed",true));
   });
+}
+function egClearGroup(gid, date){
+  const sessionPath = `${eventPath("eventGroups")}/${gid}/sessions/${date}`;
+  if(!confirm(`Clear ALL teams and scores from Group ${gid} · ${date}?`)) return;
+  db.ref(sessionPath).update({teams:[],scores:{},clearedAt:Date.now()}).then(()=>{
+    showToast(`Group ${gid} cleared`, true);
+    renderEventGroups();
+  }).catch(e=>showToast(e.message,false));
 }
 
 // ---- Patch saveAll, addTeam, removeTeam, autoSave to use active refs ----
@@ -912,15 +1045,14 @@ function initForum(){ forumRef.limitToLast(100).on("child_added",(snap)=>{ const
 function sendChatMessage(){ const nick=document.getElementById("chat-nick").value.trim()||"Admin"; const text=document.getElementById("chat-text").value.trim(); if(!text) return; forumRef.push({nick,text,ts:Date.now(),isAdmin:true}); document.getElementById("chat-text").value=""; }
 function clearAllChat(){ if(confirm("Clear all chat messages?")) forumRef.remove().then(()=>{ const container=document.getElementById("chat-messages"); container.innerHTML='<div class="chat-empty">Chat cleared.</div>'; }); }
 function escapeHtml(str){ return String(str).replace(/[&<>]/g,function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
-function previewLogo(input){ const file=input.files[0]; if(file){ const reader=new FileReader(); reader.onload=e=>{ document.getElementById("logo-preview").src=e.target.result; document.getElementById("logo-preview").style.display="block"; }; reader.readAsDataURL(file); } }
+function previewLogo(input){ const file=input.files[0]; if(file){ const reader=new FileReader(); reader.onload=e=>{ const prev=document.getElementById("logo-preview"); prev.src=e.target.result; prev.style.display="block"; prev.dataset.savedLogo=""; const btn=document.getElementById("use-saved-team-logo-btn"); if(btn) btn.style.display="none"; }; reader.readAsDataURL(file); } }
 function openStandalone(url){ if(!url || url==="") return; window.open(eventUrl(url), "_blank", "noopener"); }
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
-    // Anyone who passes Firebase login is the admin — grant full rights
-    isSuperAdmin = true;
-    showMainPage();
+    startAdminForUser(user);
   } else {
     isSuperAdmin = false;
+    currentAdminUid = "";
     window.location.href = "index.html";
   }
 });

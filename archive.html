@@ -5,15 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PMAC — Tournament Archive</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js">
-function showToast(msg, ok) {
-  var t = document.getElementById("toast");
-  t.textContent = msg;
-  t.className = "toast show " + (ok ? "toast-ok" : "toast-err");
-  setTimeout(function(){t.classList.remove("show");}, 3000);
-}
-
-</script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -140,12 +133,45 @@ firebase.initializeApp({
   appId: "1:279105805502:web:8def653069d0b3d73bd2ef"
 });
 const db = firebase.database();
+const auth = firebase.auth();
 const EVENT_ID = new URLSearchParams(location.search).get("event") || "default";
 function eventBasePath(){ return EVENT_ID==="default" ? "pmac" : "pmac/events/"+EVENT_ID; }
 function eventPath(child){ return eventBasePath()+"/"+child; }
 localStorage.setItem("pmac_active_event", EVENT_ID);
 
 var rowCount = 0;
+var archiveCanEdit = false;
+var archiveUserUid = "";
+
+function showToast(msg, ok) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show " + (ok ? "toast-ok" : "toast-err");
+  setTimeout(function(){t.classList.remove("show");}, 3000);
+}
+
+function canEditArchive(meta, isSuperAdmin) {
+  if (isSuperAdmin) return true;
+  if (!meta || !archiveUserUid) return false;
+  return meta.ownerUid === archiveUserUid || (meta.admins && meta.admins[archiveUserUid] === true);
+}
+
+function refreshArchiveAdmin(user) {
+  archiveUserUid = user ? user.uid : "";
+  archiveCanEdit = false;
+  if (!archiveUserUid) return;
+  Promise.all([
+    db.ref("pmac/superAdmins/" + archiveUserUid).once("value").then(function(s){ return s.val() === true; }).catch(function(){ return false; }),
+    db.ref("pmac/eventsMeta/" + EVENT_ID).once("value").then(function(s){ return s.val() || null; }).catch(function(){ return null; })
+  ]).then(function(res) {
+    archiveCanEdit = canEditArchive(res[1], !!res[0]);
+    document.querySelectorAll(".tc-del").forEach(function(btn){
+      btn.style.display = archiveCanEdit ? "inline-flex" : "none";
+    });
+  });
+}
+
+auth.onAuthStateChanged(refreshArchiveAdmin);
 
 function placementPts(rank) {
   if (rank === null || rank === undefined || rank === '') return 0;
@@ -288,7 +314,7 @@ db.ref(eventPath("archive")).on("value", function(snap) {
           '</div>' +
         '</div>' +
         '<div class="tc-right">' +
-          '<span class="tc-del" onclick="event.stopPropagation();deleteTournament(\'' + key + '\')">&#10005;</span>' +
+          '<span class="tc-del" style="'+(archiveCanEdit?'':'display:none')+'" onclick="event.stopPropagation();deleteTournament(\'' + key + '\')">&#10005;</span>' +
           '<div class="tc-chevron">&#9660;</div>' +
         '</div>' +
       '</div>' +
@@ -313,6 +339,7 @@ db.ref(eventPath("archive")).on("value", function(snap) {
 function toggleCard(key) { document.getElementById("tc_"+key).classList.toggle("expanded"); }
 
 function deleteTournament(key) {
+  if (!archiveCanEdit) { showToast("Admin access required", false); return; }
   if (!confirm("Delete this tournament from the archive?")) return;
   db.ref(eventPath("archive")+"/"+key).remove()
     .then(function(){showToast("Deleted",true);})

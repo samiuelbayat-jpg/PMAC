@@ -190,6 +190,12 @@ function calc(team, matches) {
   }
   return { ...team, kills, placement, total: kills + placement, played, matches: arr };
 }
+function teamMatches(team){
+  return currentScores[team.name] || currentScores[sanitizeKey(team.name)] || [];
+}
+function matchList(ms){
+  return Array.isArray(ms) ? ms : Object.values(ms || {});
+}
 
 
 let sortMode="pts";
@@ -220,7 +226,7 @@ function render(){
     document.getElementById("tbody").innerHTML='<tr><td colspan="16"><div class="no-data">No teams yet.</div></td></tr>';
     return;
   }
-  let teams=currentTeams.map(t=>calc(t,currentScores[t.name]));
+  let teams=currentTeams.map(t=>calc(t,teamMatches(t)));
   if(sortMode==="pts")teams.sort((a,b)=>b.total-a.total||b.placement-a.placement||b.kills-a.kills);
   else if(sortMode==="kills")teams.sort((a,b)=>b.kills-a.kills);
   else teams.sort((a,b)=>a.name.localeCompare(b.name));
@@ -230,7 +236,7 @@ function render(){
   const totalKills=teams.reduce((s,t)=>s+t.kills,0);
   const maxKills=Math.max(0,...teams.map(t=>t.kills));
   const topKiller=teams.find(t=>t.kills===maxKills)||teams[0];
-  const totalMatches=Math.max(0,...Object.values(currentScores).map(ms=>(ms||[]).filter(m=>m&&m.rank!==null).length));
+  const totalMatches=Math.max(0,...Object.values(currentScores).map(ms=>matchList(ms).filter(m=>m&&m.rank!==null).length));
 
   // Hero card for #1 team
   const logoHtml = leader.logo
