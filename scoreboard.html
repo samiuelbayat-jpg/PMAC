@@ -162,6 +162,7 @@ const db = firebase.database();
 const EVENT_ID = new URLSearchParams(location.search).get("event") || "default";
 function eventBasePath(){ return EVENT_ID==="default" ? "pmac" : "pmac/events/"+EVENT_ID; }
 function eventPath(child){ return eventBasePath()+"/"+child; }
+function sanitizeKey(n){ return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_"); }
 localStorage.setItem("pmac_active_event", EVENT_ID);
 
 
