@@ -149,7 +149,7 @@ function calculateTeamStats(team, matches) {
   let totalKills = 0;
   let totalPlacementPoints = 0;
   let matchesPlayed = 0;
-  const matchesList = matches || [];
+  const matchesList = Array.isArray(matches) ? matches : Object.values(matches || {});
   
   for (const match of matchesList) {
     if (!match || (match.rank === null && match.kills === null)) continue;
@@ -225,7 +225,8 @@ function render() {
   // Calculate max matches played
   let maxMatches = 0;
   Object.values(currentScores).forEach(ms => {
-    const played = (ms || []).filter(m => m && m.rank !== null).length;
+    const matchList = Array.isArray(ms) ? ms : Object.values(ms || {});
+    const played = matchList.filter(m => m && m.rank !== null).length;
     if (played > maxMatches) maxMatches = played;
   });
   document.getElementById("match-count").textContent = maxMatches + " / 10 matches";
