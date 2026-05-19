@@ -437,7 +437,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     <div class="reg-title">Register Your Team</div>
     <div class="reg-sub">Fill in all fields then click Register</div>
     <div class="field-row">
-      <div class="fld"><div class="fl">Team Name *</div><input class="fi fi-name" type="text" id="reg-name" placeholder="Team Name"></div>
+      <div class="fld"><div class="fl">Team Name *</div><input class="fi fi-name" type="text" id="reg-name" placeholder="Team Name" list="saved-team-logo-list" oninput="previewSavedRegistrationLogo('reg')" onchange="previewSavedRegistrationLogo('reg')"><datalist id="saved-team-logo-list"></datalist></div>
       <div class="fld"><div class="fl">Team Tag *</div><input class="fi fi-tag" type="text" id="reg-tag" placeholder="TAG" maxlength="6"></div>
       <div class="fld"><div class="fl">Manager *</div><input class="fi fi-mgr" type="text" id="reg-manager" placeholder="Manager name"></div>
       <div class="fld"><div class="fl">Manager Phone *</div><input class="fi fi-phone" type="text" id="reg-mgr-phone" placeholder="+93 xxx xxx xxxx"></div>
@@ -553,7 +553,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     <div class="reg-title">Register Your Team</div>
     <div class="reg-sub">Fill in all fields then click Register</div>
     <div class="field-row">
-      <div class="fld"><div class="fl">Team Name *</div><input class="fi fi-name" type="text" id="scrim-reg-name" placeholder="Team Name"></div>
+      <div class="fld"><div class="fl">Team Name *</div><input class="fi fi-name" type="text" id="scrim-reg-name" placeholder="Team Name" list="saved-team-logo-list" oninput="previewSavedRegistrationLogo('scrim')" onchange="previewSavedRegistrationLogo('scrim')"></div>
       <div class="fld"><div class="fl">Team Tag *</div><input class="fi fi-tag" type="text" id="scrim-reg-tag" placeholder="TAG" maxlength="6"></div>
       <div class="fld"><div class="fl">Manager *</div><input class="fi fi-mgr" type="text" id="scrim-reg-manager" placeholder="Manager name"></div>
       <div class="fld"><div class="fl">Manager Phone *</div><input class="fi fi-phone" type="text" id="scrim-reg-mgr-phone" placeholder="+93 xxx xxx xxxx"></div>
@@ -771,8 +771,39 @@ function eventPath(child){ return eventBasePath()+"/"+child; }
 localStorage.setItem("pmac_active_event", EVENT_ID);
 var auth = firebase.auth();
 var storage = firebase.storage();
+var teamLogoLibrary = {};
 function sanitizeKey(n){ return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_"); }
 function logoKey(name){ return String(name||"").trim().toUpperCase(); }
+function refreshSavedTeamLogoList(){
+  var dl=document.getElementById("saved-team-logo-list");
+  if(!dl) return;
+  dl.innerHTML=Object.keys(teamLogoLibrary).sort().map(function(n){return '<option value="'+escapeHtml(n)+'">';}).join("");
+}
+function findSavedRegistrationLogo(name){
+  var key=logoKey(name);
+  return key && teamLogoLibrary[key] && teamLogoLibrary[key].logo ? teamLogoLibrary[key].logo : "";
+}
+function previewSavedRegistrationLogo(kind){
+  var isScrim = kind === "scrim";
+  var nameEl=document.getElementById(isScrim ? "scrim-reg-name" : "reg-name");
+  var fileEl=document.getElementById(isScrim ? "scrim-reg-logo-file" : "reg-logo-file");
+  var prev=document.getElementById(isScrim ? "scrim-reg-logo-prev" : "reg-logo-prev");
+  if(!nameEl || !prev || (fileEl && fileEl.files && fileEl.files[0])) return;
+  var logo=findSavedRegistrationLogo(nameEl.value);
+  if(logo){ prev.src=logo; prev.style.display="block"; prev.dataset.savedLogo=logo; }
+  else { prev.src=""; prev.style.display="none"; prev.dataset.savedLogo=""; }
+}
+db.ref("pmac/teamLogos").on("value", function(s){
+  var data=s.val()||{};
+  teamLogoLibrary={};
+  Object.keys(data).forEach(function(k){
+    var item=data[k]||{};
+    if(item.name && item.logo) teamLogoLibrary[logoKey(item.name)]={name:logoKey(item.name),logo:item.logo};
+  });
+  refreshSavedTeamLogoList();
+  previewSavedRegistrationLogo("reg");
+  previewSavedRegistrationLogo("scrim");
+});
 function saveTeamLogoToLibrary(team){
   if(!isAdmin || !auth.currentUser || !team || !team.name || !team.logo) return Promise.resolve();
   var key = sanitizeKey(logoKey(team.name));
@@ -1022,6 +1053,7 @@ document.getElementById("reg-logo-file").onchange = function() {
   regLogoFile=this.files[0]; if(!regLogoFile) return;
   document.getElementById("reg-logo-prev").src=URL.createObjectURL(regLogoFile);
   document.getElementById("reg-logo-prev").style.display="block";
+  document.getElementById("reg-logo-prev").dataset.savedLogo="";
 };
 document.getElementById("reg-btn").onclick = function() {
   var name=document.getElementById("reg-name").value.trim().toUpperCase();
@@ -1042,7 +1074,7 @@ document.getElementById("reg-btn").onclick = function() {
   btn.textContent="Registering...";btn.disabled=true;msg.textContent="Saving...";msg.style.color="#e8b800";
   function doSave(logoUrl){
     db.ref(eventPath("registrations")+"/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code}).then(function(){
-      document.getElementById("reg-name").value="";document.getElementById("reg-tag").value="";document.getElementById("reg-manager").value="";document.getElementById("reg-mgr-phone").value="";document.getElementById("reg-logo-file").value="";document.getElementById("reg-logo-prev").style.display="none";regLogoFile=null;
+      document.getElementById("reg-name").value="";document.getElementById("reg-tag").value="";document.getElementById("reg-manager").value="";document.getElementById("reg-mgr-phone").value="";document.getElementById("reg-logo-file").value="";document.getElementById("reg-logo-prev").style.display="none";document.getElementById("reg-logo-prev").dataset.savedLogo="";regLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_reg_code",code);localStorage.setItem("pmac_reg_name",name);
       msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b><br><span style='color:#ff4444;font-size:9px;'>SAVE THIS CODE to remove your registration</span>";
@@ -1060,7 +1092,7 @@ document.getElementById("reg-btn").onclick = function() {
       img.src=e.target.result;
     };
     reader.readAsDataURL(regLogoFile);
-  }else{doSave("");}
+  }else{doSave(document.getElementById("reg-logo-prev").dataset.savedLogo || findSavedRegistrationLogo(name) || "");}
 };
 
 // FILTER
@@ -1959,6 +1991,7 @@ document.getElementById("scrim-reg-logo-file").onchange = function() {
   scrimLogoFile=this.files[0]; if(!scrimLogoFile) return;
   document.getElementById("scrim-reg-logo-prev").src=URL.createObjectURL(scrimLogoFile);
   document.getElementById("scrim-reg-logo-prev").style.display="block";
+  document.getElementById("scrim-reg-logo-prev").dataset.savedLogo="";
 };
 document.getElementById("scrim-reg-btn").onclick = function() {
   var name=document.getElementById("scrim-reg-name").value.trim().toUpperCase();
@@ -1979,7 +2012,7 @@ document.getElementById("scrim-reg-btn").onclick = function() {
   btn.textContent="Registering...";btn.disabled=true;msg.textContent="Saving...";msg.style.color="#e8b800";
   function doSave(logoUrl){
     db.ref(eventPath("scrim/registrations")+"/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code}).then(function(){
-      document.getElementById("scrim-reg-name").value="";document.getElementById("scrim-reg-tag").value="";document.getElementById("scrim-reg-manager").value="";document.getElementById("scrim-reg-mgr-phone").value="";document.getElementById("scrim-reg-logo-file").value="";document.getElementById("scrim-reg-logo-prev").style.display="none";scrimLogoFile=null;
+      document.getElementById("scrim-reg-name").value="";document.getElementById("scrim-reg-tag").value="";document.getElementById("scrim-reg-manager").value="";document.getElementById("scrim-reg-mgr-phone").value="";document.getElementById("scrim-reg-logo-file").value="";document.getElementById("scrim-reg-logo-prev").style.display="none";document.getElementById("scrim-reg-logo-prev").dataset.savedLogo="";scrimLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_scrim_code",code);localStorage.setItem("pmac_scrim_name",name);
       msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b><br><span style='color:#ff4444;font-size:9px;'>SAVE THIS CODE to remove your registration</span>";
@@ -1997,7 +2030,7 @@ document.getElementById("scrim-reg-btn").onclick = function() {
       img.src=e.target.result;
     };
     reader.readAsDataURL(scrimLogoFile);
-  }else{doSave("");}
+  }else{doSave(document.getElementById("scrim-reg-logo-prev").dataset.savedLogo || findSavedRegistrationLogo(name) || "");}
 };
 
 function scrimSetFilter(f) {
