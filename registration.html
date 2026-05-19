@@ -771,6 +771,28 @@ function eventPath(child){ return eventBasePath()+"/"+child; }
 localStorage.setItem("pmac_active_event", EVENT_ID);
 var auth = firebase.auth();
 var storage = firebase.storage();
+function sanitizeKey(n){ return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_"); }
+function logoKey(name){ return String(name||"").trim().toUpperCase(); }
+function saveTeamLogoToLibrary(team){
+  if(!isAdmin || !auth.currentUser || !team || !team.name || !team.logo) return Promise.resolve();
+  var key = sanitizeKey(logoKey(team.name));
+  if(!key) return Promise.resolve();
+  return db.ref("pmac/teamLogos/"+key).update({
+    name: logoKey(team.name),
+    logo: team.logo,
+    source: "pmaf-community",
+    event: EVENT_ID,
+    savedAt: Date.now(),
+    savedBy: auth.currentUser.uid
+  }).catch(function(e){ console.warn("Team logo library save failed", e); });
+}
+function seedApprovedRegistrationLogos(list){
+  if(!isAdmin || !auth.currentUser) return;
+  Object.keys(list||{}).forEach(function(k){
+    var t=list[k];
+    if(t && t.status==="approved" && t.logo) saveTeamLogoToLibrary(t);
+  });
+}
 
 var isAdmin = false;
 var isSuperAdmin = false;
@@ -808,6 +830,7 @@ db.ref(eventPath("registrations")).on("value", function(s) {
   regs = s.val() || {};
   updateCard();
   renderTeams();
+  seedApprovedRegistrationLogos(regs);
   checkStatus();
 });
 
@@ -1077,7 +1100,12 @@ function renderTeams() {
     list.appendChild(row);
   });
   list.querySelectorAll(".ta-ok,.ta-no").forEach(function(btn){
-    btn.onclick=function(){db.ref(eventPath("registrations")+"/"+this.dataset.key+"/status").set(this.dataset.status).then(function(){toast("Updated!",true);}).catch(function(e){toast("Error: "+e.message,false);});};
+    btn.onclick=function(){
+      var key=this.dataset.key, status=this.dataset.status, team=regs[key];
+      db.ref(eventPath("registrations")+"/"+key+"/status").set(status).then(function(){
+        if(status==="approved") return saveTeamLogoToLibrary(team);
+      }).then(function(){toast(status==="approved"?"Approved and logo saved":"Updated!",true);}).catch(function(e){toast("Error: "+e.message,false);});
+    };
   });
   list.querySelectorAll(".ta-wa").forEach(function(btn){
     btn.onclick=function(){
@@ -1824,6 +1852,7 @@ db.ref(eventPath("scrim/registrations")).on("value", function(s) {
   scrimRegs = s.val() || {};
   scrimUpdateCard();
   scrimRenderTeams();
+  seedApprovedRegistrationLogos(scrimRegs);
   scrimCheckStatus();
 });
 
@@ -2005,7 +2034,12 @@ function scrimRenderTeams() {
     list.appendChild(row);
   });
   list.querySelectorAll(".ta-ok,.ta-no").forEach(function(btn){
-    btn.onclick=function(){db.ref(eventPath("scrim/registrations")+"/"+this.dataset.key+"/status").set(this.dataset.status).then(function(){toast("Updated!",true);}).catch(function(e){toast("Error: "+e.message,false);});};
+    btn.onclick=function(){
+      var key=this.dataset.key, status=this.dataset.status, team=scrimRegs[key];
+      db.ref(eventPath("scrim/registrations")+"/"+key+"/status").set(status).then(function(){
+        if(status==="approved") return saveTeamLogoToLibrary(team);
+      }).then(function(){toast(status==="approved"?"Approved and logo saved":"Updated!",true);}).catch(function(e){toast("Error: "+e.message,false);});
+    };
   });
   list.querySelectorAll(".ta-wa").forEach(function(btn){
     btn.onclick=function(){

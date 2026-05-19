@@ -361,6 +361,8 @@ function showMainPage(){
   const userLabel=document.getElementById("event-user-label");
   if(userLabel) userLabel.innerHTML=`UID: ${escapeHtml(currentAdminUid)} <button class="btn" style="font-size:10px;padding:3px 8px;margin-left:5px;" onclick="copyMyAdminUid()">Copy UID</button>`;
   resetEventRefs();
+  loadTeamLogoLibrary();
+  watchTeamLogoLibrary();
   loadEventList();
   loadEventGroups();
   watchActiveSession();
@@ -397,7 +399,6 @@ function stopActiveRefs(){
   window._teamSessionMap={};
 }
 function loadFirebaseData(){
-  loadTeamLogoLibrary();
   stopActiveRefs();
   dbTeamsRef.off();
   dbScoresRef.off();
@@ -442,6 +443,7 @@ function toggleForumPanel(forceOpen){
 }
 function showSection(sec){ if(sec==="forum"){ toggleForumPanel(true); return; } document.getElementById("section-teams").style.display = sec==="teams"?"block":"none"; document.getElementById("section-scores").style.display = sec==="scores"?"block":"none"; document.getElementById("section-eventgroup").style.display = sec==="eventgroup"?"block":"none"; document.getElementById("section-overlay").style.display = sec==="overlay"?"block":"none"; document.getElementById("section-gfx").style.display = sec==="gfx"?"block":"none"; const order=["teams","scores","eventgroup","overlay","gfx","forum"]; document.querySelectorAll(".stab").forEach((b,i)=>{ b.classList.toggle("active", order[i]===sec); }); if(sec==="scores") renderScoreGrid(); if(sec==="eventgroup"){ renderEventGroups(); updateActiveBanner(); } if(sec==="overlay") fillOverlaySettingsForm(); }
 function logoKey(name){ return String(name||"").trim().toUpperCase(); }
+function teamLogoDbKey(name){ return sanitizeKey(logoKey(name)); }
 function loadTeamLogoLibrary(){ try{ teamLogoLibrary = JSON.parse(localStorage.getItem(TEAM_LOGO_LIBRARY_KEY)||"{}") || {}; }catch(e){ teamLogoLibrary={}; } }
 function saveTeamLogoLibrary(){ try{ localStorage.setItem(TEAM_LOGO_LIBRARY_KEY, JSON.stringify(teamLogoLibrary)); }catch(e){} }
 function rememberTeamLogo(name, logo){
@@ -449,6 +451,25 @@ function rememberTeamLogo(name, logo){
   if(!key || !logo) return;
   teamLogoLibrary[key] = { name:key, logo:logo, savedAt:Date.now() };
   saveTeamLogoLibrary();
+  const dbKey = teamLogoDbKey(key);
+  if(dbKey && auth.currentUser){
+    db.ref("pmac/teamLogos/"+dbKey).update({name:key,logo:logo,source:"admin",event:activeEventId,savedAt:Date.now(),savedBy:auth.currentUser.uid}).catch(()=>{});
+  }
+}
+function watchTeamLogoLibrary(){
+  if(window._teamLogoLibraryWatching) return;
+  window._teamLogoLibraryWatching = true;
+  db.ref("pmac/teamLogos").on("value", snap=>{
+    const data=snap.val()||{};
+    Object.keys(data).forEach(k=>{
+      const item=data[k]||{};
+      if(item.name && item.logo) teamLogoLibrary[logoKey(item.name)] = {name:logoKey(item.name),logo:item.logo,savedAt:item.savedAt||0};
+    });
+    saveTeamLogoLibrary();
+    refreshManageTeamSuggestions();
+    updateManageSavedLogo();
+    renderEventGroups();
+  });
 }
 function seedTeamLogoLibrary(list){
   (list||[]).forEach(t=>{ if(t && t.name && t.logo) rememberTeamLogo(t.name,t.logo); });
