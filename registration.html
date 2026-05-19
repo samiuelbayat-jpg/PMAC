@@ -850,7 +850,8 @@ function startCommunityAdmin(user) {
     db.ref("pmac/superAdmins/" + currentAdminUid).once("value").then(function(s){ return s.val() === true; }).catch(function(){ return false; }),
     db.ref("pmac/eventsMeta/" + EVENT_ID).once("value").then(function(s){ return s.val() || null; }).catch(function(){ return null; })
   ]).then(function(res) {
-    isSuperAdmin = !!res[0];
+    var legacyDefault = EVENT_ID === "default" && !res[1];
+    isSuperAdmin = !!res[0] || legacyDefault;
     isAdmin = isSuperAdmin || canEditCurrentEvent(res[1]);
     if (!isAdmin) document.getElementById("pw-err").textContent = "No admin access for this event";
     refreshAfterAdminChange();
@@ -960,21 +961,24 @@ document.getElementById("banner-file").onchange = function() {
   document.getElementById("banner-fname").textContent=f.name.substring(0,20);
 };
 document.getElementById("save-ev-btn").onclick = function() {
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var bf=document.getElementById("banner-file").files[0];
   function save(burl) {
     var d={name:document.getElementById("ei-name").value.trim()||"PMAC Tournament",date:document.getElementById("ei-date").value,maxTeams:parseInt(document.getElementById("ei-max").value)||24,prize:document.getElementById("ei-prize").value.trim(),platform:document.getElementById("ei-platform").value.trim(),description:document.getElementById("ei-desc").value.trim(),regStatus:editEvStatus};
     if(burl) d.banner=burl; else if(eventInfo.banner) d.banner=eventInfo.banner;
-    db.ref(eventPath("event")).set(d).then(function(){document.getElementById("edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
+    db.ref(eventPath("event")).update(d).then(function(){document.getElementById("edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
   }
   if(bf){storage.ref("pmac/event-banner/"+Date.now()+"_"+bf.name.replace(/ /g,"_")).put(bf).then(function(s){return s.ref.getDownloadURL();}).then(function(u){save(u);}).catch(function(){save(null);});}else{save(null);}
 };
 
 document.getElementById("toggle-reg-btn").onclick = function() {
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var ns=evStatus==="open"?"closed":"open";
   db.ref(eventPath("event/regStatus")).set(ns).then(function(){toast("Registration "+ns,true);}).catch(function(e){toast("Error: "+e.message,false);});
 };
 
 document.getElementById("save-reset-btn").onclick = function() {
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var count=Object.keys(regs).length;
   if(!count){toast("No registrations to save",false);return;}
   if(!confirm("Save "+count+" teams to archive and clear all registrations?")) return;
@@ -1890,21 +1894,24 @@ document.getElementById("scrim-banner-file").onchange = function() {
   document.getElementById("scrim-banner-prev").style.display="block";
 };
 document.getElementById("scrim-save-ev-btn").onclick = function() {
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var bf=document.getElementById("scrim-banner-file").files[0];
   function save(burl) {
     var d={name:document.getElementById("scrim-ei-name").value.trim()||"PMAF Daily Scrim",date:document.getElementById("scrim-ei-date").value,maxTeams:parseInt(document.getElementById("scrim-ei-max").value)||24,prize:document.getElementById("scrim-ei-prize").value.trim(),platform:document.getElementById("scrim-ei-platform").value.trim(),description:document.getElementById("scrim-ei-desc").value.trim(),regStatus:scrimEditStatus};
     if(burl) d.banner=burl; else if(scrimInfo.banner) d.banner=scrimInfo.banner;
-    db.ref(eventPath("scrim/event")).set(d).then(function(){document.getElementById("scrim-edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
+    db.ref(eventPath("scrim/event")).update(d).then(function(){document.getElementById("scrim-edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
   }
   if(bf){storage.ref("pmac/scrim-banner/"+Date.now()+"_"+bf.name.replace(/ /g,"_")).put(bf).then(function(s){return s.ref.getDownloadURL();}).then(function(u){save(u);}).catch(function(){save(null);});}else{save(null);}
 };
 
 document.getElementById("scrim-toggle-reg-btn").onclick = function() {
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var ns=scrimStatus==="open"?"closed":"open";
   db.ref(eventPath("scrim/event/regStatus")).set(ns).then(function(){toast("Registration "+ns,true);}).catch(function(e){toast("Error: "+e.message,false);});
 };
 
 document.getElementById("scrim-save-reset-btn").onclick = function() {
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var count=Object.keys(scrimRegs).length;
   if(!count){toast("No registrations to save",false);return;}
   if(!confirm("Save "+count+" teams to archive and clear all registrations?")) return;
