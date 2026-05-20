@@ -128,6 +128,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .ta-ok{color:#00c97a;}.ta-ok:hover{background:rgba(0,201,122,0.1);border-color:rgba(0,201,122,0.3);}
 .ta-no{color:#ff4444;}.ta-no:hover{background:rgba(255,68,68,0.1);border-color:rgba(255,68,68,0.3);}
 .ta-del:hover{color:#ff4444;border-color:rgba(255,68,68,0.3);}
+.ta-msg{color:#25d366;}.ta-msg:hover{background:rgba(37,211,102,0.1);border-color:rgba(37,211,102,0.3);}
 .ta-wa{color:#25d366;}.ta-wa:hover{background:rgba(37,211,102,0.1);border-color:rgba(37,211,102,0.3);}
 .empty{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;text-align:center;padding:2rem;}
 
@@ -389,6 +390,8 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <div class="admin-bar" id="admin-bar">
     <button class="btn" id="edit-ev-btn" style="padding:6px 16px;font-size:12px;">✎ Edit Event</button>
     <button class="btn" id="toggle-reg-btn" style="padding:6px 16px;font-size:12px;">● Toggle Registration</button>
+    <button class="btn" onclick="exportEventTeams('whatsapp')" style="padding:6px 16px;font-size:12px;">📤 WhatsApp List</button>
+    <button class="btn" onclick="exportEventTeams('telegram')" style="padding:6px 16px;font-size:12px;">📤 Telegram List</button>
     <button class="btn btn-red" id="save-reset-btn" style="padding:6px 16px;font-size:12px;">💾 Save & Reset</button>
   </div>
 
@@ -772,6 +775,7 @@ localStorage.setItem("pmac_active_event", EVENT_ID);
 var auth = firebase.auth();
 var storage = firebase.storage();
 var teamLogoLibrary = {};
+var logoLookupTimers = {};
 function sanitizeKey(n){ return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_"); }
 function logoKey(name){ return String(name||"").trim().toUpperCase(); }
 function refreshSavedTeamLogoList(){
@@ -781,7 +785,18 @@ function refreshSavedTeamLogoList(){
 }
 function findSavedRegistrationLogo(name){
   var key=logoKey(name);
-  return key && teamLogoLibrary[key] && teamLogoLibrary[key].logo ? teamLogoLibrary[key].logo : "";
+  if(!key) return "";
+  if(teamLogoLibrary[key] && teamLogoLibrary[key].logo) return teamLogoLibrary[key].logo;
+  var pools=[regs,scrimRegs];
+  for(var p=0;p<pools.length;p++){
+    var list=pools[p]||{};
+    var keys=Object.keys(list);
+    for(var i=0;i<keys.length;i++){
+      var t=list[keys[i]];
+      if(t && logoKey(t.name)===key && t.logo) return t.logo;
+    }
+  }
+  return "";
 }
 function previewSavedRegistrationLogo(kind){
   var isScrim = kind === "scrim";
@@ -790,8 +805,59 @@ function previewSavedRegistrationLogo(kind){
   var prev=document.getElementById(isScrim ? "scrim-reg-logo-prev" : "reg-logo-prev");
   if(!nameEl || !prev || (fileEl && fileEl.files && fileEl.files[0])) return;
   var logo=findSavedRegistrationLogo(nameEl.value);
-  if(logo){ prev.src=logo; prev.style.display="block"; prev.dataset.savedLogo=logo; }
-  else { prev.src=""; prev.style.display="none"; prev.dataset.savedLogo=""; }
+  if(logo){ setRegistrationLogoPreview(kind, logo); }
+  else {
+    prev.src=""; prev.style.display="none"; prev.dataset.savedLogo="";
+    scheduleFirebaseLogoLookup(kind, nameEl.value);
+  }
+}
+function setRegistrationLogoPreview(kind, logo){
+  var isScrim = kind === "scrim";
+  var prev=document.getElementById(isScrim ? "scrim-reg-logo-prev" : "reg-logo-prev");
+  if(!prev || !logo) return;
+  prev.src=logo;
+  prev.style.display="block";
+  prev.dataset.savedLogo=logo;
+}
+function scanLogoFromSnapshot(snapshot, name){
+  var key=logoKey(name);
+  var data=snapshot.val()||{};
+  var found="";
+  Object.keys(data).some(function(k){
+    var t=data[k]||{};
+    if(logoKey(t.name)===key && t.logo){ found=t.logo; return true; }
+    return false;
+  });
+  return found;
+}
+function scheduleFirebaseLogoLookup(kind, name){
+  var key=logoKey(name);
+  if(!key) return;
+  clearTimeout(logoLookupTimers[kind]);
+  logoLookupTimers[kind]=setTimeout(function(){ lookupFirebaseLogo(kind, key); }, 180);
+}
+function lookupFirebaseLogo(kind, name){
+  var key=logoKey(name);
+  if(!key) return;
+  var isScrim = kind === "scrim";
+  var fileEl=document.getElementById(isScrim ? "scrim-reg-logo-file" : "reg-logo-file");
+  if(fileEl && fileEl.files && fileEl.files[0]) return;
+  db.ref("pmac/teamLogos/"+sanitizeKey(key)).once("value").then(function(s){
+    var item=s.val()||{};
+    return item.logo || "";
+  }).catch(function(){ return ""; }).then(function(savedLogo){
+    if(savedLogo) return savedLogo;
+    return db.ref(eventPath("registrations")).once("value").then(function(regSnap){
+      var logo=scanLogoFromSnapshot(regSnap, key);
+      if(logo) return logo;
+      return db.ref(eventPath("scrim/registrations")).once("value").then(function(scrimSnap){
+        return scanLogoFromSnapshot(scrimSnap, key);
+      });
+    });
+  }).then(function(logo){
+    var currentName=document.getElementById(isScrim ? "scrim-reg-name" : "reg-name")?.value || "";
+    if(logo && logoKey(currentName)===key) setRegistrationLogoPreview(kind, logo);
+  }).catch(function(e){ console.warn("Saved logo lookup failed", e); });
 }
 db.ref("pmac/teamLogos").on("value", function(s){
   var data=s.val()||{};
@@ -862,6 +928,8 @@ db.ref(eventPath("registrations")).on("value", function(s) {
   updateCard();
   renderTeams();
   seedApprovedRegistrationLogos(regs);
+  previewSavedRegistrationLogo("reg");
+  previewSavedRegistrationLogo("scrim");
   checkStatus();
 });
 
@@ -1119,6 +1187,7 @@ function renderTeams() {
     else{logoDiv.textContent=(t.name||"?").substring(0,2);}
     var adminBtns="";
     if(isAdmin){
+      adminBtns+='<button class="ta ta-msg" data-key="'+key+'" title="Message on WhatsApp">💬</button>';
       if(st!=="approved") adminBtns+='<button class="ta ta-ok" data-key="'+key+'" data-status="approved">✓</button>';
       if(st!=="rejected") adminBtns+='<button class="ta ta-no" data-key="'+key+'" data-status="rejected">✗</button>';
       if(st==="approved") adminBtns+='<button class="ta ta-wa" data-key="'+key+'" data-status="approved" title="WhatsApp">💬✓</button>';
@@ -1131,6 +1200,12 @@ function renderTeams() {
     row.querySelector(".tr-logo").replaceWith(logoDiv);
     list.appendChild(row);
   });
+  list.querySelectorAll(".ta-msg").forEach(function(btn){
+    btn.onclick=function(){
+      var t=regs[this.dataset.key];if(!t) return;
+      openTeamWhatsApp(t,"message");
+    };
+  });
   list.querySelectorAll(".ta-ok,.ta-no").forEach(function(btn){
     btn.onclick=function(){
       var key=this.dataset.key, status=this.dataset.status, team=regs[key];
@@ -1142,10 +1217,7 @@ function renderTeams() {
   list.querySelectorAll(".ta-wa").forEach(function(btn){
     btn.onclick=function(){
       var t=regs[this.dataset.key];if(!t) return;
-      var evName=eventInfo.name||"PMAC Tournament";
-      var msg=this.dataset.status==="approved"?"Congratulations "+t.name+"! Your team has been APPROVED for "+evName+". Register: https://samiuelbayat-jpg.github.io/PMAC/registration.html - PMAC Afghanistan":"Sorry "+t.name+", your team registration for "+evName+" has been REJECTED. Contact admin for info. - PMAC Afghanistan";
-      var phone=(t.managerPhone||"").replace(/[^0-9]/g,"");
-      window.open("https://wa.me/"+(phone||"")+"?text="+encodeURIComponent(msg),"_blank");
+      openTeamWhatsApp(t,this.dataset.status);
     };
   });
   list.querySelectorAll(".ta-del").forEach(function(btn){
@@ -1154,6 +1226,39 @@ function renderTeams() {
   list.querySelectorAll("[data-act=rem]").forEach(function(btn){
     btn.onclick=function(){document.getElementById("confirm-key").value=this.dataset.key;document.getElementById("confirm-code").value="";document.getElementById("confirm-err").textContent="";document.getElementById("overlay").style.display="flex";setTimeout(function(){document.getElementById("confirm-code").focus();},100);};
   });
+}
+
+function openTeamWhatsApp(team,status){
+  var evName=eventInfo.name||"PMAC Tournament";
+  var msg="Hello "+(team.manager||"")+"، this is PMAC Afghanistan about your team "+(team.name||"")+" registration for "+evName+".";
+  if(status==="approved") msg="Congratulations "+team.name+"! Your team has been APPROVED for "+evName+". - PMAC Afghanistan";
+  else if(status==="rejected") msg="Sorry "+team.name+", your team registration for "+evName+" has been REJECTED. Contact admin for info. - PMAC Afghanistan";
+  var phone=(team.managerPhone||"").replace(/[^0-9]/g,"");
+  window.open("https://wa.me/"+(phone||"")+"?text="+encodeURIComponent(msg),"_blank");
+}
+
+function buildEventTeamList(){
+  var keys=Object.keys(regs).sort(function(a,b){return (regs[a].registeredAt||0)-(regs[b].registeredAt||0);});
+  var lines=[];
+  lines.push((eventInfo.name||"PMAF Event")+" - Team List");
+  if(eventInfo.date) lines.push("Date: "+eventInfo.date);
+  lines.push("Teams: "+keys.length);
+  lines.push("");
+  keys.forEach(function(k,i){
+    var t=regs[k]||{};
+    lines.push((i+1)+". "+(t.name||"")+" ["+(t.tag||"-")+"] - "+(t.status||"pending").toUpperCase()+" - "+(t.manager||"-")+" - "+(t.managerPhone||"-"));
+  });
+  return lines.join("\n");
+}
+
+function exportEventTeams(target){
+  if(!isAdmin){toast("Admin login required",false);return;}
+  if(!Object.keys(regs).length){toast("No teams to export",false);return;}
+  var text=buildEventTeamList();
+  if(navigator.clipboard) navigator.clipboard.writeText(text).catch(function(){});
+  var url=target==="telegram" ? "https://t.me/share/url?url=&text="+encodeURIComponent(text) : "https://wa.me/?text="+encodeURIComponent(text);
+  window.open(url,"_blank");
+  toast("Team list copied and opened",true);
 }
 
 // CONFIRM REMOVE
@@ -1885,6 +1990,8 @@ db.ref(eventPath("scrim/registrations")).on("value", function(s) {
   scrimUpdateCard();
   scrimRenderTeams();
   seedApprovedRegistrationLogos(scrimRegs);
+  previewSavedRegistrationLogo("reg");
+  previewSavedRegistrationLogo("scrim");
   scrimCheckStatus();
 });
 
