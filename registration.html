@@ -64,6 +64,12 @@ body{color:#eef0f5;font-family:'Barlow Condensed',sans-serif;min-height:100vh;ba
 
 /* ADMIN CONTROLS */
 .admin-bar{background:rgba(10,12,16,0.85);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:.875rem 1.25rem;margin-bottom:1.25rem;display:none;flex-wrap:wrap;gap:8px;align-items:center;}
+.group-export-box{display:none;background:rgba(10,12,16,0.92);border:1px solid rgba(232,184,0,0.22);border-radius:8px;padding:12px 14px;margin:-.5rem 0 1.25rem;gap:10px;align-items:center;flex-wrap:wrap;}
+.group-export-title{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:.08em;text-transform:uppercase;width:100%;}
+.group-choice-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.group-choice{font-family:'Share Tech Mono',monospace;font-size:10px;color:#eef0f5;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:6px 9px;background:#161a1f;cursor:pointer;}
+.group-choice input{margin-right:5px;vertical-align:middle;}
+.group-date-inp{background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#eef0f5;border-radius:4px;padding:7px 10px;font-family:'Share Tech Mono',monospace;font-size:11px;}
 .edit-ev-wrap{position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;padding:1rem;background:rgba(0,0,0,0.85);}
 .edit-ev-inner{background:#0f1115;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:1.5rem;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;}
 .edit-ev-title{font-weight:900;font-size:18px;letter-spacing:.04em;text-transform:uppercase;color:#e8b800;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;}
@@ -392,7 +398,15 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     <button class="btn" id="toggle-reg-btn" style="padding:6px 16px;font-size:12px;">● Toggle Registration</button>
     <button class="btn" onclick="exportEventTeams('whatsapp')" style="padding:6px 16px;font-size:12px;">📤 WhatsApp List</button>
     <button class="btn" onclick="exportEventTeams('telegram')" style="padding:6px 16px;font-size:12px;">📤 Telegram List</button>
+    <button class="btn" onclick="toggleGroupExportBox()" style="padding:6px 16px;font-size:12px;">🎲 Export to Groups</button>
+    <button class="btn btn-red" onclick="clearRejectedRegistrations()" style="padding:6px 16px;font-size:12px;">🗑 Clear Rejected</button>
     <button class="btn btn-red" id="save-reset-btn" style="padding:6px 16px;font-size:12px;">💾 Save & Reset</button>
+  </div>
+  <div class="group-export-box" id="group-export-box">
+    <div class="group-export-title">Randomly export approved teams to Event Groups</div>
+    <input class="group-date-inp" type="date" id="group-export-date">
+    <div class="group-choice-row" id="group-export-options"></div>
+    <button class="btn btn-gold" style="padding:7px 16px;font-size:12px;" onclick="exportApprovedTeamsToGroups()">Export Approved Teams</button>
   </div>
 
   <!-- EDIT EVENT FORM MODAL -->
@@ -912,6 +926,8 @@ var archiveLoaded = false;
 var streamersLoaded = false;
 var YT_API_KEY = "AIzaSyDmB2cozlb3JqUWchjyB-TdfQNtcOCVY1Y";
 var streamersList = [];
+var communityEventGroups = {};
+var GROUP_EXPORT_DEFAULTS = ["A","B","C","D","E","F","G"];
 
 // Apply admin UI immediately
 applyAdminUI();
@@ -922,6 +938,10 @@ db.ref(eventPath("event")).on("value", function(s) {
   evStatus = eventInfo.regStatus || "open";
   evMax = parseInt(eventInfo.maxTeams) || 24;
   updateCard();
+});
+db.ref(eventPath("eventGroups")).on("value", function(s) {
+  communityEventGroups = s.val() || {};
+  renderGroupExportOptions();
 });
 db.ref(eventPath("registrations")).on("value", function(s) {
   regs = s.val() || {};
@@ -1221,7 +1241,7 @@ function renderTeams() {
     };
   });
   list.querySelectorAll(".ta-del").forEach(function(btn){
-    btn.onclick=function(){if(!confirm("Delete this registration?")) return;db.ref(eventPath("registrations")+"/"+this.dataset.key).remove().then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
+    btn.onclick=function(){if(!confirm("Delete this registration? Admin removal does not need the user delete code.")) return;removeRegistrationByAdmin(this.dataset.key,"registrations").then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
   });
   list.querySelectorAll("[data-act=rem]").forEach(function(btn){
     btn.onclick=function(){document.getElementById("confirm-key").value=this.dataset.key;document.getElementById("confirm-code").value="";document.getElementById("confirm-err").textContent="";document.getElementById("overlay").style.display="flex";setTimeout(function(){document.getElementById("confirm-code").focus();},100);};
@@ -1261,11 +1281,85 @@ function exportEventTeams(target){
   toast("Team list copied and opened",true);
 }
 
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function groupExportIds(){
+  var ids=Object.keys(communityEventGroups||{}).concat(GROUP_EXPORT_DEFAULTS);
+  return ids.map(function(x){return String(x||"").trim().toUpperCase();}).filter(function(x,i,a){return x && a.indexOf(x)===i;}).sort();
+}
+function renderGroupExportOptions(){
+  var box=document.getElementById("group-export-options");
+  if(!box) return;
+  var ids=groupExportIds();
+  box.innerHTML=ids.map(function(id){return '<label class="group-choice"><input type="checkbox" class="group-export-check" value="'+id+'">Group '+id+'</label>';}).join("");
+  var dateEl=document.getElementById("group-export-date");
+  if(dateEl && !dateEl.value) dateEl.value=eventInfo.date || todayStr();
+}
+function toggleGroupExportBox(){
+  if(!isAdmin){toast("Admin login required",false);return;}
+  var box=document.getElementById("group-export-box");
+  if(!box) return;
+  box.style.display = box.style.display==="flex" ? "none" : "flex";
+  renderGroupExportOptions();
+}
+function approvedRegistrationTeams(){
+  return Object.keys(regs).filter(function(k){return regs[k] && regs[k].status==="approved";}).map(function(k){
+    var r=regs[k]||{};
+    return {name:(r.name||"").trim().toUpperCase(),tag:(r.tag||"").trim().toUpperCase(),logo:r.logo||findSavedRegistrationLogo(r.name)||""};
+  }).filter(function(t){return t.name;});
+}
+function shuffledCopy(list){
+  var arr=list.slice();
+  for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=arr[i];arr[i]=arr[j];arr[j]=tmp;}
+  return arr;
+}
+function emptyScoreRows(){ return Array(10).fill(null).map(function(){return {rank:null,kills:null};}); }
+function removeRegistrationByAdmin(key, path){
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return Promise.reject(new Error("Admin login required"));}
+  return db.ref(eventPath(path)+"/"+key).remove();
+}
+function clearRejectedRegistrations(){
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
+  var rejected=Object.keys(regs).filter(function(k){return regs[k] && regs[k].status==="rejected";});
+  if(!rejected.length){toast("No rejected teams to remove",true);return;}
+  if(!confirm("Remove "+rejected.length+" rejected team registration(s)? This does not need the user delete code.")) return;
+  var updates={};
+  rejected.forEach(function(k){updates[eventPath("registrations")+"/"+k]=null;});
+  db.ref().update(updates).then(function(){toast("Rejected teams removed",true);}).catch(function(e){toast("Error: "+e.message,false);});
+}
+
+function exportApprovedTeamsToGroups(){
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
+  var selected=Array.from(document.querySelectorAll(".group-export-check:checked")).map(function(cb){return cb.value;});
+  if(!selected.length){toast("Choose at least one group",false);return;}
+  var date=(document.getElementById("group-export-date")||{}).value || eventInfo.date || todayStr();
+  var approved=approvedRegistrationTeams();
+  if(!approved.length){toast("No approved teams found",false);return;}
+  if(!confirm("Randomly export "+approved.length+" approved teams to "+selected.length+" group(s) for "+date+"? Existing teams for that date in selected groups will be replaced.")) return;
+  var buckets={}; selected.forEach(function(g){buckets[g]=[];});
+  shuffledCopy(approved).forEach(function(team,i){buckets[selected[i%selected.length]].push(team);});
+  var updates={};
+  selected.forEach(function(g){
+    var base=eventPath("eventGroups")+"/"+g+"/sessions/"+date;
+    updates[base+"/teams"]=buckets[g];
+    var scores={};
+    buckets[g].forEach(function(team){ scores[sanitizeKey(team.name)] = emptyScoreRows(); });
+    updates[base+"/scores"]=scores;
+    updates[base+"/exportedFrom"]="pmaf-community";
+    updates[base+"/exportedAt"]=Date.now();
+  });
+  db.ref().update(updates).then(function(){
+    toast("Approved teams exported to groups",true);
+    document.getElementById("group-export-box").style.display="none";
+  }).catch(function(e){toast("Error: "+e.message,false);});
+}
 // CONFIRM REMOVE
 document.getElementById("cancel-overlay-btn").onclick=function(){document.getElementById("overlay").style.display="none";};
 document.getElementById("confirm-del-btn").onclick=function(){
   var key=document.getElementById("confirm-key").value;
   var typed=document.getElementById("confirm-code").value.trim().toUpperCase();
+  if(isAdmin && auth.currentUser){
+    return removeRegistrationByAdmin(key,"registrations").then(function(){document.getElementById("overlay").style.display="none";toast("Registration removed",true);}).catch(function(e){toast("Error: "+e.message,false);});
+  }
   if(!typed){document.getElementById("confirm-err").textContent="Enter your delete code";return;}
   db.ref(eventPath("registrations")+"/"+key).once("value").then(function(snap){
     var reg=snap.val();if(!reg){document.getElementById("overlay").style.display="none";return;}
@@ -2191,7 +2285,7 @@ function scrimRenderTeams() {
     };
   });
   list.querySelectorAll(".ta-del").forEach(function(btn){
-    btn.onclick=function(){if(!confirm("Delete this registration?")) return;db.ref(eventPath("scrim/registrations")+"/"+this.dataset.key).remove().then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
+    btn.onclick=function(){if(!confirm("Delete this registration? Admin removal does not need the user delete code.")) return;removeRegistrationByAdmin(this.dataset.key,"scrim/registrations").then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
   });
 }
 
@@ -2214,3 +2308,12 @@ function scrimCheckStatus(){
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
