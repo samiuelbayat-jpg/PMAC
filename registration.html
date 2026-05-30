@@ -1226,7 +1226,8 @@ function renderTeams() {
     }
     var selfBtn=!isAdmin?'<button class="ta" data-key="'+key+'" data-act="rem">Remove</button>':"";
     var row=document.createElement("div");row.className="team-row "+st;
-    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+'] · '+(t.manager||"—")+(t.managerPhone?" · "+t.managerPhone:"")+"</div></div>"+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+selfBtn+"</div>";
+    var privateMeta=isAdmin ? " · "+(t.manager||"—")+(t.managerPhone?" · "+t.managerPhone:"") : "";
+    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+']'+privateMeta+"</div></div>"+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+selfBtn+"</div>";
     row.querySelector(".tr-logo").replaceWith(logoDiv);
     list.appendChild(row);
   });
@@ -2289,7 +2290,8 @@ function scrimRenderTeams() {
       adminBtns+='<button class="ta ta-del" data-key="'+key+'">🗑</button>';
     }
     var row=document.createElement("div");row.className="team-row "+st;
-    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+'] · '+(t.manager||"—")+(t.managerPhone?" · "+t.managerPhone:"")+"</div></div>"+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+"</div>";
+    var privateMeta=isAdmin ? " · "+(t.manager||"—")+(t.managerPhone?" · "+t.managerPhone:"") : "";
+    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+']'+privateMeta+"</div></div>"+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+"</div>";
     row.querySelector(".tr-logo").replaceWith(logoDiv);
     list.appendChild(row);
   });
@@ -2334,6 +2336,7 @@ function scrimCheckStatus(){
 </script>
 </body>
 </html>
+
 
 
 
