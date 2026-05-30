@@ -66,9 +66,12 @@ body{color:#eef0f5;font-family:'Barlow Condensed',sans-serif;min-height:100vh;ba
 .admin-bar{background:rgba(10,12,16,0.85);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:.875rem 1.25rem;margin-bottom:1.25rem;display:none;flex-wrap:wrap;gap:8px;align-items:center;}
 .group-export-box{display:none;background:rgba(10,12,16,0.92);border:1px solid rgba(232,184,0,0.22);border-radius:8px;padding:12px 14px;margin:-.5rem 0 1.25rem;gap:10px;align-items:center;flex-wrap:wrap;}
 .group-export-title{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:.08em;text-transform:uppercase;width:100%;}
-.group-choice-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.group-export-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;text-transform:uppercase;margin-right:4px;}
+.group-choice-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;width:100%;}
 .group-choice{font-family:'Share Tech Mono',monospace;font-size:10px;color:#eef0f5;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:6px 9px;background:#161a1f;cursor:pointer;}
 .group-choice input{margin-right:5px;vertical-align:middle;}
+.group-choice.is-on{border-color:#e8b800;background:rgba(232,184,0,0.14);color:#fff;}
+.group-export-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 .group-date-inp{background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#eef0f5;border-radius:4px;padding:7px 10px;font-family:'Share Tech Mono',monospace;font-size:11px;}
 .edit-ev-wrap{position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;padding:1rem;background:rgba(0,0,0,0.85);}
 .edit-ev-inner{background:#0f1115;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:1.5rem;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;}
@@ -405,8 +408,15 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <div class="group-export-box" id="group-export-box">
     <div class="group-export-title">Randomly export approved teams to Event Groups</div>
     <input class="group-date-inp" type="date" id="group-export-date">
-    <div class="group-choice-row" id="group-export-options"></div>
-    <button class="btn btn-gold" style="padding:7px 16px;font-size:12px;" onclick="exportApprovedTeamsToGroups()">Export Approved Teams</button>
+    <div class="group-choice-row">
+      <span class="group-export-label">Choose groups:</span>
+      <div class="group-choice-row" id="group-export-options"></div>
+    </div>
+    <div class="group-export-actions">
+      <button class="btn" style="padding:7px 12px;font-size:11px;" onclick="setGroupExportChecks(true)">Select All Groups</button>
+      <button class="btn" style="padding:7px 12px;font-size:11px;" onclick="setGroupExportChecks(false)">Clear Groups</button>
+      <button class="btn btn-gold" style="padding:7px 16px;font-size:12px;" onclick="exportApprovedTeamsToGroups()">Export Approved Teams</button>
+    </div>
   </div>
 
   <!-- EDIT EVENT FORM MODAL -->
@@ -1286,13 +1296,29 @@ function groupExportIds(){
   var ids=Object.keys(communityEventGroups||{}).concat(GROUP_EXPORT_DEFAULTS);
   return ids.map(function(x){return String(x||"").trim().toUpperCase();}).filter(function(x,i,a){return x && a.indexOf(x)===i;}).sort();
 }
+function refreshGroupChoiceStyles(){
+  document.querySelectorAll(".group-choice").forEach(function(label){
+    var cb=label.querySelector("input");
+    if(cb && cb.checked) label.classList.add("is-on"); else label.classList.remove("is-on");
+  });
+}
 function renderGroupExportOptions(){
   var box=document.getElementById("group-export-options");
   if(!box) return;
+  var previous=Array.from(document.querySelectorAll(".group-export-check:checked")).map(function(cb){return cb.value;});
   var ids=groupExportIds();
-  box.innerHTML=ids.map(function(id){return '<label class="group-choice"><input type="checkbox" class="group-export-check" value="'+id+'">Group '+id+'</label>';}).join("");
+  box.innerHTML=ids.map(function(id){
+    var checked=previous.indexOf(id)>-1 ? " checked" : "";
+    return '<label class="group-choice"><input type="checkbox" class="group-export-check" value="'+id+'"'+checked+'>Group '+id+'</label>';
+  }).join("");
+  box.querySelectorAll(".group-export-check").forEach(function(cb){cb.onchange=refreshGroupChoiceStyles;});
   var dateEl=document.getElementById("group-export-date");
   if(dateEl && !dateEl.value) dateEl.value=eventInfo.date || todayStr();
+  refreshGroupChoiceStyles();
+}
+function setGroupExportChecks(checked){
+  document.querySelectorAll(".group-export-check").forEach(function(cb){cb.checked=checked;});
+  refreshGroupChoiceStyles();
 }
 function toggleGroupExportBox(){
   if(!isAdmin){toast("Admin login required",false);return;}
@@ -2308,6 +2334,7 @@ function scrimCheckStatus(){
 </script>
 </body>
 </html>
+
 
 
 
