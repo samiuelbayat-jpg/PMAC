@@ -8,7 +8,6 @@
 <title>PMAF Community</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <style>
@@ -64,15 +63,6 @@ body{color:#eef0f5;font-family:'Barlow Condensed',sans-serif;min-height:100vh;ba
 
 /* ADMIN CONTROLS */
 .admin-bar{background:rgba(10,12,16,0.85);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:.875rem 1.25rem;margin-bottom:1.25rem;display:none;flex-wrap:wrap;gap:8px;align-items:center;}
-.group-export-box{display:none;background:rgba(10,12,16,0.92);border:1px solid rgba(232,184,0,0.22);border-radius:8px;padding:12px 14px;margin:-.5rem 0 1.25rem;gap:10px;align-items:center;flex-wrap:wrap;}
-.group-export-title{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:.08em;text-transform:uppercase;width:100%;}
-.group-export-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;text-transform:uppercase;margin-right:4px;}
-.group-choice-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;width:100%;}
-.group-choice{font-family:'Share Tech Mono',monospace;font-size:10px;color:#eef0f5;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:6px 9px;background:#161a1f;cursor:pointer;}
-.group-choice input{margin-right:5px;vertical-align:middle;}
-.group-choice.is-on{border-color:#e8b800;background:rgba(232,184,0,0.14);color:#fff;}
-.group-export-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.group-date-inp{background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#eef0f5;border-radius:4px;padding:7px 10px;font-family:'Share Tech Mono',monospace;font-size:11px;}
 .edit-ev-wrap{position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;padding:1rem;background:rgba(0,0,0,0.85);}
 .edit-ev-inner{background:#0f1115;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:1.5rem;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;}
 .edit-ev-title{font-weight:900;font-size:18px;letter-spacing:.04em;text-transform:uppercase;color:#e8b800;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;}
@@ -114,6 +104,9 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .notif-close{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;cursor:pointer;padding:4px 8px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:none;}
 
 /* TEAMS LIST */
+.team-info-banner{display:none;margin:.75rem 0 1rem;background:linear-gradient(135deg,rgba(232,184,0,0.16),rgba(10,12,16,0.94));border:1px solid rgba(232,184,0,0.35);border-left:5px solid #e8b800;border-radius:8px;padding:14px 18px;box-shadow:0 10px 28px rgba(0,0,0,0.25);}
+.team-info-kicker{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px;}
+.team-info-text{font-weight:900;font-size:clamp(20px,3.4vw,34px);line-height:1.1;color:#fff;text-transform:uppercase;white-space:pre-wrap;overflow-wrap:anywhere;}
 .teams-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:8px;}
 .teams-lbl{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:.15em;text-transform:uppercase;}
 .fbtn{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(135deg,#1a1e24,#0f1115);border:1px solid rgba(255,255,255,0.1);color:#8a96a8;border-radius:14px;padding:5px 14px;cursor:pointer;transition:all .15s;}
@@ -137,7 +130,6 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .ta-ok{color:#00c97a;}.ta-ok:hover{background:rgba(0,201,122,0.1);border-color:rgba(0,201,122,0.3);}
 .ta-no{color:#ff4444;}.ta-no:hover{background:rgba(255,68,68,0.1);border-color:rgba(255,68,68,0.3);}
 .ta-del:hover{color:#ff4444;border-color:rgba(255,68,68,0.3);}
-.ta-msg{color:#25d366;}.ta-msg:hover{background:rgba(37,211,102,0.1);border-color:rgba(37,211,102,0.3);}
 .ta-wa{color:#25d366;}.ta-wa:hover{background:rgba(37,211,102,0.1);border-color:rgba(37,211,102,0.3);}
 .empty{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;text-align:center;padding:2rem;}
 
@@ -170,10 +162,6 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .gfx-thumb.on{border-color:#e8b800;}
 .gfx-thumb img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;}
 .gfx-thumb-l{font-family:'Share Tech Mono',monospace;font-size:8px;color:#606878;padding:3px 4px;background:#0f1115;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.gfx-admin-upload{display:none;background:#0f1115;border:1px solid rgba(232,184,0,0.22);border-radius:10px;padding:1rem;margin-bottom:1rem;}
-.gfx-upload-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;}
-.gfx-upload-status{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;min-height:14px;margin-top:8px;}
-.gfx-upload-preview{height:42px;aspect-ratio:16/9;object-fit:cover;border-radius:4px;border:1px solid rgba(232,184,0,0.25);display:none;}
 
 /* LOBBY */
 .lobby-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;}
@@ -342,8 +330,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;" id="hdr-count"></span>
     <!-- Login row -->
     <div id="hdr-login-row" style="display:flex;align-items:center;gap:8px;">
-      <input class="pw-inp" type="email" id="admin-email" placeholder="Admin email">
-      <input class="pw-inp" type="password" id="admin-pw" placeholder="Password">
+      <input class="pw-inp" type="password" id="admin-pw" placeholder="Admin password">
       <button class="btn btn-gold" id="login-btn" style="padding:6px 16px;">Login</button>
       <span class="pw-err" id="pw-err"></span>
     </div>
@@ -399,24 +386,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <div class="admin-bar" id="admin-bar">
     <button class="btn" id="edit-ev-btn" style="padding:6px 16px;font-size:12px;">✎ Edit Event</button>
     <button class="btn" id="toggle-reg-btn" style="padding:6px 16px;font-size:12px;">● Toggle Registration</button>
-    <button class="btn" onclick="exportEventTeams('whatsapp')" style="padding:6px 16px;font-size:12px;">📤 WhatsApp List</button>
-    <button class="btn" onclick="exportEventTeams('telegram')" style="padding:6px 16px;font-size:12px;">📤 Telegram List</button>
-    <button class="btn" onclick="toggleGroupExportBox()" style="padding:6px 16px;font-size:12px;">🎲 Export to Groups</button>
-    <button class="btn btn-red" onclick="clearRejectedRegistrations()" style="padding:6px 16px;font-size:12px;">🗑 Clear Rejected</button>
     <button class="btn btn-red" id="save-reset-btn" style="padding:6px 16px;font-size:12px;">💾 Save & Reset</button>
-  </div>
-  <div class="group-export-box" id="group-export-box">
-    <div class="group-export-title">Randomly export approved teams to Event Groups</div>
-    <input class="group-date-inp" type="date" id="group-export-date">
-    <div class="group-choice-row">
-      <span class="group-export-label">Choose groups:</span>
-      <div class="group-choice-row" id="group-export-options"></div>
-    </div>
-    <div class="group-export-actions">
-      <button class="btn" style="padding:7px 12px;font-size:11px;" onclick="setGroupExportChecks(true)">Select All Groups</button>
-      <button class="btn" style="padding:7px 12px;font-size:11px;" onclick="setGroupExportChecks(false)">Clear Groups</button>
-      <button class="btn btn-gold" style="padding:7px 16px;font-size:12px;" onclick="exportApprovedTeamsToGroups()">Export Approved Teams</button>
-    </div>
   </div>
 
   <!-- EDIT EVENT FORM MODAL -->
@@ -434,6 +404,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
         <div class="ef"><div class="el">Platform</div><input class="ei" type="text" id="ei-platform" placeholder="Online - PUBG Mobile"></div>
       </div>
       <div class="ef" style="margin-bottom:.75rem;"><div class="el">Description</div><textarea class="ei" id="ei-desc" placeholder="Rules, notes..."></textarea></div>
+      <div class="ef" style="margin-bottom:.75rem;"><div class="el">Daily Team Info / Status Update</div><textarea class="ei" id="ei-daily-info" placeholder="Example: Lobby opens 20:00 CET - Group A and B must be ready."></textarea></div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:.75rem;border-top:1px solid rgba(255,255,255,0.08);margin-top:.75rem;">
         <div style="display:flex;align-items:center;gap:8px;">
           <span class="el" style="white-space:nowrap;">Event Banner</span>
@@ -464,7 +435,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     <div class="reg-title">Register Your Team</div>
     <div class="reg-sub">Fill in all fields then click Register</div>
     <div class="field-row">
-      <div class="fld"><div class="fl">Team Name *</div><input class="fi fi-name" type="text" id="reg-name" placeholder="Team Name" list="saved-team-logo-list" oninput="previewSavedRegistrationLogo('reg')" onchange="previewSavedRegistrationLogo('reg')"><datalist id="saved-team-logo-list"></datalist></div>
+      <div class="fld"><div class="fl">Team Name *</div><input class="fi fi-name" type="text" id="reg-name" placeholder="Team Name"></div>
       <div class="fld"><div class="fl">Team Tag *</div><input class="fi fi-tag" type="text" id="reg-tag" placeholder="TAG" maxlength="6"></div>
       <div class="fld"><div class="fl">Manager *</div><input class="fi fi-mgr" type="text" id="reg-manager" placeholder="Manager name"></div>
       <div class="fld"><div class="fl">Manager Phone *</div><input class="fi fi-phone" type="text" id="reg-mgr-phone" placeholder="+93 xxx xxx xxxx"></div>
@@ -495,6 +466,10 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <button class="fbtn" id="f-approved" onclick="setFilter('approved')">Approved</button>
       <button class="fbtn" id="f-rejected" onclick="setFilter('rejected')">Rejected</button>
     </div>
+  </div>
+  <div class="team-info-banner" id="team-info-banner">
+    <div class="team-info-kicker">Daily Info / Status Update</div>
+    <div class="team-info-text" id="team-info-text"></div>
   </div>
   <div id="teams-list"></div>
 
@@ -580,7 +555,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     <div class="reg-title">Register Your Team</div>
     <div class="reg-sub">Fill in all fields then click Register</div>
     <div class="field-row">
-      <div class="fld"><div class="fl">Team Name *</div><input class="fi fi-name" type="text" id="scrim-reg-name" placeholder="Team Name" list="saved-team-logo-list" oninput="previewSavedRegistrationLogo('scrim')" onchange="previewSavedRegistrationLogo('scrim')"></div>
+      <div class="fld"><div class="fl">Team Name *</div><input class="fi fi-name" type="text" id="scrim-reg-name" placeholder="Team Name"></div>
       <div class="fld"><div class="fl">Team Tag *</div><input class="fi fi-tag" type="text" id="scrim-reg-tag" placeholder="TAG" maxlength="6"></div>
       <div class="fld"><div class="fl">Manager *</div><input class="fi fi-mgr" type="text" id="scrim-reg-manager" placeholder="Manager name"></div>
       <div class="fld"><div class="fl">Manager Phone *</div><input class="fi fi-phone" type="text" id="scrim-reg-mgr-phone" placeholder="+93 xxx xxx xxxx"></div>
@@ -618,23 +593,6 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 
 <!-- GFX SECTION -->
 <div class="section" id="sec-gfx">
-  <div class="gfx-admin-upload" id="gfx-admin-upload">
-    <div class="lobby-add-title" style="margin-bottom:.75rem;">Upload GFX Result</div>
-    <div class="gfx-upload-row">
-      <div class="lf" style="min-width:180px;flex:1;">
-        <div class="ll">Label</div>
-        <input class="li" id="gfx-upload-label" placeholder="e.g. Group A Overall Rankings">
-      </div>
-      <div class="lf">
-        <div class="ll">Image</div>
-        <input type="file" id="gfx-upload-file" accept="image/*" style="display:none" onchange="previewGfxUpload(this)">
-        <button class="btn" type="button" onclick="document.getElementById('gfx-upload-file').click()">Upload GFX</button>
-      </div>
-      <img class="gfx-upload-preview" id="gfx-upload-preview" alt="">
-      <button class="btn btn-gold" type="button" id="gfx-save-btn" onclick="saveGfxUpload()">Save GFX</button>
-    </div>
-    <div class="gfx-upload-status" id="gfx-upload-status"></div>
-  </div>
   <div class="gfx-viewer">
     <div class="gfx-img-area" id="gfx-img-area"><div class="empty">Loading...</div></div>
     <div class="gfx-bar">
@@ -792,132 +750,13 @@ firebase.initializeApp({
   appId:"1:279105805502:web:8def653069d0b3d73bd2ef"
 });
 var db = firebase.database();
-var EVENT_ID = new URLSearchParams(location.search).get("event") || "default";
-function eventBasePath(){ return EVENT_ID==="default" ? "pmac" : "pmac/events/"+EVENT_ID; }
-function eventPath(child){ return eventBasePath()+"/"+child; }
-localStorage.setItem("pmac_active_event", EVENT_ID);
-var auth = firebase.auth();
 var storage = firebase.storage();
-var teamLogoLibrary = {};
-var logoLookupTimers = {};
-function sanitizeKey(n){ return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_"); }
-function logoKey(name){ return String(name||"").trim().toUpperCase(); }
-function refreshSavedTeamLogoList(){
-  var dl=document.getElementById("saved-team-logo-list");
-  if(!dl) return;
-  dl.innerHTML=Object.keys(teamLogoLibrary).sort().map(function(n){return '<option value="'+escapeHtml(n)+'">';}).join("");
-}
-function findSavedRegistrationLogo(name){
-  var key=logoKey(name);
-  if(!key) return "";
-  if(teamLogoLibrary[key] && teamLogoLibrary[key].logo) return teamLogoLibrary[key].logo;
-  var pools=[regs,scrimRegs];
-  for(var p=0;p<pools.length;p++){
-    var list=pools[p]||{};
-    var keys=Object.keys(list);
-    for(var i=0;i<keys.length;i++){
-      var t=list[keys[i]];
-      if(t && logoKey(t.name)===key && t.logo) return t.logo;
-    }
-  }
-  return "";
-}
-function previewSavedRegistrationLogo(kind){
-  var isScrim = kind === "scrim";
-  var nameEl=document.getElementById(isScrim ? "scrim-reg-name" : "reg-name");
-  var fileEl=document.getElementById(isScrim ? "scrim-reg-logo-file" : "reg-logo-file");
-  var prev=document.getElementById(isScrim ? "scrim-reg-logo-prev" : "reg-logo-prev");
-  if(!nameEl || !prev || (fileEl && fileEl.files && fileEl.files[0])) return;
-  var logo=findSavedRegistrationLogo(nameEl.value);
-  if(logo){ setRegistrationLogoPreview(kind, logo); }
-  else {
-    prev.src=""; prev.style.display="none"; prev.dataset.savedLogo="";
-    scheduleFirebaseLogoLookup(kind, nameEl.value);
-  }
-}
-function setRegistrationLogoPreview(kind, logo){
-  var isScrim = kind === "scrim";
-  var prev=document.getElementById(isScrim ? "scrim-reg-logo-prev" : "reg-logo-prev");
-  if(!prev || !logo) return;
-  prev.src=logo;
-  prev.style.display="block";
-  prev.dataset.savedLogo=logo;
-}
-function scanLogoFromSnapshot(snapshot, name){
-  var key=logoKey(name);
-  var data=snapshot.val()||{};
-  var found="";
-  Object.keys(data).some(function(k){
-    var t=data[k]||{};
-    if(logoKey(t.name)===key && t.logo){ found=t.logo; return true; }
-    return false;
-  });
-  return found;
-}
-function scheduleFirebaseLogoLookup(kind, name){
-  var key=logoKey(name);
-  if(!key) return;
-  clearTimeout(logoLookupTimers[kind]);
-  logoLookupTimers[kind]=setTimeout(function(){ lookupFirebaseLogo(kind, key); }, 180);
-}
-function lookupFirebaseLogo(kind, name){
-  var key=logoKey(name);
-  if(!key) return;
-  var isScrim = kind === "scrim";
-  var fileEl=document.getElementById(isScrim ? "scrim-reg-logo-file" : "reg-logo-file");
-  if(fileEl && fileEl.files && fileEl.files[0]) return;
-  db.ref("pmac/teamLogos/"+sanitizeKey(key)).once("value").then(function(s){
-    var item=s.val()||{};
-    return item.logo || "";
-  }).catch(function(){ return ""; }).then(function(savedLogo){
-    if(savedLogo) return savedLogo;
-    return db.ref(eventPath("registrations")).once("value").then(function(regSnap){
-      var logo=scanLogoFromSnapshot(regSnap, key);
-      if(logo) return logo;
-      return db.ref(eventPath("scrim/registrations")).once("value").then(function(scrimSnap){
-        return scanLogoFromSnapshot(scrimSnap, key);
-      });
-    });
-  }).then(function(logo){
-    var currentName=document.getElementById(isScrim ? "scrim-reg-name" : "reg-name")?.value || "";
-    if(logo && logoKey(currentName)===key) setRegistrationLogoPreview(kind, logo);
-  }).catch(function(e){ console.warn("Saved logo lookup failed", e); });
-}
-db.ref("pmac/teamLogos").on("value", function(s){
-  var data=s.val()||{};
-  teamLogoLibrary={};
-  Object.keys(data).forEach(function(k){
-    var item=data[k]||{};
-    if(item.name && item.logo) teamLogoLibrary[logoKey(item.name)]={name:logoKey(item.name),logo:item.logo};
-  });
-  refreshSavedTeamLogoList();
-  previewSavedRegistrationLogo("reg");
-  previewSavedRegistrationLogo("scrim");
-});
-function saveTeamLogoToLibrary(team){
-  if(!isAdmin || !auth.currentUser || !team || !team.name || !team.logo) return Promise.resolve();
-  var key = sanitizeKey(logoKey(team.name));
-  if(!key) return Promise.resolve();
-  return db.ref("pmac/teamLogos/"+key).update({
-    name: logoKey(team.name),
-    logo: team.logo,
-    source: "pmaf-community",
-    event: EVENT_ID,
-    savedAt: Date.now(),
-    savedBy: auth.currentUser.uid
-  }).catch(function(e){ console.warn("Team logo library save failed", e); });
-}
-function seedApprovedRegistrationLogos(list){
-  if(!isAdmin || !auth.currentUser) return;
-  Object.keys(list||{}).forEach(function(k){
-    var t=list[k];
-    if(t && t.status==="approved" && t.logo) saveTeamLogoToLibrary(t);
-  });
-}
 
+// STATE - read session FIRST before anything else
 var isAdmin = false;
 var isSuperAdmin = false;
-var currentAdminUid = "";
+var _s = sessionStorage.getItem("reg_adm");
+if (_s === "1" || _s === "super") { isAdmin = true; isSuperAdmin = _s === "super"; }
 
 var evStatus = "open";
 var evMax = 24;
@@ -929,37 +768,27 @@ var editEvStatus = "open";
 var gfxList = [];
 var gfxIdx = 0;
 var gfxLoaded = false;
-var gfxUploadData = "";
 var lobbyLoaded = false;
 var scoresLoaded = false;
 var archiveLoaded = false;
 var streamersLoaded = false;
 var YT_API_KEY = "AIzaSyDmB2cozlb3JqUWchjyB-TdfQNtcOCVY1Y";
 var streamersList = [];
-var communityEventGroups = {};
-var GROUP_EXPORT_DEFAULTS = ["A","B","C","D","E","F","G"];
 
 // Apply admin UI immediately
 applyAdminUI();
 
 // Firebase listeners
-db.ref(eventPath("event")).on("value", function(s) {
+db.ref("pmac/event").on("value", function(s) {
   eventInfo = s.val() || {};
   evStatus = eventInfo.regStatus || "open";
   evMax = parseInt(eventInfo.maxTeams) || 24;
   updateCard();
 });
-db.ref(eventPath("eventGroups")).on("value", function(s) {
-  communityEventGroups = s.val() || {};
-  renderGroupExportOptions();
-});
-db.ref(eventPath("registrations")).on("value", function(s) {
+db.ref("pmac/registrations").on("value", function(s) {
   regs = s.val() || {};
   updateCard();
   renderTeams();
-  seedApprovedRegistrationLogos(regs);
-  previewSavedRegistrationLogo("reg");
-  previewSavedRegistrationLogo("scrim");
   checkStatus();
 });
 
@@ -967,70 +796,32 @@ function applyAdminUI() {
   if (isAdmin) {
     document.getElementById("hdr-login-row").style.display = "none";
     document.getElementById("hdr-admin-row").style.display = "flex";
-    document.getElementById("admin-lbl").textContent = isSuperAdmin ? "● Super Admin" : "● Event Admin";
+    document.getElementById("admin-lbl").textContent = isSuperAdmin ? "● Super Admin" : "● Admin";
   } else {
     document.getElementById("hdr-login-row").style.display = "flex";
     document.getElementById("hdr-admin-row").style.display = "none";
   }
-  var gfxUpload=document.getElementById("gfx-admin-upload");
-  if(gfxUpload) gfxUpload.style.display = isAdmin ? "block" : "none";
 }
 
-function canEditCurrentEvent(meta) {
-  if (isSuperAdmin) return true;
-  if (!meta || !currentAdminUid) return false;
-  return meta.ownerUid === currentAdminUid || (meta.admins && meta.admins[currentAdminUid] === true);
-}
-
-function refreshAfterAdminChange() {
+// LOGIN
+document.getElementById("login-btn").onclick = function() {
+  var pw = document.getElementById("admin-pw").value;
+  if (pw === "pmac@super2024") { isAdmin = true; isSuperAdmin = true; sessionStorage.setItem("reg_adm","super"); }
+  else if (pw === "pmac2024") { isAdmin = true; isSuperAdmin = false; sessionStorage.setItem("reg_adm","1"); }
+  else { document.getElementById("pw-err").textContent = "Wrong password"; return; }
+  document.getElementById("pw-err").textContent = "";
   applyAdminUI();
   updateCard();
   renderTeams();
   scrimUpdateCard();
   scrimRenderTeams();
-}
-
-function startCommunityAdmin(user) {
-  currentAdminUid = user ? user.uid : "";
-  if (!currentAdminUid) {
-    isAdmin = false;
-    isSuperAdmin = false;
-    refreshAfterAdminChange();
-    return;
-  }
-  Promise.all([
-    db.ref("pmac/superAdmins/" + currentAdminUid).once("value").then(function(s){ return s.val() === true; }).catch(function(){ return false; }),
-    db.ref("pmac/eventsMeta/" + EVENT_ID).once("value").then(function(s){ return s.val() || null; }).catch(function(){ return null; })
-  ]).then(function(res) {
-    var legacyDefault = EVENT_ID === "default" && !res[1];
-    isSuperAdmin = !!res[0] || legacyDefault;
-    isAdmin = isSuperAdmin || canEditCurrentEvent(res[1]);
-    if (!isAdmin) document.getElementById("pw-err").textContent = "No admin access for this event";
-    refreshAfterAdminChange();
-  });
-}
-
-auth.onAuthStateChanged(function(user) {
-  startCommunityAdmin(user);
-});
-
-// LOGIN
-document.getElementById("login-btn").onclick = function() {
-  var email = document.getElementById("admin-email").value.trim();
-  var pw = document.getElementById("admin-pw").value;
-  document.getElementById("pw-err").textContent = "";
-  if (!email || !pw) { document.getElementById("pw-err").textContent = "Enter Firebase email and password"; return; }
-  auth.signInWithEmailAndPassword(email, pw).catch(function(e) {
-    document.getElementById("pw-err").textContent = e.message || "Login failed";
-  });
 };
 
 document.getElementById("admin-pw").onkeydown = function(e) { if(e.key==="Enter") document.getElementById("login-btn").click(); };
-document.getElementById("admin-email").onkeydown = function(e) { if(e.key==="Enter") document.getElementById("login-btn").click(); };
 
 document.getElementById("logout-btn").onclick = function() {
-  auth.signOut();
-  isAdmin = false; isSuperAdmin = false; currentAdminUid = "";
+  sessionStorage.removeItem("reg_adm");
+  isAdmin = false; isSuperAdmin = false;
   applyAdminUI();
   document.getElementById("edit-ev-wrap").style.display = "none";
   document.getElementById("scrim-edit-ev-wrap").style.display = "none";
@@ -1056,6 +847,10 @@ function updateCard() {
   meta += '<span class="em">Max: <b>' + evMax + ' teams</b></span>';
   document.getElementById("ev-meta").innerHTML = meta;
   document.getElementById("ev-desc").textContent = eventInfo.description || "";
+  var infoBanner=document.getElementById("team-info-banner");
+  var infoText=document.getElementById("team-info-text");
+  var dailyInfo=(eventInfo.dailyInfo||"").trim();
+  if(infoBanner && infoText){infoText.textContent=dailyInfo;infoBanner.style.display=dailyInfo?"block":"none";}
   var isFull = count >= evMax;
   var badge = document.getElementById("ev-badge");
   if (isFull) { badge.textContent="FULL"; badge.className="status-badge s-full"; }
@@ -1093,6 +888,7 @@ document.getElementById("edit-ev-btn").onclick = function() {
   document.getElementById("ei-prize").value = eventInfo.prize||"";
   document.getElementById("ei-platform").value = eventInfo.platform||"";
   document.getElementById("ei-desc").value = eventInfo.description||"";
+  document.getElementById("ei-daily-info").value = eventInfo.dailyInfo||"";
   editEvStatus = eventInfo.regStatus||"open";
   updStBtns();
   w.style.display="flex";
@@ -1113,29 +909,26 @@ document.getElementById("banner-file").onchange = function() {
   document.getElementById("banner-fname").textContent=f.name.substring(0,20);
 };
 document.getElementById("save-ev-btn").onclick = function() {
-  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var bf=document.getElementById("banner-file").files[0];
   function save(burl) {
-    var d={name:document.getElementById("ei-name").value.trim()||"PMAC Tournament",date:document.getElementById("ei-date").value,maxTeams:parseInt(document.getElementById("ei-max").value)||24,prize:document.getElementById("ei-prize").value.trim(),platform:document.getElementById("ei-platform").value.trim(),description:document.getElementById("ei-desc").value.trim(),regStatus:editEvStatus};
+    var d={name:document.getElementById("ei-name").value.trim()||"PMAC Tournament",date:document.getElementById("ei-date").value,maxTeams:parseInt(document.getElementById("ei-max").value)||24,prize:document.getElementById("ei-prize").value.trim(),platform:document.getElementById("ei-platform").value.trim(),description:document.getElementById("ei-desc").value.trim(),dailyInfo:document.getElementById("ei-daily-info").value.trim(),regStatus:editEvStatus};
     if(burl) d.banner=burl; else if(eventInfo.banner) d.banner=eventInfo.banner;
-    db.ref(eventPath("event")).update(d).then(function(){document.getElementById("edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
+    db.ref("pmac/event").set(d).then(function(){document.getElementById("edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
   }
   if(bf){storage.ref("pmac/event-banner/"+Date.now()+"_"+bf.name.replace(/ /g,"_")).put(bf).then(function(s){return s.ref.getDownloadURL();}).then(function(u){save(u);}).catch(function(){save(null);});}else{save(null);}
 };
 
 document.getElementById("toggle-reg-btn").onclick = function() {
-  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var ns=evStatus==="open"?"closed":"open";
-  db.ref(eventPath("event/regStatus")).set(ns).then(function(){toast("Registration "+ns,true);}).catch(function(e){toast("Error: "+e.message,false);});
+  db.ref("pmac/event/regStatus").set(ns).then(function(){toast("Registration "+ns,true);}).catch(function(e){toast("Error: "+e.message,false);});
 };
 
 document.getElementById("save-reset-btn").onclick = function() {
-  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var count=Object.keys(regs).length;
   if(!count){toast("No registrations to save",false);return;}
   if(!confirm("Save "+count+" teams to archive and clear all registrations?")) return;
-  db.ref(eventPath("event_archive")+"/ev_"+Date.now()).set({name:eventInfo.name||"PMAC",date:eventInfo.date||"",savedAt:Date.now(),teams:regs}).then(function(){
-    return Promise.all([db.ref(eventPath("registrations")).remove(),db.ref(eventPath("event/regStatus")).set("closed")]);
+  db.ref("pmac/event_archive/ev_"+Date.now()).set({name:eventInfo.name||"PMAC",date:eventInfo.date||"",savedAt:Date.now(),teams:regs}).then(function(){
+    return Promise.all([db.ref("pmac/registrations").remove(),db.ref("pmac/event/regStatus").set("closed")]);
   }).then(function(){toast("Saved and reset!",true);}).catch(function(e){toast("Error: "+e.message,false);});
 };
 
@@ -1151,7 +944,6 @@ document.getElementById("reg-logo-file").onchange = function() {
   regLogoFile=this.files[0]; if(!regLogoFile) return;
   document.getElementById("reg-logo-prev").src=URL.createObjectURL(regLogoFile);
   document.getElementById("reg-logo-prev").style.display="block";
-  document.getElementById("reg-logo-prev").dataset.savedLogo="";
 };
 document.getElementById("reg-btn").onclick = function() {
   var name=document.getElementById("reg-name").value.trim().toUpperCase();
@@ -1171,8 +963,8 @@ document.getElementById("reg-btn").onclick = function() {
   for(var c=0;c<6;c++) code+=chars[Math.floor(Math.random()*chars.length)];
   btn.textContent="Registering...";btn.disabled=true;msg.textContent="Saving...";msg.style.color="#e8b800";
   function doSave(logoUrl){
-    db.ref(eventPath("registrations")+"/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code}).then(function(){
-      document.getElementById("reg-name").value="";document.getElementById("reg-tag").value="";document.getElementById("reg-manager").value="";document.getElementById("reg-mgr-phone").value="";document.getElementById("reg-logo-file").value="";document.getElementById("reg-logo-prev").style.display="none";document.getElementById("reg-logo-prev").dataset.savedLogo="";regLogoFile=null;
+    db.ref("pmac/registrations/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code}).then(function(){
+      document.getElementById("reg-name").value="";document.getElementById("reg-tag").value="";document.getElementById("reg-manager").value="";document.getElementById("reg-mgr-phone").value="";document.getElementById("reg-logo-file").value="";document.getElementById("reg-logo-prev").style.display="none";regLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_reg_code",code);localStorage.setItem("pmac_reg_name",name);
       msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b><br><span style='color:#ff4444;font-size:9px;'>SAVE THIS CODE to remove your registration</span>";
@@ -1190,7 +982,7 @@ document.getElementById("reg-btn").onclick = function() {
       img.src=e.target.result;
     };
     reader.readAsDataURL(regLogoFile);
-  }else{doSave(document.getElementById("reg-logo-prev").dataset.savedLogo || findSavedRegistrationLogo(name) || "");}
+  }else{doSave("");}
 };
 
 // FILTER
@@ -1217,7 +1009,6 @@ function renderTeams() {
     else{logoDiv.textContent=(t.name||"?").substring(0,2);}
     var adminBtns="";
     if(isAdmin){
-      adminBtns+='<button class="ta ta-msg" data-key="'+key+'" title="Message on WhatsApp">💬</button>';
       if(st!=="approved") adminBtns+='<button class="ta ta-ok" data-key="'+key+'" data-status="approved">✓</button>';
       if(st!=="rejected") adminBtns+='<button class="ta ta-no" data-key="'+key+'" data-status="rejected">✗</button>';
       if(st==="approved") adminBtns+='<button class="ta ta-wa" data-key="'+key+'" data-status="approved" title="WhatsApp">💬✓</button>';
@@ -1226,172 +1017,40 @@ function renderTeams() {
     }
     var selfBtn=!isAdmin?'<button class="ta" data-key="'+key+'" data-act="rem">Remove</button>':"";
     var row=document.createElement("div");row.className="team-row "+st;
-    var privateMeta=isAdmin ? " · "+(t.manager||"—")+(t.managerPhone?" · "+t.managerPhone:"") : "";
-    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+']'+privateMeta+"</div></div>"+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+selfBtn+"</div>";
+    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+'] · '+(t.manager||"—")+(t.managerPhone?" · "+t.managerPhone:"")+"</div></div>"+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+selfBtn+"</div>";
     row.querySelector(".tr-logo").replaceWith(logoDiv);
     list.appendChild(row);
   });
-  list.querySelectorAll(".ta-msg").forEach(function(btn){
-    btn.onclick=function(){
-      var t=regs[this.dataset.key];if(!t) return;
-      openTeamWhatsApp(t,"message");
-    };
-  });
   list.querySelectorAll(".ta-ok,.ta-no").forEach(function(btn){
-    btn.onclick=function(){
-      var key=this.dataset.key, status=this.dataset.status, team=regs[key];
-      db.ref(eventPath("registrations")+"/"+key+"/status").set(status).then(function(){
-        if(status==="approved") return saveTeamLogoToLibrary(team);
-      }).then(function(){toast(status==="approved"?"Approved and logo saved":"Updated!",true);}).catch(function(e){toast("Error: "+e.message,false);});
-    };
+    btn.onclick=function(){db.ref("pmac/registrations/"+this.dataset.key+"/status").set(this.dataset.status).then(function(){toast("Updated!",true);}).catch(function(e){toast("Error: "+e.message,false);});};
   });
   list.querySelectorAll(".ta-wa").forEach(function(btn){
     btn.onclick=function(){
       var t=regs[this.dataset.key];if(!t) return;
-      openTeamWhatsApp(t,this.dataset.status);
+      var evName=eventInfo.name||"PMAC Tournament";
+      var msg=this.dataset.status==="approved"?"Congratulations "+t.name+"! Your team has been APPROVED for "+evName+". Register: https://samiuelbayat-jpg.github.io/PMAC/registration.html - PMAC Afghanistan":"Sorry "+t.name+", your team registration for "+evName+" has been REJECTED. Contact admin for info. - PMAC Afghanistan";
+      var phone=(t.managerPhone||"").replace(/[^0-9]/g,"");
+      window.open("https://wa.me/"+(phone||"")+"?text="+encodeURIComponent(msg),"_blank");
     };
   });
   list.querySelectorAll(".ta-del").forEach(function(btn){
-    btn.onclick=function(){if(!confirm("Delete this registration? Admin removal does not need the user delete code.")) return;removeRegistrationByAdmin(this.dataset.key,"registrations").then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
+    btn.onclick=function(){if(!confirm("Delete this registration?")) return;db.ref("pmac/registrations/"+this.dataset.key).remove().then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
   });
   list.querySelectorAll("[data-act=rem]").forEach(function(btn){
     btn.onclick=function(){document.getElementById("confirm-key").value=this.dataset.key;document.getElementById("confirm-code").value="";document.getElementById("confirm-err").textContent="";document.getElementById("overlay").style.display="flex";setTimeout(function(){document.getElementById("confirm-code").focus();},100);};
   });
 }
 
-function openTeamWhatsApp(team,status){
-  var evName=eventInfo.name||"PMAC Tournament";
-  var msg="Hello "+(team.manager||"")+"، this is PMAC Afghanistan about your team "+(team.name||"")+" registration for "+evName+".";
-  if(status==="approved") msg="Congratulations "+team.name+"! Your team has been APPROVED for "+evName+". - PMAC Afghanistan";
-  else if(status==="rejected") msg="Sorry "+team.name+", your team registration for "+evName+" has been REJECTED. Contact admin for info. - PMAC Afghanistan";
-  var phone=(team.managerPhone||"").replace(/[^0-9]/g,"");
-  window.open("https://wa.me/"+(phone||"")+"?text="+encodeURIComponent(msg),"_blank");
-}
-
-function buildEventTeamList(){
-  var keys=Object.keys(regs).sort(function(a,b){return (regs[a].registeredAt||0)-(regs[b].registeredAt||0);});
-  var lines=[];
-  lines.push((eventInfo.name||"PMAF Event")+" - Team List");
-  if(eventInfo.date) lines.push("Date: "+eventInfo.date);
-  lines.push("Teams: "+keys.length);
-  lines.push("");
-  keys.forEach(function(k,i){
-    var t=regs[k]||{};
-    lines.push((i+1)+". "+(t.name||"")+" ["+(t.tag||"-")+"] - "+(t.status||"pending").toUpperCase()+" - "+(t.manager||"-")+" - "+(t.managerPhone||"-"));
-  });
-  return lines.join("\n");
-}
-
-function exportEventTeams(target){
-  if(!isAdmin){toast("Admin login required",false);return;}
-  if(!Object.keys(regs).length){toast("No teams to export",false);return;}
-  var text=buildEventTeamList();
-  if(navigator.clipboard) navigator.clipboard.writeText(text).catch(function(){});
-  var url=target==="telegram" ? "https://t.me/share/url?url=&text="+encodeURIComponent(text) : "https://wa.me/?text="+encodeURIComponent(text);
-  window.open(url,"_blank");
-  toast("Team list copied and opened",true);
-}
-
-function todayStr(){ return new Date().toISOString().slice(0,10); }
-function groupExportIds(){
-  var ids=Object.keys(communityEventGroups||{}).concat(GROUP_EXPORT_DEFAULTS);
-  return ids.map(function(x){return String(x||"").trim().toUpperCase();}).filter(function(x,i,a){return x && a.indexOf(x)===i;}).sort();
-}
-function refreshGroupChoiceStyles(){
-  document.querySelectorAll(".group-choice").forEach(function(label){
-    var cb=label.querySelector("input");
-    if(cb && cb.checked) label.classList.add("is-on"); else label.classList.remove("is-on");
-  });
-}
-function renderGroupExportOptions(){
-  var box=document.getElementById("group-export-options");
-  if(!box) return;
-  var previous=Array.from(document.querySelectorAll(".group-export-check:checked")).map(function(cb){return cb.value;});
-  var ids=groupExportIds();
-  box.innerHTML=ids.map(function(id){
-    var checked=previous.indexOf(id)>-1 ? " checked" : "";
-    return '<label class="group-choice"><input type="checkbox" class="group-export-check" value="'+id+'"'+checked+'>Group '+id+'</label>';
-  }).join("");
-  box.querySelectorAll(".group-export-check").forEach(function(cb){cb.onchange=refreshGroupChoiceStyles;});
-  var dateEl=document.getElementById("group-export-date");
-  if(dateEl && !dateEl.value) dateEl.value=eventInfo.date || todayStr();
-  refreshGroupChoiceStyles();
-}
-function setGroupExportChecks(checked){
-  document.querySelectorAll(".group-export-check").forEach(function(cb){cb.checked=checked;});
-  refreshGroupChoiceStyles();
-}
-function toggleGroupExportBox(){
-  if(!isAdmin){toast("Admin login required",false);return;}
-  var box=document.getElementById("group-export-box");
-  if(!box) return;
-  box.style.display = box.style.display==="flex" ? "none" : "flex";
-  renderGroupExportOptions();
-}
-function approvedRegistrationTeams(){
-  return Object.keys(regs).filter(function(k){return regs[k] && regs[k].status==="approved";}).map(function(k){
-    var r=regs[k]||{};
-    return {name:(r.name||"").trim().toUpperCase(),tag:(r.tag||"").trim().toUpperCase(),logo:r.logo||findSavedRegistrationLogo(r.name)||""};
-  }).filter(function(t){return t.name;});
-}
-function shuffledCopy(list){
-  var arr=list.slice();
-  for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=arr[i];arr[i]=arr[j];arr[j]=tmp;}
-  return arr;
-}
-function emptyScoreRows(){ return Array(10).fill(null).map(function(){return {rank:null,kills:null};}); }
-function removeRegistrationByAdmin(key, path){
-  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return Promise.reject(new Error("Admin login required"));}
-  return db.ref(eventPath(path)+"/"+key).remove();
-}
-function clearRejectedRegistrations(){
-  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
-  var rejected=Object.keys(regs).filter(function(k){return regs[k] && regs[k].status==="rejected";});
-  if(!rejected.length){toast("No rejected teams to remove",true);return;}
-  if(!confirm("Remove "+rejected.length+" rejected team registration(s)? This does not need the user delete code.")) return;
-  var updates={};
-  rejected.forEach(function(k){updates[eventPath("registrations")+"/"+k]=null;});
-  db.ref().update(updates).then(function(){toast("Rejected teams removed",true);}).catch(function(e){toast("Error: "+e.message,false);});
-}
-
-function exportApprovedTeamsToGroups(){
-  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
-  var selected=Array.from(document.querySelectorAll(".group-export-check:checked")).map(function(cb){return cb.value;});
-  if(!selected.length){toast("Choose at least one group",false);return;}
-  var date=(document.getElementById("group-export-date")||{}).value || eventInfo.date || todayStr();
-  var approved=approvedRegistrationTeams();
-  if(!approved.length){toast("No approved teams found",false);return;}
-  if(!confirm("Randomly export "+approved.length+" approved teams to "+selected.length+" group(s) for "+date+"? Existing teams for that date in selected groups will be replaced.")) return;
-  var buckets={}; selected.forEach(function(g){buckets[g]=[];});
-  shuffledCopy(approved).forEach(function(team,i){buckets[selected[i%selected.length]].push(team);});
-  var updates={};
-  selected.forEach(function(g){
-    var base=eventPath("eventGroups")+"/"+g+"/sessions/"+date;
-    updates[base+"/teams"]=buckets[g];
-    var scores={};
-    buckets[g].forEach(function(team){ scores[sanitizeKey(team.name)] = emptyScoreRows(); });
-    updates[base+"/scores"]=scores;
-    updates[base+"/exportedFrom"]="pmaf-community";
-    updates[base+"/exportedAt"]=Date.now();
-  });
-  db.ref().update(updates).then(function(){
-    toast("Approved teams exported to groups",true);
-    document.getElementById("group-export-box").style.display="none";
-  }).catch(function(e){toast("Error: "+e.message,false);});
-}
 // CONFIRM REMOVE
 document.getElementById("cancel-overlay-btn").onclick=function(){document.getElementById("overlay").style.display="none";};
 document.getElementById("confirm-del-btn").onclick=function(){
   var key=document.getElementById("confirm-key").value;
   var typed=document.getElementById("confirm-code").value.trim().toUpperCase();
-  if(isAdmin && auth.currentUser){
-    return removeRegistrationByAdmin(key,"registrations").then(function(){document.getElementById("overlay").style.display="none";toast("Registration removed",true);}).catch(function(e){toast("Error: "+e.message,false);});
-  }
   if(!typed){document.getElementById("confirm-err").textContent="Enter your delete code";return;}
-  db.ref(eventPath("registrations")+"/"+key).once("value").then(function(snap){
+  db.ref("pmac/registrations/"+key).once("value").then(function(snap){
     var reg=snap.val();if(!reg){document.getElementById("overlay").style.display="none";return;}
     if(reg.deleteCode!==typed){document.getElementById("confirm-err").textContent="Wrong delete code";return;}
-    return db.ref(eventPath("registrations")+"/"+key).remove().then(function(){document.getElementById("overlay").style.display="none";toast("Registration removed",true);});
+    return db.ref("pmac/registrations/"+key).remove().then(function(){document.getElementById("overlay").style.display="none";toast("Registration removed",true);});
   }).catch(function(e){toast("Error: "+e.message,false);});
 };
 
@@ -1428,7 +1087,7 @@ function showTab(tab){
 
 // GFX
 function loadGFX(){
-  db.ref(eventPath("gfx")).once("value").then(function(s){
+  db.ref("pmac/gfx").once("value").then(function(s){
     var v=s.val();gfxList=v?(Array.isArray(v)?v:Object.values(v)):[];gfxList.sort(function(a,b){return b.uploadedAt-a.uploadedAt;});gfxLoaded=true;gfxIdx=0;renderGFX();
   });
 }
@@ -1439,59 +1098,6 @@ function renderGFX(){
   thumbs.innerHTML="";gfxList.forEach(function(g,i){var div=document.createElement("div");div.className="gfx-thumb"+(i===gfxIdx?" on":"");div.innerHTML='<img src="'+g.url+'" alt="'+(g.label||"")+'"><div class="gfx-thumb-l">'+(g.label||"Image "+(i+1))+"</div>";div.onclick=(function(idx){return function(){gfxIdx=idx;renderGFX();};})(i);thumbs.appendChild(div);});
 }
 function gfxNav(dir){gfxIdx=Math.max(0,Math.min(gfxList.length-1,gfxIdx+dir));renderGFX();}
-function previewGfxUpload(input){
-  var file=input.files&&input.files[0];
-  var prev=document.getElementById("gfx-upload-preview");
-  var status=document.getElementById("gfx-upload-status");
-  gfxUploadData="";
-  if(!file){if(prev) prev.style.display="none";return;}
-  if(status) status.textContent="Preparing image...";
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var img=new Image();
-    img.onload=function(){
-      var maxW=1920, maxH=1080;
-      var scale=Math.min(1,maxW/img.width,maxH/img.height);
-      var w=Math.round(img.width*scale), h=Math.round(img.height*scale);
-      var c=document.createElement("canvas");
-      c.width=w; c.height=h;
-      var ctx=c.getContext("2d");
-      ctx.fillStyle="#0a0b0d";
-      ctx.fillRect(0,0,w,h);
-      ctx.drawImage(img,0,0,w,h);
-      gfxUploadData=c.toDataURL("image/jpeg",0.86);
-      if(prev){prev.src=gfxUploadData;prev.style.display="block";}
-      if(status) status.textContent=file.name+" ready";
-    };
-    img.onerror=function(){if(status) status.textContent="Could not read this image";};
-    img.src=e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-function saveGfxUpload(){
-  if(!isAdmin){toast("Admin login required",false);return;}
-  if(!gfxUploadData){toast("Choose a GFX image first",false);return;}
-  var btn=document.getElementById("gfx-save-btn");
-  var status=document.getElementById("gfx-upload-status");
-  var label=(document.getElementById("gfx-upload-label").value||"GFX Result").trim();
-  if(btn){btn.disabled=true;btn.textContent="Saving...";}
-  if(status) status.textContent="Saving GFX result...";
-  db.ref(eventPath("gfx")).push({label:label,url:gfxUploadData,uploadedAt:Date.now()}).then(function(){
-    gfxUploadData="";
-    document.getElementById("gfx-upload-label").value="";
-    document.getElementById("gfx-upload-file").value="";
-    document.getElementById("gfx-upload-preview").style.display="none";
-    gfxLoaded=false;
-    loadGFX();
-    toast("GFX uploaded",true);
-    if(status) status.textContent="Uploaded successfully";
-  }).catch(function(e){
-    toast("Upload failed: "+e.message,false);
-    if(status) status.textContent="Upload failed: "+e.message;
-  }).finally(function(){
-    if(btn){btn.disabled=false;btn.textContent="Save GFX";}
-  });
-}
 
 // LOBBY
 var lobbyAllTeams = [];
@@ -1499,7 +1105,7 @@ var lobbyCurrentPage = 0;
 var LOBBY_PER_PAGE = 20;
 
 function loadLobby(){
-  db.ref(eventPath("lobby_teams")).once("value").then(function(s){
+  db.ref("pmac/lobby_teams").once("value").then(function(s){
     var v=s.val();var raw=v?(Array.isArray(v)?v:Object.values(v)):[];
     lobbyAllTeams=raw.sort(function(a,b){return (a.addedAt||0)-(b.addedAt||0);});
     lobbyLoaded=true;
@@ -1555,7 +1161,7 @@ function importToLobby() {
   var label = approved.length > 0 ? approved.length + " approved" : regKeys.length + " all";
   if (!confirm("Import " + src.length + " " + (approved.length > 0 ? "approved" : "") + " teams to Best Teams Lobby?")) return;
 
-  db.ref(eventPath("lobby_teams")).once("value").then(function(snap) {
+  db.ref("pmac/lobby_teams").once("value").then(function(snap) {
     var existing = snap.val() || {};
     var existingNames = Object.values(existing).map(function(t){ return t.name; });
     var toAdd = src.filter(function(k){ return regs[k].name && existingNames.indexOf(regs[k].name) === -1; });
@@ -1565,7 +1171,7 @@ function importToLobby() {
     var promises = toAdd.map(function(k) {
       var r = regs[k];
       var key = "t" + Date.now() + Math.floor(Math.random() * 9999);
-      return db.ref(eventPath("lobby_teams")+"/"+key).set({
+      return db.ref("pmac/lobby_teams/" + key).set({
         name: r.name, tag: r.tag || "", manager: r.manager || "",
         phone: r.managerPhone || "", logo: r.logo || "",
         code: (function(){ var c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",r=""; for(var i=0;i<6;i++) r+=c[Math.floor(Math.random()*c.length)]; return r; })(),
@@ -1604,7 +1210,7 @@ document.getElementById("lb-add-btn").onclick = function(){
   var chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; var code="";
   for(var i=0;i<6;i++) code+=chars[Math.floor(Math.random()*chars.length)];
   function doSave(logoB64){
-    db.ref(eventPath("lobby_teams")+"/t"+Date.now()).set({
+    db.ref("pmac/lobby_teams/t"+Date.now()).set({
       name:name, tag:tag, manager:manager, phone:phone,
       logo:logoB64, code:code, addedAt:Date.now()
     }).then(function(){
@@ -1665,9 +1271,9 @@ function pubSortBy(mode){
 function loadScoreboard(){
   scoresLoaded=true;
   var pubTeams=[],pubScores={};
-  db.ref(eventPath("teams")).once("value").then(function(s){
+  db.ref("pmac/teams").once("value").then(function(s){
     var v=s.val()||[];pubTeamsGlobal=Array.isArray(v)?v:Object.values(v);
-    db.ref(eventPath("matches")).once("value").then(function(s2){
+    db.ref("pmac/matches").once("value").then(function(s2){
       pubScoresGlobal=s2.val()||{};
       renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
     });
@@ -1733,7 +1339,7 @@ function renderPubScoreboard(pubTeams,pubScores){
 
 function loadPubArchive(){
   archiveLoaded = true;
-  db.ref(eventPath("archive")).once("value").then(function(s){
+  db.ref("pmac/archive").once("value").then(function(s){
     var v = s.val() || {};
     var list = Object.values(v).sort(function(a,b){return (b.archivedAt||0)-(a.archivedAt||0);});
     pubArchiveList = list;
@@ -1953,7 +1559,7 @@ document.getElementById("s-add-btn").onclick = function(){
   if(!ytId){toast("Enter YouTube Channel ID",false);return;}
   var btn=this; btn.textContent="Adding..."; btn.disabled=true;
   function doSave(photoB64){
-    db.ref(eventPath("streamers")+"/s"+Date.now()).set({
+    db.ref("pmac/streamers/s"+Date.now()).set({
       name:name, ytId:ytId, ttUser:ttUser, photo:photoB64, addedAt:Date.now()
     }).then(function(){
       btn.textContent="Add Streamer"; btn.disabled=false;
@@ -1975,7 +1581,7 @@ document.getElementById("s-add-btn").onclick = function(){
 
 function loadStreamers(){
   streamersLoaded = true;
-  db.ref(eventPath("streamers")).once("value").then(function(s){
+  db.ref("pmac/streamers").once("value").then(function(s){
     var v = s.val() || {};
     streamersList = Object.entries(v).map(function(e){ return Object.assign({key:e[0]},e[1]); });
     if(!streamersList.length){
@@ -1993,26 +1599,13 @@ function loadStreamers(){
   document.getElementById("streamer-add-form").style.display = isAdmin ? "block" : "none";
 }
 
-function finishStreamerCheck(results){
-  results.sort(function(a,b){ return (b.live?1:0)-(a.live?1:0) || (a.name||"").localeCompare(b.name||""); });
-  renderStreamers(results);
-  document.getElementById("streamers-last-check").textContent = "Last checked: "+new Date().toLocaleTimeString("en-GB");
-}
 function checkLiveStatus(streamers){
   document.getElementById("streamers-last-check").textContent = "Checking live status...";
   var results = [];
   var pending = streamers.length;
-  if(!pending){ finishStreamerCheck(results); return; }
   streamers.forEach(function(streamer){
-    var channelId = String(streamer.ytId||"").trim();
-    if(!channelId){
-      results.push(Object.assign({},streamer,{live:false,title:"",thumb:"",videoId:"",statusNote:"Missing channel ID"}));
-      pending--; if(pending===0) finishStreamerCheck(results); return;
-    }
-    var url = "https://www.googleapis.com/youtube/v3/search?part=snippet&channelId="+encodeURIComponent(channelId)+"&eventType=live&type=video&key="+YT_API_KEY;
-    fetch(url).then(function(r){return r.json().then(function(data){return {ok:r.ok,data:data};});}).then(function(res){
-      var data = res.data || {};
-      if(!res.ok || data.error){ throw new Error((data.error && data.error.message) || "YouTube API error"); }
+    var url = "https://www.googleapis.com/youtube/v3/search?part=snippet&channelId="+streamer.ytId+"&eventType=live&type=video&key="+YT_API_KEY;
+    fetch(url).then(function(r){return r.json();}).then(function(data){
       var liveItem = data.items && data.items[0];
       results.push(Object.assign({},streamer,{
         live: !!liveItem,
@@ -2021,11 +1614,15 @@ function checkLiveStatus(streamers){
         videoId: liveItem ? liveItem.id.videoId : ""
       }));
       pending--;
-      if(pending===0) finishStreamerCheck(results);
-    }).catch(function(err){
-      results.push(Object.assign({},streamer,{live:false,title:"",thumb:"",videoId:"",statusNote:err.message||"Status unavailable"}));
+      if(pending===0){
+        results.sort(function(a,b){ return (b.live?1:0)-(a.live?1:0); });
+        renderStreamers(results);
+        document.getElementById("streamers-last-check").textContent = "Last checked: "+new Date().toLocaleTimeString("en-GB");
+      }
+    }).catch(function(){
+      results.push(Object.assign({},streamer,{live:false,title:"",thumb:"",videoId:""}));
       pending--;
-      if(pending===0) finishStreamerCheck(results);
+      if(pending===0){ renderStreamers(results); }
     });
   });
 }
@@ -2075,7 +1672,7 @@ function renderStreamers(streamers){
 
 function deleteStreamer(key){
   if(!confirm("Remove this streamer?")) return;
-  db.ref(eventPath("streamers")+"/"+key).remove().then(function(){ streamersLoaded=false; loadStreamers(); toast("Removed",true); });
+  db.ref("pmac/streamers/"+key).remove().then(function(){ streamersLoaded=false; loadStreamers(); toast("Removed",true); });
 }
 
 function refreshStreamers(){
@@ -2100,19 +1697,16 @@ var scrimFilterMode = "all";
 var scrimLogoFile = null;
 var scrimEditStatus = "open";
 
-db.ref(eventPath("scrim/event")).on("value", function(s) {
+db.ref("pmac/scrim/event").on("value", function(s) {
   scrimInfo = s.val() || {};
   scrimStatus = scrimInfo.regStatus || "open";
   scrimMax = parseInt(scrimInfo.maxTeams) || 24;
   scrimUpdateCard();
 });
-db.ref(eventPath("scrim/registrations")).on("value", function(s) {
+db.ref("pmac/scrim/registrations").on("value", function(s) {
   scrimRegs = s.val() || {};
   scrimUpdateCard();
   scrimRenderTeams();
-  seedApprovedRegistrationLogos(scrimRegs);
-  previewSavedRegistrationLogo("reg");
-  previewSavedRegistrationLogo("scrim");
   scrimCheckStatus();
 });
 
@@ -2183,29 +1777,26 @@ document.getElementById("scrim-banner-file").onchange = function() {
   document.getElementById("scrim-banner-prev").style.display="block";
 };
 document.getElementById("scrim-save-ev-btn").onclick = function() {
-  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var bf=document.getElementById("scrim-banner-file").files[0];
   function save(burl) {
     var d={name:document.getElementById("scrim-ei-name").value.trim()||"PMAF Daily Scrim",date:document.getElementById("scrim-ei-date").value,maxTeams:parseInt(document.getElementById("scrim-ei-max").value)||24,prize:document.getElementById("scrim-ei-prize").value.trim(),platform:document.getElementById("scrim-ei-platform").value.trim(),description:document.getElementById("scrim-ei-desc").value.trim(),regStatus:scrimEditStatus};
     if(burl) d.banner=burl; else if(scrimInfo.banner) d.banner=scrimInfo.banner;
-    db.ref(eventPath("scrim/event")).update(d).then(function(){document.getElementById("scrim-edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
+    db.ref("pmac/scrim/event").set(d).then(function(){document.getElementById("scrim-edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
   }
   if(bf){storage.ref("pmac/scrim-banner/"+Date.now()+"_"+bf.name.replace(/ /g,"_")).put(bf).then(function(s){return s.ref.getDownloadURL();}).then(function(u){save(u);}).catch(function(){save(null);});}else{save(null);}
 };
 
 document.getElementById("scrim-toggle-reg-btn").onclick = function() {
-  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var ns=scrimStatus==="open"?"closed":"open";
-  db.ref(eventPath("scrim/event/regStatus")).set(ns).then(function(){toast("Registration "+ns,true);}).catch(function(e){toast("Error: "+e.message,false);});
+  db.ref("pmac/scrim/event/regStatus").set(ns).then(function(){toast("Registration "+ns,true);}).catch(function(e){toast("Error: "+e.message,false);});
 };
 
 document.getElementById("scrim-save-reset-btn").onclick = function() {
-  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var count=Object.keys(scrimRegs).length;
   if(!count){toast("No registrations to save",false);return;}
   if(!confirm("Save "+count+" teams to archive and clear all registrations?")) return;
-  db.ref(eventPath("scrim/archive")+"/ev_"+Date.now()).set({name:scrimInfo.name||"PMAF Daily Scrim",date:scrimInfo.date||"",savedAt:Date.now(),teams:scrimRegs}).then(function(){
-    return Promise.all([db.ref(eventPath("scrim/registrations")).remove(),db.ref(eventPath("scrim/event/regStatus")).set("closed")]);
+  db.ref("pmac/scrim/archive/ev_"+Date.now()).set({name:scrimInfo.name||"PMAF Daily Scrim",date:scrimInfo.date||"",savedAt:Date.now(),teams:scrimRegs}).then(function(){
+    return Promise.all([db.ref("pmac/scrim/registrations").remove(),db.ref("pmac/scrim/event/regStatus").set("closed")]);
   }).then(function(){toast("Saved and reset!",true);}).catch(function(e){toast("Error: "+e.message,false);});
 };
 
@@ -2219,7 +1810,6 @@ document.getElementById("scrim-reg-logo-file").onchange = function() {
   scrimLogoFile=this.files[0]; if(!scrimLogoFile) return;
   document.getElementById("scrim-reg-logo-prev").src=URL.createObjectURL(scrimLogoFile);
   document.getElementById("scrim-reg-logo-prev").style.display="block";
-  document.getElementById("scrim-reg-logo-prev").dataset.savedLogo="";
 };
 document.getElementById("scrim-reg-btn").onclick = function() {
   var name=document.getElementById("scrim-reg-name").value.trim().toUpperCase();
@@ -2239,8 +1829,8 @@ document.getElementById("scrim-reg-btn").onclick = function() {
   for(var c=0;c<6;c++) code+=chars[Math.floor(Math.random()*chars.length)];
   btn.textContent="Registering...";btn.disabled=true;msg.textContent="Saving...";msg.style.color="#e8b800";
   function doSave(logoUrl){
-    db.ref(eventPath("scrim/registrations")+"/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code}).then(function(){
-      document.getElementById("scrim-reg-name").value="";document.getElementById("scrim-reg-tag").value="";document.getElementById("scrim-reg-manager").value="";document.getElementById("scrim-reg-mgr-phone").value="";document.getElementById("scrim-reg-logo-file").value="";document.getElementById("scrim-reg-logo-prev").style.display="none";document.getElementById("scrim-reg-logo-prev").dataset.savedLogo="";scrimLogoFile=null;
+    db.ref("pmac/scrim/registrations/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code}).then(function(){
+      document.getElementById("scrim-reg-name").value="";document.getElementById("scrim-reg-tag").value="";document.getElementById("scrim-reg-manager").value="";document.getElementById("scrim-reg-mgr-phone").value="";document.getElementById("scrim-reg-logo-file").value="";document.getElementById("scrim-reg-logo-prev").style.display="none";scrimLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_scrim_code",code);localStorage.setItem("pmac_scrim_name",name);
       msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b><br><span style='color:#ff4444;font-size:9px;'>SAVE THIS CODE to remove your registration</span>";
@@ -2258,7 +1848,7 @@ document.getElementById("scrim-reg-btn").onclick = function() {
       img.src=e.target.result;
     };
     reader.readAsDataURL(scrimLogoFile);
-  }else{doSave(document.getElementById("scrim-reg-logo-prev").dataset.savedLogo || findSavedRegistrationLogo(name) || "");}
+  }else{doSave("");}
 };
 
 function scrimSetFilter(f) {
@@ -2290,18 +1880,12 @@ function scrimRenderTeams() {
       adminBtns+='<button class="ta ta-del" data-key="'+key+'">🗑</button>';
     }
     var row=document.createElement("div");row.className="team-row "+st;
-    var privateMeta=isAdmin ? " · "+(t.manager||"—")+(t.managerPhone?" · "+t.managerPhone:"") : "";
-    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+']'+privateMeta+"</div></div>"+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+"</div>";
+    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+'] · '+(t.manager||"—")+(t.managerPhone?" · "+t.managerPhone:"")+"</div></div>"+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+"</div>";
     row.querySelector(".tr-logo").replaceWith(logoDiv);
     list.appendChild(row);
   });
   list.querySelectorAll(".ta-ok,.ta-no").forEach(function(btn){
-    btn.onclick=function(){
-      var key=this.dataset.key, status=this.dataset.status, team=scrimRegs[key];
-      db.ref(eventPath("scrim/registrations")+"/"+key+"/status").set(status).then(function(){
-        if(status==="approved") return saveTeamLogoToLibrary(team);
-      }).then(function(){toast(status==="approved"?"Approved and logo saved":"Updated!",true);}).catch(function(e){toast("Error: "+e.message,false);});
-    };
+    btn.onclick=function(){db.ref("pmac/scrim/registrations/"+this.dataset.key+"/status").set(this.dataset.status).then(function(){toast("Updated!",true);}).catch(function(e){toast("Error: "+e.message,false);});};
   });
   list.querySelectorAll(".ta-wa").forEach(function(btn){
     btn.onclick=function(){
@@ -2313,7 +1897,7 @@ function scrimRenderTeams() {
     };
   });
   list.querySelectorAll(".ta-del").forEach(function(btn){
-    btn.onclick=function(){if(!confirm("Delete this registration? Admin removal does not need the user delete code.")) return;removeRegistrationByAdmin(this.dataset.key,"scrim/registrations").then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
+    btn.onclick=function(){if(!confirm("Delete this registration?")) return;db.ref("pmac/scrim/registrations/"+this.dataset.key).remove().then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
   });
 }
 
@@ -2336,14 +1920,3 @@ function scrimCheckStatus(){
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
