@@ -141,6 +141,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .ta-no{color:#ff4444;}.ta-no:hover{background:rgba(255,68,68,0.1);border-color:rgba(255,68,68,0.3);}
 .ta-del:hover{color:#ff4444;border-color:rgba(255,68,68,0.3);}
 .ta-msg{color:#25d366;}.ta-msg:hover{background:rgba(37,211,102,0.1);border-color:rgba(37,211,102,0.3);}
+.ta-logo-dl{color:#e8b800;}.ta-logo-dl:hover{background:rgba(232,184,0,0.1);border-color:rgba(232,184,0,0.35);}
 .ta-wa{color:#25d366;}.ta-wa:hover{background:rgba(37,211,102,0.1);border-color:rgba(37,211,102,0.3);}
 .empty{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;text-align:center;padding:2rem;}
 
@@ -1235,6 +1236,7 @@ function renderTeams() {
       if(st!=="rejected") adminBtns+='<button class="ta ta-no" data-key="'+key+'" data-status="rejected">✗</button>';
       if(st==="approved") adminBtns+='<button class="ta ta-wa" data-key="'+key+'" data-status="approved" title="WhatsApp">💬✓</button>';
       if(st==="rejected") adminBtns+='<button class="ta ta-wa" data-key="'+key+'" data-status="rejected" title="WhatsApp">💬✗</button>';
+      if(t.logo) adminBtns+='<button class="ta ta-logo-dl" data-key="'+key+'" title="Download logo">⬇</button>';
       adminBtns+='<button class="ta ta-del" data-key="'+key+'">🗑</button>';
     }
     var selfBtn=!isAdmin?'<button class="ta" data-key="'+key+'" data-act="rem">Remove</button>':"";
@@ -1264,6 +1266,12 @@ function renderTeams() {
       openTeamWhatsApp(t,this.dataset.status);
     };
   });
+  list.querySelectorAll(".ta-logo-dl").forEach(function(btn){
+    btn.onclick=function(){
+      var t=regs[this.dataset.key];if(!t) return;
+      downloadTeamLogo(t);
+    };
+  });
   list.querySelectorAll(".ta-del").forEach(function(btn){
     btn.onclick=function(){if(!confirm("Delete this registration? Admin removal does not need the user delete code.")) return;removeRegistrationByAdmin(this.dataset.key,"registrations").then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
   });
@@ -1279,6 +1287,28 @@ function openTeamWhatsApp(team,status){
   else if(status==="rejected") msg="Sorry "+team.name+", your team registration for "+evName+" has been REJECTED. Contact admin for info. - PMAC Afghanistan";
   var phone=(team.managerPhone||"").replace(/[^0-9]/g,"");
   window.open("https://wa.me/"+(phone||"")+"?text="+encodeURIComponent(msg),"_blank");
+}
+
+function logoFileName(team){
+  return ((team.name||"team")+" logo").replace(/[\\/:*?"<>|]+/g,"_").replace(/\s+/g,"_")+".png";
+}
+function triggerLogoDownload(url,fileName){
+  var a=document.createElement("a");
+  a.href=url;a.download=fileName;document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+function downloadTeamLogo(team){
+  if(!team||!team.logo){toast("No logo found",false);return;}
+  var fileName=logoFileName(team);
+  if(team.logo.indexOf("data:")===0){triggerLogoDownload(team.logo,fileName);toast("Logo download started",true);return;}
+  fetch(team.logo).then(function(r){if(!r.ok) throw new Error("Logo request failed");return r.blob();}).then(function(blob){
+    var url=URL.createObjectURL(blob);
+    triggerLogoDownload(url,fileName);
+    setTimeout(function(){URL.revokeObjectURL(url);},1500);
+    toast("Logo download started",true);
+  }).catch(function(){
+    window.open(team.logo,"_blank");
+    toast("Logo opened in new tab",true);
+  });
 }
 
 function buildEventTeamList(){
@@ -2300,6 +2330,7 @@ function scrimRenderTeams() {
       if(st!=="rejected") adminBtns+='<button class="ta ta-no" data-key="'+key+'" data-status="rejected">✗</button>';
       if(st==="approved") adminBtns+='<button class="ta ta-wa" data-key="'+key+'" data-status="approved" title="WhatsApp">💬✓</button>';
       if(st==="rejected") adminBtns+='<button class="ta ta-wa" data-key="'+key+'" data-status="rejected" title="WhatsApp">💬✗</button>';
+      if(t.logo) adminBtns+='<button class="ta ta-logo-dl" data-key="'+key+'" title="Download logo">⬇</button>';
       adminBtns+='<button class="ta ta-del" data-key="'+key+'">🗑</button>';
     }
     var row=document.createElement("div");row.className="team-row "+st;
@@ -2323,6 +2354,12 @@ function scrimRenderTeams() {
       var msg=this.dataset.status==="approved"?"Congratulations "+t.name+"! Your team has been APPROVED for "+evName+". - PMAF Afghanistan":"Sorry "+t.name+", your team registration for "+evName+" has been REJECTED. Contact admin for info. - PMAF Afghanistan";
       var phone=(t.managerPhone||"").replace(/[^0-9]/g,"");
       window.open("https://wa.me/"+(phone||"")+"?text="+encodeURIComponent(msg),"_blank");
+    };
+  });
+  list.querySelectorAll(".ta-logo-dl").forEach(function(btn){
+    btn.onclick=function(){
+      var t=scrimRegs[this.dataset.key];if(!t) return;
+      downloadTeamLogo(t);
     };
   });
   list.querySelectorAll(".ta-del").forEach(function(btn){
