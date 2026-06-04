@@ -109,6 +109,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .notif-banner{border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:none;align-items:center;gap:12px;flex-wrap:wrap;}
 .notif-approved{background:linear-gradient(135deg,rgba(0,201,122,0.15),rgba(0,201,122,0.08));border:1px solid rgba(0,201,122,0.4);}
 .notif-rejected{background:linear-gradient(135deg,rgba(255,68,68,0.15),rgba(255,68,68,0.08));border:1px solid rgba(255,68,68,0.4);}
+.notif-pending{background:linear-gradient(135deg,rgba(232,184,0,0.17),rgba(232,184,0,0.08));border:1px solid rgba(232,184,0,0.42);}
 .notif-title{font-weight:900;font-size:16px;letter-spacing:.04em;text-transform:uppercase;}
 .notif-sub{font-family:'Share Tech Mono',monospace;font-size:10px;margin-top:3px;color:#8a96a8;}
 .notif-close{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;cursor:pointer;padding:4px 8px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:none;}
@@ -935,6 +936,13 @@ var regs = {};
 var filterMode = "all";
 var regLogoFile = null;
 var editEvStatus = "open";
+var PAYPAL_PAYMENT_EMAIL = "ztygf020@gmail.com";
+function pendingPaymentHtml(){
+  return "<br><span style='display:inline-block;margin-top:6px;color:#e8b800;font-size:11px;line-height:1.35;'>Payment required: send your PayPal payment to <b>"+PAYPAL_PAYMENT_EMAIL+"</b>. Your registration will be accepted after payment.</span>";
+}
+function pendingPaymentText(){
+  return "Payment required: send your PayPal payment to "+PAYPAL_PAYMENT_EMAIL+". Your registration will be accepted after payment.";
+}
 var gfxList = [];
 var gfxIdx = 0;
 var gfxLoaded = false;
@@ -1189,7 +1197,7 @@ document.getElementById("reg-btn").onclick = function() {
       document.getElementById("reg-name").value="";document.getElementById("reg-tag").value="";document.getElementById("reg-manager").value="";document.getElementById("reg-mgr-phone").value="";document.getElementById("reg-logo-file").value="";document.getElementById("reg-logo-prev").style.display="none";document.getElementById("reg-logo-prev").dataset.savedLogo="";regLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_reg_code",code);localStorage.setItem("pmac_reg_name",name);
-      msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b><br><span style='color:#ff4444;font-size:9px;'>SAVE THIS CODE to remove your registration</span>";
+      msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b>"+pendingPaymentHtml()+"<br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b><br><span style='color:#ff4444;font-size:9px;'>SAVE THIS CODE to remove your registration</span>";
     }).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});
   }
   if(regLogoFile){
@@ -1449,7 +1457,7 @@ function checkStatus(){
       var b=document.getElementById("notif-banner");var evName=eventInfo.name||"PMAC Tournament";
       if(t.status==="approved"){b.className="notif-banner notif-approved";b.style.display="flex";document.getElementById("notif-icon").textContent="✅";document.getElementById("notif-title").textContent="Congratulations! "+t.name+" is Approved";document.getElementById("notif-sub").textContent="Your team has been approved for "+evName+".";}
       else if(t.status==="rejected"){b.className="notif-banner notif-rejected";b.style.display="flex";document.getElementById("notif-icon").textContent="❌";document.getElementById("notif-title").textContent=t.name+" — Registration Rejected";document.getElementById("notif-sub").textContent="Contact admin for more information.";}
-      else{b.style.display="none";}
+      else{b.className="notif-banner notif-pending";b.style.display="flex";document.getElementById("notif-icon").textContent="⏳";document.getElementById("notif-title").textContent=t.name+" — Registration Pending";document.getElementById("notif-sub").textContent=pendingPaymentText();}
       return;
     }
   }
@@ -2286,7 +2294,7 @@ document.getElementById("scrim-reg-btn").onclick = function() {
       document.getElementById("scrim-reg-name").value="";document.getElementById("scrim-reg-tag").value="";document.getElementById("scrim-reg-manager").value="";document.getElementById("scrim-reg-mgr-phone").value="";document.getElementById("scrim-reg-logo-file").value="";document.getElementById("scrim-reg-logo-prev").style.display="none";document.getElementById("scrim-reg-logo-prev").dataset.savedLogo="";scrimLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_scrim_code",code);localStorage.setItem("pmac_scrim_name",name);
-      msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b><br><span style='color:#ff4444;font-size:9px;'>SAVE THIS CODE to remove your registration</span>";
+      msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b>"+pendingPaymentHtml()+"<br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b><br><span style='color:#ff4444;font-size:9px;'>SAVE THIS CODE to remove your registration</span>";
     }).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});
   }
   if(scrimLogoFile){
@@ -2377,7 +2385,7 @@ function scrimCheckStatus(){
       var b=document.getElementById("scrim-notif-banner");var evName=scrimInfo.name||"PMAF Daily Scrim";
       if(t.status==="approved"){b.className="notif-banner notif-approved";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="✅";document.getElementById("scrim-notif-title").textContent="Congratulations! "+t.name+" is Approved";document.getElementById("scrim-notif-sub").textContent="Your team has been approved for "+evName+".";}
       else if(t.status==="rejected"){b.className="notif-banner notif-rejected";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="❌";document.getElementById("scrim-notif-title").textContent=t.name+" — Registration Rejected";document.getElementById("scrim-notif-sub").textContent="Contact admin for more information.";}
-      else{b.style.display="none";}
+      else{b.className="notif-banner notif-pending";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="⏳";document.getElementById("scrim-notif-title").textContent=t.name+" — Registration Pending";document.getElementById("scrim-notif-sub").textContent=pendingPaymentText();}
       return;
     }
   }
