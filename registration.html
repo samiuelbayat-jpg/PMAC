@@ -972,6 +972,9 @@ function pendingPaymentHtml(){
 function pendingPaymentText(){
   return "Payment required: send your PayPal payment to "+PAYPAL_PAYMENT_EMAIL+". Your registration will be accepted after payment.";
 }
+function rejectedPaymentText(){
+  return "Your registration was rejected because the payment was not completed.";
+}
 function showRegistrationSuccessPopup(name,code){
   document.getElementById("success-team-name").textContent="✓ "+name+" registered!";
   document.getElementById("success-paypal-email").textContent=PAYPAL_PAYMENT_EMAIL;
@@ -1328,7 +1331,7 @@ function openTeamWhatsApp(team,status){
   var evName=eventInfo.name||"PMAC Tournament";
   var msg="Hello "+(team.manager||"")+"، this is PMAC Afghanistan about your team "+(team.name||"")+" registration for "+evName+".";
   if(status==="approved") msg="Congratulations "+team.name+"! Your team has been APPROVED for "+evName+". - PMAC Afghanistan";
-  else if(status==="rejected") msg="Sorry "+team.name+", your team registration for "+evName+" has been REJECTED. Contact admin for info. - PMAC Afghanistan";
+  else if(status==="rejected") msg="Sorry "+team.name+", your team registration for "+evName+" has been REJECTED because payment was not completed. - PMAC Afghanistan";
   var phone=(team.managerPhone||"").replace(/[^0-9]/g,"");
   window.open("https://wa.me/"+(phone||"")+"?text="+encodeURIComponent(msg),"_blank");
 }
@@ -1493,7 +1496,7 @@ function checkStatus(){
     if(t.deleteCode===code&&t.name===name){
       var b=document.getElementById("notif-banner");var evName=eventInfo.name||"PMAC Tournament";
       if(t.status==="approved"){b.className="notif-banner notif-approved";b.style.display="flex";document.getElementById("notif-icon").textContent="✅";document.getElementById("notif-title").textContent="Congratulations! "+t.name+" is Approved";document.getElementById("notif-sub").textContent="Your team has been approved for "+evName+".";}
-      else if(t.status==="rejected"){b.className="notif-banner notif-rejected";b.style.display="flex";document.getElementById("notif-icon").textContent="❌";document.getElementById("notif-title").textContent=t.name+" — Registration Rejected";document.getElementById("notif-sub").textContent="Contact admin for more information.";}
+      else if(t.status==="rejected"){b.className="notif-banner notif-rejected";b.style.display="flex";document.getElementById("notif-icon").textContent="❌";document.getElementById("notif-title").textContent=t.name+" — Registration Rejected";document.getElementById("notif-sub").textContent=rejectedPaymentText();}
       else{b.className="notif-banner notif-pending";b.style.display="flex";document.getElementById("notif-icon").textContent="⏳";document.getElementById("notif-title").textContent=t.name+" — Registration Pending";document.getElementById("notif-sub").textContent=pendingPaymentText();}
       return;
     }
@@ -2397,7 +2400,7 @@ function scrimRenderTeams() {
     btn.onclick=function(){
       var t=scrimRegs[this.dataset.key];if(!t) return;
       var evName=scrimInfo.name||"PMAF Daily Scrim";
-      var msg=this.dataset.status==="approved"?"Congratulations "+t.name+"! Your team has been APPROVED for "+evName+". - PMAF Afghanistan":"Sorry "+t.name+", your team registration for "+evName+" has been REJECTED. Contact admin for info. - PMAF Afghanistan";
+      var msg=this.dataset.status==="approved"?"Congratulations "+t.name+"! Your team has been APPROVED for "+evName+". - PMAF Afghanistan":"Sorry "+t.name+", your team registration for "+evName+" has been REJECTED because payment was not completed. - PMAF Afghanistan";
       var phone=(t.managerPhone||"").replace(/[^0-9]/g,"");
       window.open("https://wa.me/"+(phone||"")+"?text="+encodeURIComponent(msg),"_blank");
     };
@@ -2422,7 +2425,7 @@ function scrimCheckStatus(){
     if(t.deleteCode===code&&t.name===name){
       var b=document.getElementById("scrim-notif-banner");var evName=scrimInfo.name||"PMAF Daily Scrim";
       if(t.status==="approved"){b.className="notif-banner notif-approved";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="✅";document.getElementById("scrim-notif-title").textContent="Congratulations! "+t.name+" is Approved";document.getElementById("scrim-notif-sub").textContent="Your team has been approved for "+evName+".";}
-      else if(t.status==="rejected"){b.className="notif-banner notif-rejected";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="❌";document.getElementById("scrim-notif-title").textContent=t.name+" — Registration Rejected";document.getElementById("scrim-notif-sub").textContent="Contact admin for more information.";}
+      else if(t.status==="rejected"){b.className="notif-banner notif-rejected";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="❌";document.getElementById("scrim-notif-title").textContent=t.name+" — Registration Rejected";document.getElementById("scrim-notif-sub").textContent=rejectedPaymentText();}
       else{b.className="notif-banner notif-pending";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="⏳";document.getElementById("scrim-notif-title").textContent=t.name+" — Registration Pending";document.getElementById("scrim-notif-sub").textContent=pendingPaymentText();}
       return;
     }
