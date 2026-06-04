@@ -811,6 +811,11 @@ var storage = firebase.storage();
 var teamLogoLibrary = {};
 var logoLookupTimers = {};
 function sanitizeKey(n){ return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_"); }
+function escapeHtml(v){
+  return String(v||"").replace(/[&<>"']/g,function(ch){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch];
+  });
+}
 function logoKey(name){ return String(name||"").trim().toUpperCase(); }
 function refreshSavedTeamLogoList(){
   var dl=document.getElementById("saved-team-logo-list");
