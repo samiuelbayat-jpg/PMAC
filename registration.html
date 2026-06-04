@@ -155,6 +155,12 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .modal-inp:focus{border-color:#e8b800;}
 .modal-err{font-family:'Share Tech Mono',monospace;font-size:9px;color:#ff4444;min-height:14px;margin-bottom:.5rem;}
 .modal-act{display:flex;gap:8px;justify-content:flex-end;margin-top:.75rem;}
+.success-modal{max-width:460px;border-color:rgba(232,184,0,0.35);box-shadow:0 20px 60px rgba(0,0,0,0.55);}
+.success-team{font-weight:900;font-size:22px;text-transform:uppercase;color:#00c97a;margin-bottom:.75rem;}
+.payment-box{background:rgba(232,184,0,0.1);border:1px solid rgba(232,184,0,0.34);border-radius:8px;padding:12px;margin:.75rem 0;color:#e8b800;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.5;}
+.delete-code-box{background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:8px;padding:10px;margin:.75rem 0;font-family:'Share Tech Mono',monospace;font-size:11px;color:#8a96a8;}
+.delete-code-value{display:inline-block;margin-top:5px;font-size:24px;letter-spacing:.22em;color:#e8b800;font-weight:900;}
+.save-code-note{font-family:'Share Tech Mono',monospace;font-size:10px;color:#ff4444;line-height:1.4;}
 
 /* GFX */
 .gfx-viewer{border-radius:8px;overflow:hidden;background:#0a0b0d;border:1px solid rgba(255,255,255,0.08);margin-bottom:.75rem;}
@@ -788,6 +794,24 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     </div>
   </div>
 </div>
+<div class="overlay" id="success-overlay">
+  <div class="modal success-modal">
+    <div class="modal-title">Registration Pending</div>
+    <div class="success-team" id="success-team-name"></div>
+    <div class="payment-box">
+      Send your PayPal payment to <b id="success-paypal-email">ztygf020@gmail.com</b>.<br>
+      Your registration will be accepted after payment.
+    </div>
+    <div class="delete-code-box">
+      Your remove code:
+      <div class="delete-code-value" id="success-delete-code"></div>
+    </div>
+    <div class="save-code-note">Save this code. You need it if you want to remove your registration later.</div>
+    <div class="modal-act">
+      <button class="btn btn-gold" id="success-close-btn">I Understand</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -947,6 +971,12 @@ function pendingPaymentHtml(){
 }
 function pendingPaymentText(){
   return "Payment required: send your PayPal payment to "+PAYPAL_PAYMENT_EMAIL+". Your registration will be accepted after payment.";
+}
+function showRegistrationSuccessPopup(name,code){
+  document.getElementById("success-team-name").textContent="✓ "+name+" registered!";
+  document.getElementById("success-paypal-email").textContent=PAYPAL_PAYMENT_EMAIL;
+  document.getElementById("success-delete-code").textContent=code;
+  document.getElementById("success-overlay").style.display="flex";
 }
 var gfxList = [];
 var gfxIdx = 0;
@@ -1202,7 +1232,8 @@ document.getElementById("reg-btn").onclick = function() {
       document.getElementById("reg-name").value="";document.getElementById("reg-tag").value="";document.getElementById("reg-manager").value="";document.getElementById("reg-mgr-phone").value="";document.getElementById("reg-logo-file").value="";document.getElementById("reg-logo-prev").style.display="none";document.getElementById("reg-logo-prev").dataset.savedLogo="";regLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_reg_code",code);localStorage.setItem("pmac_reg_name",name);
-      msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b>"+pendingPaymentHtml()+"<br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b><br><span style='color:#ff4444;font-size:9px;'>SAVE THIS CODE to remove your registration</span>";
+      if(isAdmin){msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b>";}
+      else{msg.textContent="";showRegistrationSuccessPopup(name,code);}
     }).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});
   }
   if(regLogoFile){
@@ -1437,6 +1468,7 @@ function exportApprovedTeamsToGroups(){
 }
 // CONFIRM REMOVE
 document.getElementById("cancel-overlay-btn").onclick=function(){document.getElementById("overlay").style.display="none";};
+document.getElementById("success-close-btn").onclick=function(){document.getElementById("success-overlay").style.display="none";};
 document.getElementById("confirm-del-btn").onclick=function(){
   var key=document.getElementById("confirm-key").value;
   var typed=document.getElementById("confirm-code").value.trim().toUpperCase();
@@ -2299,7 +2331,8 @@ document.getElementById("scrim-reg-btn").onclick = function() {
       document.getElementById("scrim-reg-name").value="";document.getElementById("scrim-reg-tag").value="";document.getElementById("scrim-reg-manager").value="";document.getElementById("scrim-reg-mgr-phone").value="";document.getElementById("scrim-reg-logo-file").value="";document.getElementById("scrim-reg-logo-prev").style.display="none";document.getElementById("scrim-reg-logo-prev").dataset.savedLogo="";scrimLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_scrim_code",code);localStorage.setItem("pmac_scrim_name",name);
-      msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b>"+pendingPaymentHtml()+"<br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b><br><span style='color:#ff4444;font-size:9px;'>SAVE THIS CODE to remove your registration</span>";
+      if(isAdmin){msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b>";}
+      else{msg.textContent="";showRegistrationSuccessPopup(name,code);}
     }).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});
   }
   if(scrimLogoFile){
