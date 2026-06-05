@@ -158,6 +158,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .success-modal{max-width:460px;border-color:rgba(232,184,0,0.35);box-shadow:0 20px 60px rgba(0,0,0,0.55);}
 .success-team{font-weight:900;font-size:22px;text-transform:uppercase;color:#00c97a;margin-bottom:.75rem;}
 .payment-box{background:rgba(232,184,0,0.1);border:1px solid rgba(232,184,0,0.34);border-radius:8px;padding:12px;margin:.75rem 0;color:#e8b800;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.5;}
+.paypal-email-big{display:block;margin:7px 0 5px;font-size:18px;line-height:1.25;color:#ffffff;font-weight:900;letter-spacing:.04em;overflow-wrap:anywhere;}
 .delete-code-box{background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:8px;padding:10px;margin:.75rem 0;font-family:'Share Tech Mono',monospace;font-size:11px;color:#8a96a8;}
 .delete-code-value{display:inline-block;margin-top:5px;font-size:24px;letter-spacing:.22em;color:#e8b800;font-weight:900;}
 .save-code-note{font-family:'Share Tech Mono',monospace;font-size:10px;color:#ff4444;line-height:1.4;}
@@ -799,7 +800,8 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     <div class="modal-title">Registration Pending</div>
     <div class="success-team" id="success-team-name"></div>
     <div class="payment-box">
-      Send your PayPal payment to <b id="success-paypal-email">ztygf020@gmail.com</b>.<br>
+      Send your PayPal payment to
+      <b class="paypal-email-big" id="success-paypal-email">ztygf020@gmail.com</b>
       Your registration will be accepted after payment.
     </div>
     <div class="delete-code-box">
@@ -967,7 +969,7 @@ var regLogoFile = null;
 var editEvStatus = "open";
 var PAYPAL_PAYMENT_EMAIL = "ztygf020@gmail.com";
 function pendingPaymentHtml(){
-  return "<br><span style='display:inline-block;margin-top:6px;color:#e8b800;font-size:11px;line-height:1.35;'>Payment required: send your PayPal payment to <b>"+PAYPAL_PAYMENT_EMAIL+"</b>. Your registration will be accepted after payment.</span>";
+  return "<br><span style='display:inline-block;margin-top:6px;color:#e8b800;font-size:12px;line-height:1.4;'>Payment required: send your PayPal payment to <b style='font-size:15px;color:#fff;'>"+PAYPAL_PAYMENT_EMAIL+"</b>. Your registration will be accepted after payment.</span>";
 }
 function pendingPaymentText(){
   return "Payment required: send your PayPal payment to "+PAYPAL_PAYMENT_EMAIL+". Your registration will be accepted after payment.";
