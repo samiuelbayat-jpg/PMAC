@@ -139,6 +139,13 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .rules-pill{font-family:'Share Tech Mono',monospace;font-size:8px;padding:3px 7px;border-radius:9px;border:1px solid;flex-shrink:0;letter-spacing:.04em;white-space:nowrap;}
 .rules-ok{background:rgba(0,201,122,0.09);color:#00c97a;border-color:rgba(0,201,122,0.32);}
 .rules-no{background:rgba(255,68,68,0.07);color:#ff7777;border-color:rgba(255,68,68,0.24);}
+.rules-log-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:1rem;}
+.rules-log-title{font-weight:900;font-size:22px;text-transform:uppercase;color:#e8b800;}
+.rules-log-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;margin-top:3px;}
+.rules-log-card{background:rgba(10,12,16,0.82);border:1px solid rgba(255,255,255,0.08);border-radius:7px;padding:10px 12px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;}
+.rules-log-name{font-weight:900;font-size:15px;text-transform:uppercase;color:#eef0f5;}
+.rules-log-meta{font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;line-height:1.55;margin-top:2px;}
+.rules-log-type{font-family:'Share Tech Mono',monospace;font-size:9px;color:#00c97a;border:1px solid rgba(0,201,122,0.28);background:rgba(0,201,122,0.08);border-radius:12px;padding:4px 8px;white-space:nowrap;}
 .tr-actions{display:flex;gap:5px;flex-shrink:0;}
 .ta{background:none;border:1px solid transparent;border-radius:4px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:11px;padding:4px 8px;color:#606878;}
 .ta-ok{color:#00c97a;}.ta-ok:hover{background:rgba(0,201,122,0.1);border-color:rgba(0,201,122,0.3);}
@@ -392,6 +399,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <button class="tab" id="tab-archive" onclick="showTab('archive')"><span>🗄</span><span>Archive</span></button>
   <button class="tab" id="tab-events" onclick="window.location.href='promotions.html'"><span>📣</span><span>Events</span></button>
   <button class="tab" id="tab-streamers" onclick="showTab('streamers')"><span>🔴</span><span>Live Streamers</span></button>
+  <button class="tab" id="tab-rulelog" onclick="showTab('rulelog')" style="display:none;"><span>✓</span><span>Rules Agreed</span></button>
 </div>
 
 <div class="section" id="sec-rulesagree">
@@ -413,6 +421,18 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <span class="reg-msg" id="agree-msg"></span>
     </div>
   </div>
+</div>
+
+<div class="section" id="sec-rulelog">
+  <div class="rules-log-head">
+    <div>
+      <div class="rules-log-title">Teams Who Agreed With Rules</div>
+      <div class="rules-log-sub">Admin-only list from PMAF Event and PMAF Daily Scrim registrations.</div>
+    </div>
+    <button class="btn" onclick="renderRulesAgreedLog()" style="padding:6px 16px;font-size:12px;">Refresh</button>
+  </div>
+  <div id="rules-agreed-summary" class="rules-log-sub" style="margin-bottom:.75rem;"></div>
+  <div id="rules-agreed-list"></div>
 </div>
 
 <!-- REGISTRATION SECTION -->
@@ -1063,6 +1083,46 @@ function rulesAgreementLabel(team){
   }else detail=" · Rules agreed";
   return {ok:true,text:"RULES AGREED",detail:detail};
 }
+function fmtRulesDate(ts){
+  if(!ts) return "-";
+  try{return new Date(ts).toLocaleString();}catch(e){return "-";}
+}
+function collectRulesAgreedTeams(){
+  var out=[];
+  function addFrom(list,typeLabel){
+    Object.keys(list||{}).forEach(function(key){
+      var t=list[key]||{}, a=t.rulesAgreement||{};
+      if(!a.agreed) return;
+      out.push({key:key,type:typeLabel,name:t.name||"",tag:t.tag||"",status:t.status||"pending",manager:t.manager||"",phone:t.managerPhone||"",agreedAt:a.agreedAt||0,agreedVia:a.agreedVia||"",version:a.version||""});
+    });
+  }
+  addFrom(regs,"PMAF Event");
+  addFrom((typeof scrimRegs==="undefined"?{}:scrimRegs),"PMAF Daily Scrim");
+  out.sort(function(a,b){return (b.agreedAt||0)-(a.agreedAt||0) || a.name.localeCompare(b.name);});
+  return out;
+}
+function renderRulesAgreedLog(){
+  var list=document.getElementById("rules-agreed-list");
+  var sum=document.getElementById("rules-agreed-summary");
+  if(!list||!sum) return;
+  if(!isAdmin){
+    sum.textContent="Admin login required.";
+    list.innerHTML='<div class="empty">Login as admin to view teams who agreed with rules.</div>';
+    return;
+  }
+  var teams=collectRulesAgreedTeams();
+  var eventCount=teams.filter(function(t){return t.type==="PMAF Event";}).length;
+  var scrimCount=teams.filter(function(t){return t.type==="PMAF Daily Scrim";}).length;
+  sum.textContent=teams.length+" agreed team(s) · PMAF Event: "+eventCount+" · Daily Scrim: "+scrimCount;
+  if(!teams.length){list.innerHTML='<div class="empty">No teams have agreed with rules yet.</div>';return;}
+  list.innerHTML="";
+  teams.forEach(function(t){
+    var card=document.createElement("div");
+    card.className="rules-log-card";
+    card.innerHTML='<div><div class="rules-log-name">'+t.name+'</div><div class="rules-log-meta">['+(t.tag||"-")+'] · Status: '+t.status.toUpperCase()+' · Agreed: '+fmtRulesDate(t.agreedAt)+' · Via: '+(t.agreedVia||"-")+(t.manager?' · Manager: '+t.manager:"")+(t.phone?' · '+t.phone:"")+'</div></div><div class="rules-log-type">'+t.type+'</div>';
+    list.appendChild(card);
+  });
+}
 function selectedAgreeType(){
   var el=document.querySelector('input[name="agree-type"]:checked');
   return el?el.value:"event";
@@ -1149,6 +1209,7 @@ db.ref(eventPath("registrations")).on("value", function(s) {
   regs = s.val() || {};
   updateCard();
   renderTeams();
+  renderRulesAgreedLog();
   seedApprovedRegistrationLogos(regs);
   previewSavedRegistrationLogo("reg");
   previewSavedRegistrationLogo("scrim");
@@ -1166,6 +1227,10 @@ function applyAdminUI() {
   }
   var gfxUpload=document.getElementById("gfx-admin-upload");
   if(gfxUpload) gfxUpload.style.display = isAdmin ? "block" : "none";
+  var ruleTab=document.getElementById("tab-rulelog");
+  if(ruleTab) ruleTab.style.display = isAdmin ? "" : "none";
+  if(!isAdmin && document.getElementById("sec-rulelog") && document.getElementById("sec-rulelog").classList.contains("show")) showTab("reg");
+  renderRulesAgreedLog();
 }
 
 function canEditCurrentEvent(meta) {
@@ -1178,6 +1243,7 @@ function refreshAfterAdminChange() {
   applyAdminUI();
   updateCard();
   renderTeams();
+  renderRulesAgreedLog();
   scrimUpdateCard();
   scrimRenderTeams();
 }
@@ -1645,7 +1711,8 @@ function checkStatus(){
 
 // TABS
 function showTab(tab){
-  ["reg","scrim","gfx","lobby","scores","archive","streamers","rulesagree"].forEach(function(t){
+  if(tab==="rulelog"&&!isAdmin){toast("Admin login required",false);return;}
+  ["reg","scrim","gfx","lobby","scores","archive","streamers","rulesagree","rulelog"].forEach(function(t){
     var tb=document.getElementById("tab-"+t); var sc=document.getElementById("sec-"+t);
     if(tb) tb.className="tab"+(t===tab?" active":"");
     if(sc) sc.className="section"+(t===tab?" show":"");
@@ -1655,6 +1722,7 @@ function showTab(tab){
   if(tab==="scores"&&!scoresLoaded) loadScoreboard();
   if(tab==="archive"&&!archiveLoaded) loadPubArchive();
   if(tab==="streamers"&&!streamersLoaded) loadStreamers();
+  if(tab==="rulelog") renderRulesAgreedLog();
 }
 document.getElementById("agree-save-btn").onclick=saveExistingRulesAgreement;
 initRulesAgreeLink();
@@ -2343,6 +2411,7 @@ db.ref(eventPath("scrim/registrations")).on("value", function(s) {
   scrimRegs = s.val() || {};
   scrimUpdateCard();
   scrimRenderTeams();
+  renderRulesAgreedLog();
   seedApprovedRegistrationLogos(scrimRegs);
   previewSavedRegistrationLogo("reg");
   previewSavedRegistrationLogo("scrim");

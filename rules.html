@@ -8,7 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#08090c;color:#eef0f5;font-family:'Rajdhani',Arial,sans-serif;min-height:100vh}.top{position:sticky;top:0;z-index:5;background:rgba(8,9,12,.94);border-bottom:1px solid rgba(232,184,0,.25);backdrop-filter:blur(8px)}.top-inner{max-width:980px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#e8b800}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid rgba(232,184,0,.55);background:#161a1f;color:#fff;border-radius:7px;padding:9px 13px;font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;text-decoration:none}.btn.gold{background:#e8b800;color:#08090c;font-weight:900}.wrap{max-width:980px;margin:0 auto;padding:24px 18px 46px}.hero{border:1px solid rgba(232,184,0,.28);background:linear-gradient(135deg,#14171c,#0d0f13);border-radius:12px;padding:24px;margin-bottom:18px}.eyebrow{font-family:'Share Tech Mono',monospace;color:#8a96a8;font-size:11px;text-transform:uppercase;letter-spacing:.14em}.hero h1{margin:8px 0 8px;font-size:42px;line-height:.95;text-transform:uppercase;color:#fff}.hero p{max-width:760px;color:#aeb6c4;font-size:15px;line-height:1.55}.notice{border-left:4px solid #e8b800;background:rgba(232,184,0,.08);padding:12px 14px;margin:14px 0 22px;color:#f5dc75;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.55}.agree-box{background:#0f1115;border:1px solid rgba(232,184,0,.28);border-radius:12px;padding:18px;margin:0 0 22px}.agree-title{font-weight:900;color:#fff;font-size:22px;text-transform:uppercase;margin-bottom:4px}.agree-sub{font-family:'Share Tech Mono',monospace;color:#8a96a8;font-size:11px;line-height:1.55;margin-bottom:14px}.agree-grid{display:grid;grid-template-columns:minmax(220px,1fr) 180px auto;gap:10px;align-items:end}.field label{display:block;font-family:'Share Tech Mono',monospace;color:#e8b800;font-size:10px;text-transform:uppercase;margin-bottom:5px}.field input,.field select{width:100%;background:#161a1f;border:1px solid rgba(255,255,255,.14);border-radius:7px;color:#fff;padding:10px 11px;font-family:'Share Tech Mono',monospace;font-size:12px}.agree-check{margin-top:12px;font-family:'Share Tech Mono',monospace;color:#c8ced8;font-size:11px;display:flex;gap:8px;align-items:flex-start}.agree-check input{accent-color:#e8b800;margin-top:2px}.agree-msg{display:block;margin-top:10px;font-family:'Share Tech Mono',monospace;font-size:12px}.rules{background:#0f1115;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:22px}.rules h2{margin:28px 0 10px;color:#e8b800;font-size:25px;text-transform:uppercase;letter-spacing:.03em;border-top:1px solid rgba(255,255,255,.08);padding-top:18px}.rules h2:first-child{margin-top:0;border-top:0;padding-top:0}.rules h3{margin:18px 0 8px;color:#fff;font-size:19px;text-transform:uppercase}.rules p{margin:7px 0;color:#c8ced8;font-size:15px;line-height:1.55}.rules .leadline{font-family:'Share Tech Mono',monospace;color:#8a96a8;text-transform:uppercase;letter-spacing:.06em;font-size:12px}.rules .warn{color:#ffdf7a;background:rgba(255,76,76,.08);border:1px solid rgba(255,76,76,.22);border-radius:8px;padding:10px 12px}.rules-table{width:100%;border-collapse:collapse;margin:14px 0 16px;background:#090b0f;border:1px solid rgba(232,184,0,.22);font-family:'Share Tech Mono',monospace;font-size:12px}.rules-table th{background:#e8b800;color:#08090c;text-align:left;text-transform:uppercase;padding:10px}.rules-table td{border-top:1px solid rgba(255,255,255,.08);padding:9px 10px;color:#eef0f5}.rules-table tr:nth-child(even) td{background:rgba(255,255,255,.03)}.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:50;align-items:center;justify-content:center;padding:18px}.modal{max-width:440px;width:100%;background:#0f1115;border:1px solid rgba(232,184,0,.4);border-radius:12px;padding:22px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,.45)}.modal-title{font-weight:900;font-size:26px;text-transform:uppercase;color:#e8b800}.success-team{font-weight:900;font-size:21px;text-transform:uppercase;color:#00c97a;margin:.65rem 0}.payment-box{background:rgba(232,184,0,.1);border:1px solid rgba(232,184,0,.34);border-radius:8px;padding:13px;margin:.75rem 0;color:#e8b800;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.5}.paypal-email-big{display:block;margin:7px 0 5px;font-size:20px;line-height:1.25;color:#fff;font-weight:900;letter-spacing:.04em;overflow-wrap:anywhere}.footer-note{margin-top:20px;color:#8a96a8;font-family:'Share Tech Mono',monospace;font-size:11px;text-align:center}@media(max-width:640px){.top-inner{align-items:flex-start;flex-direction:column}.hero h1{font-size:30px}.agree-grid{grid-template-columns:1fr}.rules{padding:16px}.rules h2{font-size:21px}.rules-table{font-size:11px}}
+*{box-sizing:border-box}body{margin:0;background:#08090c;color:#eef0f5;font-family:'Rajdhani',Arial,sans-serif;min-height:100vh}.top{position:sticky;top:0;z-index:5;background:rgba(8,9,12,.94);border-bottom:1px solid rgba(232,184,0,.25);backdrop-filter:blur(8px)}.top-inner{max-width:980px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#e8b800}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid rgba(232,184,0,.55);background:#161a1f;color:#fff;border-radius:7px;padding:9px 13px;font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;text-decoration:none}.btn.gold{background:#e8b800;color:#08090c;font-weight:900}.wrap{max-width:980px;margin:0 auto;padding:24px 18px 46px}.hero{border:1px solid rgba(232,184,0,.28);background:linear-gradient(135deg,#14171c,#0d0f13);border-radius:12px;padding:24px;margin-bottom:18px}.eyebrow{font-family:'Share Tech Mono',monospace;color:#8a96a8;font-size:11px;text-transform:uppercase;letter-spacing:.14em}.hero h1{margin:8px 0 8px;font-size:42px;line-height:.95;text-transform:uppercase;color:#fff}.hero p{max-width:760px;color:#aeb6c4;font-size:15px;line-height:1.55}.notice{border-left:4px solid #e8b800;background:rgba(232,184,0,.08);padding:12px 14px;margin:14px 0 22px;color:#f5dc75;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.55}.agree-box{background:#0f1115;border:1px solid rgba(232,184,0,.28);border-radius:12px;padding:18px;margin:0 0 22px}.agree-title{font-weight:900;color:#fff;font-size:22px;text-transform:uppercase;margin-bottom:4px}.agree-sub{font-family:'Share Tech Mono',monospace;color:#8a96a8;font-size:11px;line-height:1.55;margin-bottom:14px}.agree-grid{display:grid;grid-template-columns:minmax(220px,1fr) 180px auto;gap:10px;align-items:end}.field label{display:block;font-family:'Share Tech Mono',monospace;color:#e8b800;font-size:10px;text-transform:uppercase;margin-bottom:5px}.field input,.field select{width:100%;background:#161a1f;border:1px solid rgba(255,255,255,.14);border-radius:7px;color:#fff;padding:10px 11px;font-family:'Share Tech Mono',monospace;font-size:12px}.agree-check{margin-top:12px;font-family:'Share Tech Mono',monospace;color:#c8ced8;font-size:11px;display:flex;gap:8px;align-items:flex-start}.agree-check input{accent-color:#e8b800;margin-top:2px}.agree-msg{display:block;margin-top:10px;font-family:'Share Tech Mono',monospace;font-size:12px}.rules{background:#0f1115;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:22px}.rules h2{margin:28px 0 10px;color:#e8b800;font-size:25px;text-transform:uppercase;letter-spacing:.03em;border-top:1px solid rgba(255,255,255,.08);padding-top:18px}.rules h2:first-child{margin-top:0;border-top:0;padding-top:0}.rules h3{margin:18px 0 8px;color:#fff;font-size:19px;text-transform:uppercase}.rules p{margin:7px 0;color:#c8ced8;font-size:15px;line-height:1.55}.rules .leadline{font-family:'Share Tech Mono',monospace;color:#8a96a8;text-transform:uppercase;letter-spacing:.06em;font-size:12px}.rules .warn{color:#ffdf7a;background:rgba(255,76,76,.08);border:1px solid rgba(255,76,76,.22);border-radius:8px;padding:10px 12px}.rules-table{width:100%;border-collapse:collapse;margin:14px 0 16px;background:#090b0f;border:1px solid rgba(232,184,0,.22);font-family:'Share Tech Mono',monospace;font-size:12px}.rules-table th{background:#e8b800;color:#08090c;text-align:left;text-transform:uppercase;padding:10px}.rules-table td{border-top:1px solid rgba(255,255,255,.08);padding:9px 10px;color:#eef0f5}.rules-table tr:nth-child(even) td{background:rgba(255,255,255,.03)}.footer-note{margin-top:20px;color:#8a96a8;font-family:'Share Tech Mono',monospace;font-size:11px;text-align:center}@media(max-width:640px){.top-inner{align-items:flex-start;flex-direction:column}.hero h1{font-size:30px}.agree-grid{grid-template-columns:1fr}.rules{padding:16px}.rules h2{font-size:21px}.rules-table{font-size:11px}}
 </style>
 </head>
 <body>
@@ -373,18 +373,6 @@
 </section>
 <div class="footer-note">PMAC Official Tournament Rulebook v1.0</div>
 </main>
-<div class="overlay" id="payment-overlay">
-<div class="modal">
-<div class="modal-title">Registration Pending</div>
-<div class="success-team" id="payment-team-name"></div>
-<div class="payment-box">
-Send your PayPal payment to
-<b class="paypal-email-big">ztygf020@gmail.com</b>
-Your registration will be accepted after payment.
-</div>
-<button class="btn gold" id="payment-close-btn" type="button">I Understand</button>
-</div>
-</div>
 <script>
 firebase.initializeApp({
   apiKey:"AIzaSyD-RFu-40Igcoqhm8QBbu_PgdFxV6aUIQA",
@@ -398,7 +386,6 @@ firebase.initializeApp({
 var db=firebase.database();
 var EVENT_ID=new URLSearchParams(location.search).get("event")||"default";
 var RULEBOOK_VERSION="PMAC_Tournament_Rulebook_v1.0";
-var PAYPAL_PAYMENT_EMAIL="ztygf020@gmail.com";
 function eventBasePath(){return EVENT_ID==="default"?"pmac":"pmac/events/"+EVENT_ID;}
 function eventPath(child){return eventBasePath()+"/"+child;}
 function findRegistrationByName(list,name){
@@ -417,13 +404,6 @@ function setMessage(text,ok){
   msg.textContent=text;
   msg.style.color=ok?"#00c97a":"#ff5555";
 }
-function showPaymentPopup(teamName){
-  document.getElementById("payment-team-name").textContent="✓ "+teamName+" agreed with rules";
-  document.getElementById("payment-overlay").style.display="flex";
-}
-document.getElementById("payment-close-btn").onclick=function(){
-  document.getElementById("payment-overlay").style.display="none";
-};
 document.getElementById("agree-save-btn").onclick=function(){
   var btn=this;
   var name=document.getElementById("agree-team-name").value.trim().toUpperCase();
@@ -449,8 +429,7 @@ document.getElementById("agree-save-btn").onclick=function(){
   }).then(function(match){
     btn.disabled=false;btn.textContent="Confirm Agreement";
     document.getElementById("agree-check").checked=false;
-    setMessage("Agreement saved for "+(match.team.name||name)+". Payment message opened.",true);
-    showPaymentPopup(match.team.name||name);
+    setMessage("Agreement saved for "+(match.team.name||name)+".",true);
   }).catch(function(e){
     btn.disabled=false;btn.textContent="Confirm Agreement";
     setMessage(e.message||"Could not save agreement.",false);
