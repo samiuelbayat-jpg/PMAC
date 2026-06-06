@@ -5,8 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PMAC Tournament Rules</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#08090c;color:#eef0f5;font-family:'Rajdhani',Arial,sans-serif;min-height:100vh}.top{position:sticky;top:0;z-index:5;background:rgba(8,9,12,.94);border-bottom:1px solid rgba(232,184,0,.25);backdrop-filter:blur(8px)}.top-inner{max-width:980px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#e8b800}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid rgba(232,184,0,.55);background:#161a1f;color:#fff;border-radius:7px;padding:9px 13px;font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;text-decoration:none}.btn.gold{background:#e8b800;color:#08090c;font-weight:900}.wrap{max-width:980px;margin:0 auto;padding:24px 18px 46px}.hero{border:1px solid rgba(232,184,0,.28);background:linear-gradient(135deg,#14171c,#0d0f13);border-radius:12px;padding:24px;margin-bottom:18px}.eyebrow{font-family:'Share Tech Mono',monospace;color:#8a96a8;font-size:11px;text-transform:uppercase;letter-spacing:.14em}.hero h1{margin:8px 0 8px;font-size:42px;line-height:.95;text-transform:uppercase;color:#fff}.hero p{max-width:760px;color:#aeb6c4;font-size:15px;line-height:1.55}.notice{border-left:4px solid #e8b800;background:rgba(232,184,0,.08);padding:12px 14px;margin:14px 0 22px;color:#f5dc75;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.55}.rules{background:#0f1115;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:22px}.rules h2{margin:28px 0 10px;color:#e8b800;font-size:25px;text-transform:uppercase;letter-spacing:.03em;border-top:1px solid rgba(255,255,255,.08);padding-top:18px}.rules h2:first-child{margin-top:0;border-top:0;padding-top:0}.rules h3{margin:18px 0 8px;color:#fff;font-size:19px;text-transform:uppercase}.rules p{margin:7px 0;color:#c8ced8;font-size:15px;line-height:1.55}.rules .leadline{font-family:'Share Tech Mono',monospace;color:#8a96a8;text-transform:uppercase;letter-spacing:.06em;font-size:12px}.rules .warn{color:#ffdf7a;background:rgba(255,76,76,.08);border:1px solid rgba(255,76,76,.22);border-radius:8px;padding:10px 12px}.footer-note{margin-top:20px;color:#8a96a8;font-family:'Share Tech Mono',monospace;font-size:11px;text-align:center}@media(max-width:640px){.top-inner{align-items:flex-start;flex-direction:column}.hero h1{font-size:30px}.rules{padding:16px}.rules h2{font-size:21px}}
+*{box-sizing:border-box}body{margin:0;background:#08090c;color:#eef0f5;font-family:'Rajdhani',Arial,sans-serif;min-height:100vh}.top{position:sticky;top:0;z-index:5;background:rgba(8,9,12,.94);border-bottom:1px solid rgba(232,184,0,.25);backdrop-filter:blur(8px)}.top-inner{max-width:980px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#e8b800}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid rgba(232,184,0,.55);background:#161a1f;color:#fff;border-radius:7px;padding:9px 13px;font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;text-decoration:none}.btn.gold{background:#e8b800;color:#08090c;font-weight:900}.wrap{max-width:980px;margin:0 auto;padding:24px 18px 46px}.hero{border:1px solid rgba(232,184,0,.28);background:linear-gradient(135deg,#14171c,#0d0f13);border-radius:12px;padding:24px;margin-bottom:18px}.eyebrow{font-family:'Share Tech Mono',monospace;color:#8a96a8;font-size:11px;text-transform:uppercase;letter-spacing:.14em}.hero h1{margin:8px 0 8px;font-size:42px;line-height:.95;text-transform:uppercase;color:#fff}.hero p{max-width:760px;color:#aeb6c4;font-size:15px;line-height:1.55}.notice{border-left:4px solid #e8b800;background:rgba(232,184,0,.08);padding:12px 14px;margin:14px 0 22px;color:#f5dc75;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.55}.agree-box{background:#0f1115;border:1px solid rgba(232,184,0,.28);border-radius:12px;padding:18px;margin:0 0 22px}.agree-title{font-weight:900;color:#fff;font-size:22px;text-transform:uppercase;margin-bottom:4px}.agree-sub{font-family:'Share Tech Mono',monospace;color:#8a96a8;font-size:11px;line-height:1.55;margin-bottom:14px}.agree-grid{display:grid;grid-template-columns:minmax(220px,1fr) 180px auto;gap:10px;align-items:end}.field label{display:block;font-family:'Share Tech Mono',monospace;color:#e8b800;font-size:10px;text-transform:uppercase;margin-bottom:5px}.field input,.field select{width:100%;background:#161a1f;border:1px solid rgba(255,255,255,.14);border-radius:7px;color:#fff;padding:10px 11px;font-family:'Share Tech Mono',monospace;font-size:12px}.agree-check{margin-top:12px;font-family:'Share Tech Mono',monospace;color:#c8ced8;font-size:11px;display:flex;gap:8px;align-items:flex-start}.agree-check input{accent-color:#e8b800;margin-top:2px}.agree-msg{display:block;margin-top:10px;font-family:'Share Tech Mono',monospace;font-size:12px}.rules{background:#0f1115;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:22px}.rules h2{margin:28px 0 10px;color:#e8b800;font-size:25px;text-transform:uppercase;letter-spacing:.03em;border-top:1px solid rgba(255,255,255,.08);padding-top:18px}.rules h2:first-child{margin-top:0;border-top:0;padding-top:0}.rules h3{margin:18px 0 8px;color:#fff;font-size:19px;text-transform:uppercase}.rules p{margin:7px 0;color:#c8ced8;font-size:15px;line-height:1.55}.rules .leadline{font-family:'Share Tech Mono',monospace;color:#8a96a8;text-transform:uppercase;letter-spacing:.06em;font-size:12px}.rules .warn{color:#ffdf7a;background:rgba(255,76,76,.08);border:1px solid rgba(255,76,76,.22);border-radius:8px;padding:10px 12px}.rules-table{width:100%;border-collapse:collapse;margin:14px 0 16px;background:#090b0f;border:1px solid rgba(232,184,0,.22);font-family:'Share Tech Mono',monospace;font-size:12px}.rules-table th{background:#e8b800;color:#08090c;text-align:left;text-transform:uppercase;padding:10px}.rules-table td{border-top:1px solid rgba(255,255,255,.08);padding:9px 10px;color:#eef0f5}.rules-table tr:nth-child(even) td{background:rgba(255,255,255,.03)}.footer-note{margin-top:20px;color:#8a96a8;font-family:'Share Tech Mono',monospace;font-size:11px;text-align:center}@media(max-width:640px){.top-inner{align-items:flex-start;flex-direction:column}.hero h1{font-size:30px}.agree-grid{grid-template-columns:1fr}.rules{padding:16px}.rules h2{font-size:21px}.rules-table{font-size:11px}}
 </style>
 </head>
 <body>
@@ -14,6 +16,17 @@
 <main class="wrap">
 <section class="hero"><div class="eyebrow">PUBG Mobile Afghanistan Community</div><h1>Tournament Rules</h1><p>Every registered team must read and agree with these rules before competing in PMAC events.</p></section>
 <div class="notice">By submitting agreement, the team representative confirms the team has read, understood, and accepted the PMAC tournament rulebook.</div>
+<section class="agree-box">
+<div class="agree-title">Confirm Team Agreement</div>
+<div class="agree-sub">Enter the registered team name exactly as registered. This saves the rule agreement to that team record.</div>
+<div class="agree-grid">
+<div class="field"><label for="agree-team-name">Team Name</label><input id="agree-team-name" type="text" placeholder="Example: AONE ESPORTS"></div>
+<div class="field"><label for="agree-type">Registration Type</label><select id="agree-type"><option value="event">PMAF Event</option><option value="scrim">PMAF Daily Scrim</option></select></div>
+<button class="btn gold" id="agree-save-btn" type="button">Confirm Agreement</button>
+</div>
+<label class="agree-check"><input id="agree-check" type="checkbox"><span>I confirm that my team has read, understood, and agrees with the PMAC tournament rules.</span></label>
+<span class="agree-msg" id="agree-msg"></span>
+</section>
 <section class="rules">
 <p class="leadline">PUBG MOBILE AFGHANISTAN COMMUNITY</p>
 <p class="leadline">PMAC — Official Tournament Rulebook</p>
@@ -94,36 +107,20 @@
 <p>Not permitted</p>
 <h3>5.3 Scoring System</h3>
 <p>PMAC uses the official PUBG Mobile competitive scoring system introduced for the 2023 season and used in all current global events (PMGO, PMWC, PMGC). Points are accumulated across all 12 matches. Final standings are determined by total points.</p>
-<p>Place</p>
-<p>Points</p>
-<p>Kills</p>
-<p>1st (WWCD)</p>
-<p>10</p>
-<p>1 point per kill</p>
-<p>2nd</p>
-<p>6</p>
-<p>1 point per kill</p>
-<p>3rd</p>
-<p>5</p>
-<p>1 point per kill</p>
-<p>4th</p>
-<p>4</p>
-<p>1 point per kill</p>
-<p>5th</p>
-<p>3</p>
-<p>1 point per kill</p>
-<p>6th</p>
-<p>2</p>
-<p>1 point per kill</p>
-<p>7th</p>
-<p>1</p>
-<p>1 point per kill</p>
-<p>8th</p>
-<p>1</p>
-<p>1 point per kill</p>
-<p>9th–16th</p>
-<p>0</p>
-<p>1 point per kill</p>
+<table class="rules-table">
+<thead><tr><th>Place</th><th>Placement Points</th><th>Kill Points</th></tr></thead>
+<tbody>
+<tr><td>1st (WWCD)</td><td>10</td><td>1 point per kill</td></tr>
+<tr><td>2nd</td><td>6</td><td>1 point per kill</td></tr>
+<tr><td>3rd</td><td>5</td><td>1 point per kill</td></tr>
+<tr><td>4th</td><td>4</td><td>1 point per kill</td></tr>
+<tr><td>5th</td><td>3</td><td>1 point per kill</td></tr>
+<tr><td>6th</td><td>2</td><td>1 point per kill</td></tr>
+<tr><td>7th</td><td>1</td><td>1 point per kill</td></tr>
+<tr><td>8th</td><td>1</td><td>1 point per kill</td></tr>
+<tr><td>9th-16th</td><td>0</td><td>1 point per kill</td></tr>
+</tbody>
+</table>
 <p class="warn">⚠  In the event of a tie in total points, the tiebreaker order is: (1) Most WWCD (Winner Winner Chicken Dinner), (2) Most total kills, (3) Most top-3 finishes.</p>
 <h2>6. Code of Conduct</h2>
 <h3>6.1 General Conduct</h3>
@@ -376,5 +373,68 @@
 </section>
 <div class="footer-note">PMAC Official Tournament Rulebook v1.0</div>
 </main>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyD-RFu-40Igcoqhm8QBbu_PgdFxV6aUIQA",
+  authDomain:"pubg-mobile-afghanistan.firebaseapp.com",
+  databaseURL:"https://pubg-mobile-afghanistan-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"pubg-mobile-afghanistan",
+  storageBucket:"pubg-mobile-afghanistan.firebasestorage.app",
+  messagingSenderId:"279105805502",
+  appId:"1:279105805502:web:8def653069d0b3d73bd2ef"
+});
+var db=firebase.database();
+var EVENT_ID=new URLSearchParams(location.search).get("event")||"default";
+var RULEBOOK_VERSION="PMAC_Tournament_Rulebook_v1.0";
+function eventBasePath(){return EVENT_ID==="default"?"pmac":"pmac/events/"+EVENT_ID;}
+function eventPath(child){return eventBasePath()+"/"+child;}
+function findRegistrationByName(list,name){
+  name=String(name||"").trim().toUpperCase();
+  var found=[];
+  Object.keys(list||{}).forEach(function(key){
+    var team=list[key]||{};
+    if(String(team.name||"").trim().toUpperCase()===name) found.push({key:key,team:team});
+  });
+  if(found.length===1) return found[0];
+  if(found.length>1) return {duplicate:true};
+  return null;
+}
+function setMessage(text,ok){
+  var msg=document.getElementById("agree-msg");
+  msg.textContent=text;
+  msg.style.color=ok?"#00c97a":"#ff5555";
+}
+document.getElementById("agree-save-btn").onclick=function(){
+  var btn=this;
+  var name=document.getElementById("agree-team-name").value.trim().toUpperCase();
+  var type=document.getElementById("agree-type").value;
+  if(!name){setMessage("Enter your registered team name.",false);return;}
+  if(!document.getElementById("agree-check").checked){setMessage("Please tick the agreement checkbox first.",false);return;}
+  btn.disabled=true;btn.textContent="Checking...";
+  var base=type==="scrim"?"scrim/registrations":"registrations";
+  db.ref(eventPath(base)).once("value").then(function(snap){
+    var match=findRegistrationByName(snap.val()||{},name);
+    if(match&&match.duplicate) throw new Error("More than one team has this name. Please contact admin to confirm it.");
+    if(!match) throw new Error("Team name was not found. Please check the spelling.");
+    btn.textContent="Saving...";
+    return db.ref(eventPath(base)+"/"+match.key+"/rulesAgreement").set({
+      agreed:true,
+      version:RULEBOOK_VERSION,
+      agreedAt:Date.now(),
+      eventId:EVENT_ID,
+      type:type,
+      agreedVia:"rules-page",
+      teamName:match.team.name||name
+    }).then(function(){return match;});
+  }).then(function(match){
+    btn.disabled=false;btn.textContent="Confirm Agreement";
+    document.getElementById("agree-check").checked=false;
+    setMessage("Agreement saved for "+(match.team.name||name)+".",true);
+  }).catch(function(e){
+    btn.disabled=false;btn.textContent="Confirm Agreement";
+    setMessage(e.message||"Could not save agreement.",false);
+  });
+};
+</script>
 </body>
 </html>

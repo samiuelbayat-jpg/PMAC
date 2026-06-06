@@ -1047,7 +1047,7 @@ function showRegistrationSuccessPopup(name,code){
   document.getElementById("success-delete-code").textContent=code;
   document.getElementById("success-overlay").style.display="flex";
 }
-function openRulesModal(){window.open("rules.html","pmacRules","width=980,height=760,scrollbars=yes,resizable=yes");}
+function openRulesModal(){window.open("rules.html?event="+encodeURIComponent(EVENT_ID),"pmacRules","width=980,height=760,scrollbars=yes,resizable=yes");}
 function rulesAgreementPayload(type){
   return {agreed:true,version:RULEBOOK_VERSION,agreedAt:Date.now(),eventId:EVENT_ID,type:type};
 }
