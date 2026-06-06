@@ -136,6 +136,9 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .b-pending{background:rgba(232,184,0,0.08);color:#e8b800;border-color:rgba(232,184,0,0.25);}
 .b-approved{background:rgba(0,201,122,0.08);color:#00c97a;border-color:rgba(0,201,122,0.25);}
 .b-rejected{background:rgba(255,68,68,0.08);color:#ff4444;border-color:rgba(255,68,68,0.25);}
+.rules-pill{font-family:'Share Tech Mono',monospace;font-size:8px;padding:3px 7px;border-radius:9px;border:1px solid;flex-shrink:0;letter-spacing:.04em;white-space:nowrap;}
+.rules-ok{background:rgba(0,201,122,0.09);color:#00c97a;border-color:rgba(0,201,122,0.32);}
+.rules-no{background:rgba(255,68,68,0.07);color:#ff7777;border-color:rgba(255,68,68,0.24);}
 .tr-actions{display:flex;gap:5px;flex-shrink:0;}
 .ta{background:none;border:1px solid transparent;border-radius:4px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:11px;padding:4px 8px;color:#606878;}
 .ta-ok{color:#00c97a;}.ta-ok:hover{background:rgba(0,201,122,0.1);border-color:rgba(0,201,122,0.3);}
@@ -1051,6 +1054,15 @@ function openRulesModal(){window.open("rules.html?event="+encodeURIComponent(EVE
 function rulesAgreementPayload(type){
   return {agreed:true,version:RULEBOOK_VERSION,agreedAt:Date.now(),eventId:EVENT_ID,type:type};
 }
+function rulesAgreementLabel(team){
+  var a=(team&&team.rulesAgreement)||{};
+  if(!a.agreed) return {ok:false,text:"RULES NOT AGREED",detail:""};
+  var detail="";
+  if(a.agreedAt){
+    try{detail=" · Rules agreed: "+new Date(a.agreedAt).toLocaleString();}catch(e){detail=" · Rules agreed";}
+  }else detail=" · Rules agreed";
+  return {ok:true,text:"RULES AGREED",detail:detail};
+}
 function selectedAgreeType(){
   var el=document.querySelector('input[name="agree-type"]:checked');
   return el?el.value:"event";
@@ -1415,7 +1427,8 @@ function renderTeams() {
     var selfBtn=!isAdmin?'<button class="ta" data-key="'+key+'" data-act="rem">Remove</button>':"";
     var row=document.createElement("div");row.className="team-row "+st;
     var privateMeta=isAdmin ? " · "+(t.manager||"—")+(t.managerPhone?" · "+t.managerPhone:"") : "";
-    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+']'+privateMeta+"</div></div>"+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+selfBtn+"</div>";
+    var rule=rulesAgreementLabel(t);
+    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+']'+privateMeta+(isAdmin?rule.detail:"")+"</div></div>"+'<div class="rules-pill '+(rule.ok?"rules-ok":"rules-no")+'">'+rule.text+'</div><div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+selfBtn+"</div>";
     row.querySelector(".tr-logo").replaceWith(logoDiv);
     list.appendChild(row);
   });
@@ -2514,7 +2527,8 @@ function scrimRenderTeams() {
     }
     var row=document.createElement("div");row.className="team-row "+st;
     var privateMeta=isAdmin ? " · "+(t.manager||"—")+(t.managerPhone?" · "+t.managerPhone:"") : "";
-    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+']'+privateMeta+"</div></div>"+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+"</div>";
+    var rule=rulesAgreementLabel(t);
+    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+']'+privateMeta+(isAdmin?rule.detail:"")+"</div></div>"+'<div class="rules-pill '+(rule.ok?"rules-ok":"rules-no")+'">'+rule.text+'</div><div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+"</div>";
     row.querySelector(".tr-logo").replaceWith(logoDiv);
     list.appendChild(row);
   });
