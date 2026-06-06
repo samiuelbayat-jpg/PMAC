@@ -162,6 +162,18 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .delete-code-box{background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:8px;padding:10px;margin:.75rem 0;font-family:'Share Tech Mono',monospace;font-size:11px;color:#8a96a8;}
 .delete-code-value{display:inline-block;margin-top:5px;font-size:24px;letter-spacing:.22em;color:#e8b800;font-weight:900;}
 .save-code-note{font-family:'Share Tech Mono',monospace;font-size:10px;color:#ff4444;line-height:1.4;}
+.rules-agree{width:100%;background:rgba(232,184,0,0.07);border:1px solid rgba(232,184,0,0.25);border-radius:8px;padding:10px 12px;margin-top:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;line-height:1.45;}
+.rules-agree label{display:flex;gap:9px;align-items:flex-start;cursor:pointer;}
+.rules-agree input{margin-top:2px;accent-color:#e8b800;}
+.rules-link-btn{background:none;border:0;color:#e8b800;font-family:'Share Tech Mono',monospace;font-size:10px;text-decoration:underline;cursor:pointer;padding:0;}
+.rules-list{margin:.5rem 0 0;padding-left:1.1rem;color:#8a96a8;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.55;}
+.rules-list li{margin-bottom:5px;}
+.rules-agree-page{background:#0f1115;border:1px solid rgba(232,184,0,0.22);border-radius:10px;padding:1.25rem;margin-bottom:1.5rem;}
+.rules-agree-page-title{font-weight:900;font-size:24px;color:#e8b800;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem;}
+.rules-agree-page-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;line-height:1.6;margin-bottom:1rem;}
+.rules-type-row{display:flex;gap:8px;flex-wrap:wrap;margin:.5rem 0 1rem;}
+.rules-type-row label{font-family:'Share Tech Mono',monospace;font-size:10px;color:#eef0f5;border:1px solid rgba(255,255,255,0.12);background:#161a1f;border-radius:18px;padding:7px 12px;cursor:pointer;}
+.rules-type-row input{margin-right:6px;accent-color:#e8b800;}
 
 /* GFX */
 .gfx-viewer{border-radius:8px;overflow:hidden;background:#0a0b0d;border:1px solid rgba(255,255,255,0.08);margin-bottom:.75rem;}
@@ -379,6 +391,27 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <button class="tab" id="tab-streamers" onclick="showTab('streamers')"><span>🔴</span><span>Live Streamers</span></button>
 </div>
 
+<div class="section" id="sec-rulesagree">
+  <div class="rules-agree-page">
+    <div class="rules-agree-page-title">Agree With PMAC Rules</div>
+    <div class="rules-agree-page-sub">For teams already registered. Enter your team name, read the rules, then submit your agreement.</div>
+    <div class="field-row">
+      <div class="fld"><div class="fl">Team Name *</div><input class="fi fi-name" type="text" id="agree-team-name" placeholder="Team Name"></div>
+    </div>
+    <div class="rules-type-row">
+      <label><input type="radio" name="agree-type" value="event" checked>PMAF Event</label>
+      <label><input type="radio" name="agree-type" value="scrim">PMAF Daily Scrim</label>
+    </div>
+    <div class="rules-agree">
+      <label><input type="checkbox" id="agree-rules-check"><span>I have read and agree with the PMAC tournament rulebook. <button type="button" class="rules-link-btn" onclick="openRulesModal()">View rules</button></span></label>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:1rem;">
+      <button class="btn btn-gold" id="agree-save-btn">Submit Agreement</button>
+      <span class="reg-msg" id="agree-msg"></span>
+    </div>
+  </div>
+</div>
+
 <!-- REGISTRATION SECTION -->
 <div class="section show" id="sec-reg">
 
@@ -490,6 +523,9 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
           <button class="logo-btn" id="reg-logo-btn">📷 Choose Logo</button>
           <img id="reg-logo-prev" class="logo-prev" src="" alt="">
         </div>
+      </div>
+      <div class="rules-agree">
+        <label><input type="checkbox" id="reg-rules-agree"><span>I have read and agree with the PMAC tournament rulebook. <button type="button" class="rules-link-btn" onclick="openRulesModal()">View rules</button></span></label>
       </div>
       <button class="btn btn-gold" id="reg-btn" style="align-self:flex-end;padding:9px 20px;">Register</button>
     </div>
@@ -610,6 +646,9 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
           <button class="logo-btn" id="scrim-reg-logo-btn">📷 Choose Logo</button>
           <img id="scrim-reg-logo-prev" class="logo-prev" src="" alt="">
         </div>
+      </div>
+      <div class="rules-agree">
+        <label><input type="checkbox" id="scrim-reg-rules-agree"><span>I have read and agree with the PMAC tournament rulebook. <button type="button" class="rules-link-btn" onclick="openRulesModal()">View rules</button></span></label>
       </div>
       <button class="btn btn-gold" id="scrim-reg-btn" style="align-self:flex-end;padding:9px 20px;">Register</button>
     </div>
@@ -815,6 +854,30 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   </div>
 </div>
 
+<div class="overlay" id="rules-overlay">
+  <div class="modal success-modal">
+    <div class="modal-title">PMAC Tournament Rules</div>
+    <div class="modal-sub">Teams must agree before registration. Summary from PMAC Official Tournament Rulebook v1.0:</div>
+    <ul class="rules-list">
+      <li>All players, captains, coaches, and managers are bound by the rules from registration.</li>
+      <li>Minimum age is 16. Players aged 16-17 need guardian consent.</li>
+      <li>Each player must use their own PUBG Mobile account. Account sharing, banned accounts, smurfs, boosted accounts, emulators, macros, hacks, and cheats are not allowed.</li>
+      <li>Clan collusion, teaming, point gifting, or sharing match information during live games leads to disqualification.</li>
+      <li>Teams must attend scheduled matches, be ready before match time, and follow check-in requirements.</li>
+      <li>PMAC may request recordings, screenshots, or replay evidence for anti-cheat review.</li>
+      <li>Abusive language, stream sniping, room ID sharing, match fixing, and harassment are prohibited.</li>
+      <li>By registering, the team representative confirms the team has read, understood, and agrees to the full rulebook.</li>
+    </ul>
+    <div class="payment-box" style="color:#fff;">
+      Full rulebook:
+      <a href="rules.html" target="_blank" style="color:#e8b800;font-weight:900;">Open PMAC Tournament Rules</a>
+    </div>
+    <div class="modal-act">
+      <button class="btn btn-gold" id="rules-close-btn">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -968,6 +1031,7 @@ var filterMode = "all";
 var regLogoFile = null;
 var editEvStatus = "open";
 var PAYPAL_PAYMENT_EMAIL = "ztygf020@gmail.com";
+var RULEBOOK_VERSION = "PMAC_Tournament_Rulebook_v1.0";
 function pendingPaymentHtml(){
   return "<br><span style='display:inline-block;margin-top:6px;color:#e8b800;font-size:12px;line-height:1.4;'>Payment required: send your PayPal payment to <b style='font-size:15px;color:#fff;'>"+PAYPAL_PAYMENT_EMAIL+"</b>. Your registration will be accepted after payment.</span>";
 }
@@ -982,6 +1046,65 @@ function showRegistrationSuccessPopup(name,code){
   document.getElementById("success-paypal-email").textContent=PAYPAL_PAYMENT_EMAIL;
   document.getElementById("success-delete-code").textContent=code;
   document.getElementById("success-overlay").style.display="flex";
+}
+function openRulesModal(){window.open("rules.html","pmacRules","width=980,height=760,scrollbars=yes,resizable=yes");}
+function rulesAgreementPayload(type){
+  return {agreed:true,version:RULEBOOK_VERSION,agreedAt:Date.now(),eventId:EVENT_ID,type:type};
+}
+function selectedAgreeType(){
+  var el=document.querySelector('input[name="agree-type"]:checked');
+  return el?el.value:"event";
+}
+function findRegistrationByName(list,name){
+  name=String(name||"").trim().toUpperCase();
+  var keys=Object.keys(list||{});
+  var found=[];
+  for(var i=0;i<keys.length;i++){
+    var t=list[keys[i]]||{};
+    if(String(t.name||"").trim().toUpperCase()===name){
+      found.push({key:keys[i],team:t});
+    }
+  }
+  if(found.length===1) return found[0];
+  if(found.length>1) return {duplicate:true};
+  return null;
+}
+function saveExistingRulesAgreement(){
+  var msg=document.getElementById("agree-msg");
+  var btn=document.getElementById("agree-save-btn");
+  var name=document.getElementById("agree-team-name").value.trim().toUpperCase();
+  var type=selectedAgreeType();
+  if(!name){msg.textContent="Enter your team name";msg.style.color="#ff4444";return;}
+  if(!document.getElementById("agree-rules-check").checked){msg.textContent="You must agree with the PMAC tournament rulebook";msg.style.color="#ff4444";return;}
+  var list=type==="scrim"?scrimRegs:regs;
+  var match=findRegistrationByName(list,name);
+  if(match&&match.duplicate){msg.textContent="More than one team has this name. Please contact admin to save the agreement.";msg.style.color="#ff4444";return;}
+  if(!match){msg.textContent="Team name was not found. Please check the spelling.";msg.style.color="#ff4444";return;}
+  var payload=rulesAgreementPayload(type);
+  payload.agreedVia="rules-link";
+  payload.teamName=match.team.name||name;
+  payload.updatedAt=Date.now();
+  btn.disabled=true;btn.textContent="Saving...";msg.textContent="Saving agreement...";msg.style.color="#e8b800";
+  var path=type==="scrim"?eventPath("scrim/registrations"):eventPath("registrations");
+  db.ref(path+"/"+match.key+"/rulesAgreement").set(payload).then(function(){
+    btn.disabled=false;btn.textContent="Submit Agreement";
+    document.getElementById("agree-rules-check").checked=false;
+    msg.textContent="Rules agreement saved for "+(match.team.name||name)+".";
+    msg.style.color="#00c97a";
+  }).catch(function(e){
+    btn.disabled=false;btn.textContent="Submit Agreement";
+    msg.textContent="Error: "+e.message;
+    msg.style.color="#ff4444";
+  });
+}
+function initRulesAgreeLink(){
+  var params=new URLSearchParams(location.search);
+  if(params.get("agree")!=="rules") return;
+  var team=params.get("team")||"";
+  if(team) document.getElementById("agree-team-name").value=team.toUpperCase();
+  var tabs=document.querySelector(".tabs");
+  if(tabs) tabs.style.display="none";
+  showTab("rulesagree");
 }
 var gfxList = [];
 var gfxIdx = 0;
@@ -1226,6 +1349,7 @@ document.getElementById("reg-btn").onclick = function() {
   if(!tag){msg.textContent="Enter team tag";msg.style.color="#ff4444";return;}
   if(!mgr){msg.textContent="Enter manager name";msg.style.color="#ff4444";return;}
   if(!phone){msg.textContent="Enter manager phone";msg.style.color="#ff4444";return;}
+  if(!document.getElementById("reg-rules-agree").checked){msg.textContent="You must agree with the PMAC tournament rulebook";msg.style.color="#ff4444";return;}
   var keys=Object.keys(regs);
   for(var i=0;i<keys.length;i++){if(regs[keys[i]].name===name){msg.textContent="Team already registered";msg.style.color="#ff4444";return;}}
   if(keys.length>=evMax){msg.textContent="Registration is full";msg.style.color="#ff4444";return;}
@@ -1233,8 +1357,8 @@ document.getElementById("reg-btn").onclick = function() {
   for(var c=0;c<6;c++) code+=chars[Math.floor(Math.random()*chars.length)];
   btn.textContent="Registering...";btn.disabled=true;msg.textContent="Saving...";msg.style.color="#e8b800";
   function doSave(logoUrl){
-    db.ref(eventPath("registrations")+"/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code}).then(function(){
-      document.getElementById("reg-name").value="";document.getElementById("reg-tag").value="";document.getElementById("reg-manager").value="";document.getElementById("reg-mgr-phone").value="";document.getElementById("reg-logo-file").value="";document.getElementById("reg-logo-prev").style.display="none";document.getElementById("reg-logo-prev").dataset.savedLogo="";regLogoFile=null;
+    db.ref(eventPath("registrations")+"/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code,rulesAgreement:rulesAgreementPayload("event")}).then(function(){
+      document.getElementById("reg-name").value="";document.getElementById("reg-tag").value="";document.getElementById("reg-manager").value="";document.getElementById("reg-mgr-phone").value="";document.getElementById("reg-logo-file").value="";document.getElementById("reg-logo-prev").style.display="none";document.getElementById("reg-logo-prev").dataset.savedLogo="";document.getElementById("reg-rules-agree").checked=false;regLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_reg_code",code);localStorage.setItem("pmac_reg_name",name);
       if(isAdmin){msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b>";}
@@ -1474,6 +1598,7 @@ function exportApprovedTeamsToGroups(){
 // CONFIRM REMOVE
 document.getElementById("cancel-overlay-btn").onclick=function(){document.getElementById("overlay").style.display="none";};
 document.getElementById("success-close-btn").onclick=function(){document.getElementById("success-overlay").style.display="none";};
+document.getElementById("rules-close-btn").onclick=function(){document.getElementById("rules-overlay").style.display="none";};
 document.getElementById("confirm-del-btn").onclick=function(){
   var key=document.getElementById("confirm-key").value;
   var typed=document.getElementById("confirm-code").value.trim().toUpperCase();
@@ -1507,7 +1632,7 @@ function checkStatus(){
 
 // TABS
 function showTab(tab){
-  ["reg","scrim","gfx","lobby","scores","archive","streamers"].forEach(function(t){
+  ["reg","scrim","gfx","lobby","scores","archive","streamers","rulesagree"].forEach(function(t){
     var tb=document.getElementById("tab-"+t); var sc=document.getElementById("sec-"+t);
     if(tb) tb.className="tab"+(t===tab?" active":"");
     if(sc) sc.className="section"+(t===tab?" show":"");
@@ -1518,6 +1643,8 @@ function showTab(tab){
   if(tab==="archive"&&!archiveLoaded) loadPubArchive();
   if(tab==="streamers"&&!streamersLoaded) loadStreamers();
 }
+document.getElementById("agree-save-btn").onclick=saveExistingRulesAgreement;
+initRulesAgreeLink();
 
 // GFX
 function loadGFX(){
@@ -2325,6 +2452,7 @@ document.getElementById("scrim-reg-btn").onclick = function() {
   if(!tag){msg.textContent="Enter team tag";msg.style.color="#ff4444";return;}
   if(!mgr){msg.textContent="Enter manager name";msg.style.color="#ff4444";return;}
   if(!phone){msg.textContent="Enter manager phone";msg.style.color="#ff4444";return;}
+  if(!document.getElementById("scrim-reg-rules-agree").checked){msg.textContent="You must agree with the PMAC tournament rulebook";msg.style.color="#ff4444";return;}
   var keys=Object.keys(scrimRegs);
   for(var i=0;i<keys.length;i++){if(scrimRegs[keys[i]].name===name){msg.textContent="Team already registered";msg.style.color="#ff4444";return;}}
   if(keys.length>=scrimMax){msg.textContent="Registration is full";msg.style.color="#ff4444";return;}
@@ -2332,8 +2460,8 @@ document.getElementById("scrim-reg-btn").onclick = function() {
   for(var c=0;c<6;c++) code+=chars[Math.floor(Math.random()*chars.length)];
   btn.textContent="Registering...";btn.disabled=true;msg.textContent="Saving...";msg.style.color="#e8b800";
   function doSave(logoUrl){
-    db.ref(eventPath("scrim/registrations")+"/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code}).then(function(){
-      document.getElementById("scrim-reg-name").value="";document.getElementById("scrim-reg-tag").value="";document.getElementById("scrim-reg-manager").value="";document.getElementById("scrim-reg-mgr-phone").value="";document.getElementById("scrim-reg-logo-file").value="";document.getElementById("scrim-reg-logo-prev").style.display="none";document.getElementById("scrim-reg-logo-prev").dataset.savedLogo="";scrimLogoFile=null;
+    db.ref(eventPath("scrim/registrations")+"/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code,rulesAgreement:rulesAgreementPayload("scrim")}).then(function(){
+      document.getElementById("scrim-reg-name").value="";document.getElementById("scrim-reg-tag").value="";document.getElementById("scrim-reg-manager").value="";document.getElementById("scrim-reg-mgr-phone").value="";document.getElementById("scrim-reg-logo-file").value="";document.getElementById("scrim-reg-logo-prev").style.display="none";document.getElementById("scrim-reg-logo-prev").dataset.savedLogo="";document.getElementById("scrim-reg-rules-agree").checked=false;scrimLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_scrim_code",code);localStorage.setItem("pmac_scrim_name",name);
       if(isAdmin){msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b>";}
