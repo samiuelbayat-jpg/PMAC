@@ -146,6 +146,23 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .rules-log-name{font-weight:900;font-size:15px;text-transform:uppercase;color:#eef0f5;}
 .rules-log-meta{font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;line-height:1.55;margin-top:2px;}
 .rules-log-type{font-family:'Share Tech Mono',monospace;font-size:9px;color:#00c97a;border:1px solid rgba(0,201,122,0.28);background:rgba(0,201,122,0.08);border-radius:12px;padding:4px 8px;white-space:nowrap;}
+.idpass-admin-box{background:rgba(10,12,16,0.9);border:1px solid rgba(232,184,0,0.22);border-radius:9px;padding:12px;margin-bottom:1rem;}
+.idpass-title{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+.idpass-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;}
+.idpass-field{display:flex;flex-direction:column;gap:4px;min-width:150px;flex:1;}
+.idpass-field label{font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;text-transform:uppercase;}
+.idpass-field input{background:#161a1f;border:1px solid rgba(255,255,255,0.12);border-radius:5px;color:#eef0f5;font-family:'Share Tech Mono',monospace;font-size:11px;padding:8px 9px;}
+.idpass-status{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;margin-top:8px;min-height:14px;}
+.idpass-public-box{background:#0f1115;border:1px solid rgba(0,201,122,0.25);border-radius:10px;padding:1.25rem;margin-bottom:1rem;}
+.idpass-public-title{font-weight:900;font-size:24px;color:#00c97a;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem;}
+.idpass-public-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;line-height:1.6;margin-bottom:1rem;}
+.idpass-public-result{display:none;margin-top:1rem;background:#090b0f;border:1px solid rgba(0,201,122,0.25);border-radius:9px;padding:14px;}
+.idpass-public-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.idpass-public-value{background:#161a1f;border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:12px;}
+.idpass-public-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;text-transform:uppercase;margin-bottom:5px;}
+.idpass-public-text{font-family:'Share Tech Mono',monospace;font-size:22px;color:#fff;font-weight:900;letter-spacing:.08em;overflow-wrap:anywhere;}
+.idpass-public-note{font-family:'Share Tech Mono',monospace;font-size:11px;color:#f5dc75;margin-top:10px;line-height:1.5;}
+@media(max-width:640px){.idpass-public-grid{grid-template-columns:1fr}.idpass-public-text{font-size:18px;}}
 .tr-actions{display:flex;gap:5px;flex-shrink:0;}
 .ta{background:none;border:1px solid transparent;border-radius:4px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:11px;padding:4px 8px;color:#606878;}
 .ta-ok{color:#00c97a;}.ta-ok:hover{background:rgba(0,201,122,0.1);border-color:rgba(0,201,122,0.3);}
@@ -399,6 +416,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <button class="tab" id="tab-archive" onclick="showTab('archive')"><span>🗄</span><span>Archive</span></button>
   <button class="tab" id="tab-events" onclick="window.location.href='promotions.html'"><span>📣</span><span>Events</span></button>
   <button class="tab" id="tab-streamers" onclick="showTab('streamers')"><span>🔴</span><span>Live Streamers</span></button>
+  <button class="tab" id="tab-idpass" onclick="showTab('idpass')"><span>🔑</span><span>ID Pass</span></button>
   <button class="tab" id="tab-rulelog" onclick="showTab('rulelog')" style="display:none;"><span>✓</span><span>Rules Agreed</span></button>
 </div>
 
@@ -423,6 +441,31 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   </div>
 </div>
 
+<div class="section" id="sec-idpass">
+  <div class="idpass-public-box">
+    <div class="idpass-public-title">Get ID Pass</div>
+    <div class="idpass-public-sub">Only teams who agreed with PMAC rules can see the room ID and password. Enter your registered team name exactly as registered.</div>
+    <div class="field-row">
+      <div class="fld"><div class="fl">Team Name *</div><input class="fi fi-name" type="text" id="idpass-team-name" placeholder="Team Name"></div>
+    </div>
+    <div class="rules-type-row">
+      <label><input type="radio" name="idpass-type" value="event" checked>PMAF Event</label>
+      <label><input type="radio" name="idpass-type" value="scrim">PMAF Daily Scrim</label>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:1rem;">
+      <button class="btn btn-gold" id="idpass-get-btn">Show ID Pass</button>
+      <span class="reg-msg" id="idpass-msg"></span>
+    </div>
+    <div class="idpass-public-result" id="idpass-public-result">
+      <div class="idpass-public-grid">
+        <div class="idpass-public-value"><div class="idpass-public-label">Room ID</div><div class="idpass-public-text" id="idpass-public-id">-</div></div>
+        <div class="idpass-public-value"><div class="idpass-public-label">Room Pass</div><div class="idpass-public-text" id="idpass-public-pass">-</div></div>
+      </div>
+      <div class="idpass-public-note" id="idpass-public-note"></div>
+    </div>
+  </div>
+</div>
+
 <div class="section" id="sec-rulelog">
   <div class="rules-log-head">
     <div>
@@ -430,6 +473,22 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <div class="rules-log-sub">Admin-only list from PMAF Event and PMAF Daily Scrim registrations.</div>
     </div>
     <button class="btn" onclick="renderRulesAgreedLog()" style="padding:6px 16px;font-size:12px;">Refresh</button>
+  </div>
+  <div class="idpass-admin-box">
+    <div class="idpass-title">ID Pass for agreed teams</div>
+    <div class="idpass-row">
+      <div class="idpass-field"><label>PMAF Event ID</label><input id="idpass-event-id" placeholder="Room ID"></div>
+      <div class="idpass-field"><label>PMAF Event Pass</label><input id="idpass-event-pass" placeholder="Password"></div>
+      <div class="idpass-field"><label>Event Note</label><input id="idpass-event-note" placeholder="Optional note"></div>
+      <button class="btn btn-gold" onclick="saveIdPass('event')" style="padding:8px 16px;font-size:12px;">Save Event</button>
+    </div>
+    <div class="idpass-row" style="margin-top:10px;">
+      <div class="idpass-field"><label>Daily Scrim ID</label><input id="idpass-scrim-id" placeholder="Room ID"></div>
+      <div class="idpass-field"><label>Daily Scrim Pass</label><input id="idpass-scrim-pass" placeholder="Password"></div>
+      <div class="idpass-field"><label>Scrim Note</label><input id="idpass-scrim-note" placeholder="Optional note"></div>
+      <button class="btn btn-gold" onclick="saveIdPass('scrim')" style="padding:8px 16px;font-size:12px;">Save Scrim</button>
+    </div>
+    <div class="idpass-status" id="idpass-admin-status"></div>
   </div>
   <div id="rules-agreed-summary" class="rules-log-sub" style="margin-bottom:.75rem;"></div>
   <div id="rules-agreed-list"></div>
@@ -1123,6 +1182,74 @@ function renderRulesAgreedLog(){
     list.appendChild(card);
   });
 }
+function renderIdPassAdmin(){
+  ["event","scrim"].forEach(function(type){
+    var data=(idPassInfo&&idPassInfo[type])||{};
+    var idEl=document.getElementById("idpass-"+type+"-id");
+    var passEl=document.getElementById("idpass-"+type+"-pass");
+    var noteEl=document.getElementById("idpass-"+type+"-note");
+    if(idEl && document.activeElement!==idEl) idEl.value=data.roomId||"";
+    if(passEl && document.activeElement!==passEl) passEl.value=data.roomPass||"";
+    if(noteEl && document.activeElement!==noteEl) noteEl.value=data.note||"";
+  });
+}
+function saveIdPass(type){
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
+  var id=(document.getElementById("idpass-"+type+"-id")||{}).value||"";
+  var pass=(document.getElementById("idpass-"+type+"-pass")||{}).value||"";
+  var note=(document.getElementById("idpass-"+type+"-note")||{}).value||"";
+  var status=document.getElementById("idpass-admin-status");
+  var label=type==="scrim"?"Daily Scrim":"PMAF Event";
+  if(status){status.textContent="Saving "+label+" ID/pass...";status.style.color="#e8b800";}
+  db.ref(eventPath("idpass/"+type)).set({
+    roomId:id.trim(),
+    roomPass:pass.trim(),
+    note:note.trim(),
+    updatedAt:Date.now(),
+    updatedBy:currentAdminUid||""
+  }).then(function(){
+    if(status){status.textContent=label+" ID/pass saved.";status.style.color="#00c97a";}
+    toast(label+" ID/pass saved",true);
+  }).catch(function(e){
+    if(status){status.textContent="Error: "+e.message;status.style.color="#ff4444";}
+    toast("Error: "+e.message,false);
+  });
+}
+function selectedIdPassType(){
+  var el=document.querySelector('input[name="idpass-type"]:checked');
+  return el?el.value:"event";
+}
+function showPublicIdPass(){
+  var msg=document.getElementById("idpass-msg");
+  var result=document.getElementById("idpass-public-result");
+  var name=document.getElementById("idpass-team-name").value.trim().toUpperCase();
+  var type=selectedIdPassType();
+  var list=type==="scrim"?scrimRegs:regs;
+  if(result) result.style.display="none";
+  if(!name){msg.textContent="Enter your team name";msg.style.color="#ff4444";return;}
+  var match=findRegistrationByName(list,name);
+  if(match&&match.duplicate){msg.textContent="More than one team has this name. Please contact admin.";msg.style.color="#ff4444";return;}
+  if(!match){msg.textContent="Team name was not found.";msg.style.color="#ff4444";return;}
+  if(!match.team.rulesAgreement || !match.team.rulesAgreement.agreed){
+    msg.textContent="This team has not agreed with the rules yet.";
+    msg.style.color="#ff4444";
+    return;
+  }
+  msg.textContent="Loading ID/pass...";
+  msg.style.color="#e8b800";
+  db.ref(eventPath("idpass/"+type)).once("value").then(function(snap){
+    var data=snap.val()||{};
+    document.getElementById("idpass-public-id").textContent=data.roomId||"Not set yet";
+    document.getElementById("idpass-public-pass").textContent=data.roomPass||"Not set yet";
+    document.getElementById("idpass-public-note").textContent=data.note||(!data.roomId&&!data.roomPass?"Admin has not added the ID/pass yet. Please check again later.":"");
+    result.style.display="block";
+    msg.textContent="ID/pass unlocked for "+(match.team.name||name)+".";
+    msg.style.color="#00c97a";
+  }).catch(function(e){
+    msg.textContent="Error: "+e.message;
+    msg.style.color="#ff4444";
+  });
+}
 function selectedAgreeType(){
   var el=document.querySelector('input[name="agree-type"]:checked');
   return el?el.value:"event";
@@ -1190,6 +1317,7 @@ var YT_API_KEY = "AIzaSyDmB2cozlb3JqUWchjyB-TdfQNtcOCVY1Y";
 var streamersList = [];
 var communityEventGroups = {};
 var GROUP_EXPORT_DEFAULTS = ["A","B","C","D","E","F","G"];
+var idPassInfo = {event:{},scrim:{}};
 
 // Apply admin UI immediately
 applyAdminUI();
@@ -1204,6 +1332,10 @@ db.ref(eventPath("event")).on("value", function(s) {
 db.ref(eventPath("eventGroups")).on("value", function(s) {
   communityEventGroups = s.val() || {};
   renderGroupExportOptions();
+});
+db.ref(eventPath("idpass")).on("value", function(s) {
+  idPassInfo = s.val() || {event:{},scrim:{}};
+  renderIdPassAdmin();
 });
 db.ref(eventPath("registrations")).on("value", function(s) {
   regs = s.val() || {};
@@ -1712,7 +1844,7 @@ function checkStatus(){
 // TABS
 function showTab(tab){
   if(tab==="rulelog"&&!isAdmin){toast("Admin login required",false);return;}
-  ["reg","scrim","gfx","lobby","scores","archive","streamers","rulesagree","rulelog"].forEach(function(t){
+  ["reg","scrim","gfx","lobby","scores","archive","streamers","rulesagree","idpass","rulelog"].forEach(function(t){
     var tb=document.getElementById("tab-"+t); var sc=document.getElementById("sec-"+t);
     if(tb) tb.className="tab"+(t===tab?" active":"");
     if(sc) sc.className="section"+(t===tab?" show":"");
@@ -1725,6 +1857,7 @@ function showTab(tab){
   if(tab==="rulelog") renderRulesAgreedLog();
 }
 document.getElementById("agree-save-btn").onclick=saveExistingRulesAgreement;
+document.getElementById("idpass-get-btn").onclick=showPublicIdPass;
 initRulesAgreeLink();
 
 // GFX

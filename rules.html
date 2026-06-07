@@ -429,7 +429,7 @@ document.getElementById("agree-save-btn").onclick=function(){
   }).then(function(match){
     btn.disabled=false;btn.textContent="Confirm Agreement";
     document.getElementById("agree-check").checked=false;
-    setMessage("Agreement saved for "+(match.team.name||name)+".",true);
+    setMessage("Agreement saved for "+(match.team.name||name)+". Open PMAF Community and use the ID Pass tab.",true);
   }).catch(function(e){
     btn.disabled=false;btn.textContent="Confirm Agreement";
     setMessage(e.message||"Could not save agreement.",false);
