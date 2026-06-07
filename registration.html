@@ -416,7 +416,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <button class="tab" id="tab-archive" onclick="showTab('archive')"><span>🗄</span><span>Archive</span></button>
   <button class="tab" id="tab-events" onclick="window.location.href='promotions.html'"><span>📣</span><span>Events</span></button>
   <button class="tab" id="tab-streamers" onclick="showTab('streamers')"><span>🔴</span><span>Live Streamers</span></button>
-  <button class="tab" id="tab-idpass" onclick="showTab('idpass')"><span>🔑</span><span>ID Pass</span></button>
+  <button class="tab" id="tab-idpass" onclick="showTab('idpass')" style="display:none;"><span>🔑</span><span>ID Pass</span></button>
   <button class="tab" id="tab-rulelog" onclick="showTab('rulelog')" style="display:none;"><span>✓</span><span>Rules Agreed</span></button>
 </div>
 
@@ -444,14 +444,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 <div class="section" id="sec-idpass">
   <div class="idpass-public-box">
     <div class="idpass-public-title">Get ID Pass</div>
-    <div class="idpass-public-sub">Only teams who agreed with PMAC rules can see the room ID and password. Enter your registered team name exactly as registered.</div>
-    <div class="field-row">
-      <div class="fld"><div class="fl">Team Name *</div><input class="fi fi-name" type="text" id="idpass-team-name" placeholder="Team Name"></div>
-    </div>
-    <div class="rules-type-row">
-      <label><input type="radio" name="idpass-type" value="event" checked>PMAF Event</label>
-      <label><input type="radio" name="idpass-type" value="scrim">PMAF Daily Scrim</label>
-    </div>
+    <div class="idpass-public-sub" id="idpass-public-sub">Only teams who agreed with PMAC rules can see the room ID and password.</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:1rem;">
       <button class="btn btn-gold" id="idpass-get-btn">Show ID Pass</button>
       <span class="reg-msg" id="idpass-msg"></span>
@@ -1142,6 +1135,33 @@ function rulesAgreementLabel(team){
   }else detail=" · Rules agreed";
   return {ok:true,text:"RULES AGREED",detail:detail};
 }
+function idPassAccessKey(type){return "pmac_idpass_access_"+EVENT_ID+"_"+type;}
+function rememberRulesAgreementForIdPass(type,teamName){
+  try{
+    localStorage.setItem(idPassAccessKey(type), JSON.stringify({teamName:teamName||"",type:type,eventId:EVENT_ID,at:Date.now()}));
+  }catch(e){}
+  updateIdPassTabVisibility();
+}
+function getRememberedIdPassAccess(){
+  var found=null;
+  ["event","scrim"].forEach(function(type){
+    try{
+      var raw=localStorage.getItem(idPassAccessKey(type));
+      if(raw && !found) found=JSON.parse(raw);
+    }catch(e){}
+  });
+  return found;
+}
+function updateIdPassTabVisibility(){
+  var tab=document.getElementById("tab-idpass");
+  if(!tab) return;
+  var access=getRememberedIdPassAccess();
+  tab.style.display = access ? "" : "none";
+  if(access){
+    var sub=document.getElementById("idpass-public-sub");
+    if(sub) sub.textContent="Unlocked for "+(access.teamName||"your team")+" · "+(access.type==="scrim"?"PMAF Daily Scrim":"PMAF Event");
+  }
+}
 function fmtRulesDate(ts){
   if(!ts) return "-";
   try{return new Date(ts).toLocaleString();}catch(e){return "-";}
@@ -1216,17 +1236,18 @@ function saveIdPass(type){
   });
 }
 function selectedIdPassType(){
-  var el=document.querySelector('input[name="idpass-type"]:checked');
-  return el?el.value:"event";
+  var access=getRememberedIdPassAccess();
+  return access&&access.type?access.type:"event";
 }
 function showPublicIdPass(){
   var msg=document.getElementById("idpass-msg");
   var result=document.getElementById("idpass-public-result");
-  var name=document.getElementById("idpass-team-name").value.trim().toUpperCase();
+  var access=getRememberedIdPassAccess();
+  var name=(access&&access.teamName?access.teamName:"").trim().toUpperCase();
   var type=selectedIdPassType();
   var list=type==="scrim"?scrimRegs:regs;
   if(result) result.style.display="none";
-  if(!name){msg.textContent="Enter your team name";msg.style.color="#ff4444";return;}
+  if(!name){msg.textContent="Agree with the rules first.";msg.style.color="#ff4444";return;}
   var match=findRegistrationByName(list,name);
   if(match&&match.duplicate){msg.textContent="More than one team has this name. Please contact admin.";msg.style.color="#ff4444";return;}
   if(!match){msg.textContent="Team name was not found.";msg.style.color="#ff4444";return;}
@@ -1288,6 +1309,7 @@ function saveExistingRulesAgreement(){
   db.ref(path+"/"+match.key+"/rulesAgreement").set(payload).then(function(){
     btn.disabled=false;btn.textContent="Submit Agreement";
     document.getElementById("agree-rules-check").checked=false;
+    rememberRulesAgreementForIdPass(type,match.team.name||name);
     msg.textContent="Rules agreement saved for "+(match.team.name||name)+".";
     msg.style.color="#00c97a";
   }).catch(function(e){
@@ -1361,6 +1383,7 @@ function applyAdminUI() {
   if(gfxUpload) gfxUpload.style.display = isAdmin ? "block" : "none";
   var ruleTab=document.getElementById("tab-rulelog");
   if(ruleTab) ruleTab.style.display = isAdmin ? "" : "none";
+  updateIdPassTabVisibility();
   if(!isAdmin && document.getElementById("sec-rulelog") && document.getElementById("sec-rulelog").classList.contains("show")) showTab("reg");
   renderRulesAgreedLog();
 }
@@ -1571,6 +1594,7 @@ document.getElementById("reg-btn").onclick = function() {
       document.getElementById("reg-name").value="";document.getElementById("reg-tag").value="";document.getElementById("reg-manager").value="";document.getElementById("reg-mgr-phone").value="";document.getElementById("reg-logo-file").value="";document.getElementById("reg-logo-prev").style.display="none";document.getElementById("reg-logo-prev").dataset.savedLogo="";document.getElementById("reg-rules-agree").checked=false;regLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_reg_code",code);localStorage.setItem("pmac_reg_name",name);
+      rememberRulesAgreementForIdPass("event",name);
       if(isAdmin){msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b>";}
       else{msg.textContent="";showRegistrationSuccessPopup(name,code);}
     }).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});
@@ -1844,6 +1868,7 @@ function checkStatus(){
 // TABS
 function showTab(tab){
   if(tab==="rulelog"&&!isAdmin){toast("Admin login required",false);return;}
+  if(tab==="idpass"&&!getRememberedIdPassAccess()){toast("Agree with the rules first",false);return;}
   ["reg","scrim","gfx","lobby","scores","archive","streamers","rulesagree","idpass","rulelog"].forEach(function(t){
     var tb=document.getElementById("tab-"+t); var sc=document.getElementById("sec-"+t);
     if(tb) tb.className="tab"+(t===tab?" active":"");
@@ -1854,6 +1879,7 @@ function showTab(tab){
   if(tab==="scores"&&!scoresLoaded) loadScoreboard();
   if(tab==="archive"&&!archiveLoaded) loadPubArchive();
   if(tab==="streamers"&&!streamersLoaded) loadStreamers();
+  if(tab==="idpass") showPublicIdPass();
   if(tab==="rulelog") renderRulesAgreedLog();
 }
 document.getElementById("agree-save-btn").onclick=saveExistingRulesAgreement;
@@ -2679,6 +2705,7 @@ document.getElementById("scrim-reg-btn").onclick = function() {
       document.getElementById("scrim-reg-name").value="";document.getElementById("scrim-reg-tag").value="";document.getElementById("scrim-reg-manager").value="";document.getElementById("scrim-reg-mgr-phone").value="";document.getElementById("scrim-reg-logo-file").value="";document.getElementById("scrim-reg-logo-prev").style.display="none";document.getElementById("scrim-reg-logo-prev").dataset.savedLogo="";document.getElementById("scrim-reg-rules-agree").checked=false;scrimLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_scrim_code",code);localStorage.setItem("pmac_scrim_name",name);
+      rememberRulesAgreementForIdPass("scrim",name);
       if(isAdmin){msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b>";}
       else{msg.textContent="";showRegistrationSuccessPopup(name,code);}
     }).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});

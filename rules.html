@@ -404,6 +404,11 @@ function setMessage(text,ok){
   msg.textContent=text;
   msg.style.color=ok?"#00c97a":"#ff5555";
 }
+function rememberIdPassAccess(type,teamName){
+  try{
+    localStorage.setItem("pmac_idpass_access_"+EVENT_ID+"_"+type, JSON.stringify({teamName:teamName||"",type:type,eventId:EVENT_ID,at:Date.now()}));
+  }catch(e){}
+}
 document.getElementById("agree-save-btn").onclick=function(){
   var btn=this;
   var name=document.getElementById("agree-team-name").value.trim().toUpperCase();
@@ -429,7 +434,8 @@ document.getElementById("agree-save-btn").onclick=function(){
   }).then(function(match){
     btn.disabled=false;btn.textContent="Confirm Agreement";
     document.getElementById("agree-check").checked=false;
-    setMessage("Agreement saved for "+(match.team.name||name)+". Open PMAF Community and use the ID Pass tab.",true);
+    rememberIdPassAccess(type,match.team.name||name);
+    setMessage("Agreement saved for "+(match.team.name||name)+". Open PMAF Community and the ID Pass tab will be visible.",true);
   }).catch(function(e){
     btn.disabled=false;btn.textContent="Confirm Agreement";
     setMessage(e.message||"Could not save agreement.",false);
