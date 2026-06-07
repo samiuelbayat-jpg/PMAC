@@ -508,6 +508,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <div class="ev-meta" id="ev-meta"></div>
       <div class="ev-desc" id="ev-desc"></div>
       <span class="status-badge s-open" id="ev-badge">Open</span>
+      <button class="btn" onclick="openEventInfoModal('event')" style="padding:6px 16px;font-size:12px;margin-left:8px;">Event Information</button>
       <div class="prog-row">
         <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
         <div class="prog-lbl" id="prog-lbl">0 / 0 teams</div>
@@ -649,6 +650,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <div class="ev-meta" id="scrim-ev-meta"></div>
       <div class="ev-desc" id="scrim-ev-desc"></div>
       <span class="status-badge s-open" id="scrim-ev-badge">Open</span>
+      <button class="btn" onclick="openEventInfoModal('scrim')" style="padding:6px 16px;font-size:12px;margin-left:8px;">Event Information</button>
       <div class="prog-row">
         <div class="prog-bar"><div class="prog-fill" id="scrim-prog-fill" style="width:0%"></div></div>
         <div class="prog-lbl" id="scrim-prog-lbl">0 / 0 teams</div>
@@ -953,6 +955,25 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   </div>
 </div>
 
+<div class="overlay" id="event-info-overlay">
+  <div class="modal success-modal">
+    <div class="modal-title" id="event-info-title">Event Information</div>
+    <div class="modal-sub" id="event-info-sub">Short guide for teams in this event.</div>
+    <ul class="rules-list" id="event-info-list">
+      <li>Register your team in the correct PMAF Community tab.</li>
+      <li>After admin approval, read and agree with the PMAC rules from the rulebook link.</li>
+      <li>After your agreement, the ID Pass tab becomes visible in PMAF Community on this browser.</li>
+      <li>Open ID Pass to see the room ID and password after admin has added it.</li>
+      <li>Admins can place approved teams into event groups for lobby days and group matches.</li>
+      <li>If admin removes your team, ID Pass access is removed automatically.</li>
+    </ul>
+    <div class="payment-box" id="event-info-note" style="color:#fff;"></div>
+    <div class="modal-act">
+      <button class="btn btn-gold" id="event-info-close-btn">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1124,6 +1145,36 @@ function showRegistrationSuccessPopup(name,code){
   document.getElementById("success-overlay").style.display="flex";
 }
 function openRulesModal(){window.open("rules.html?event="+encodeURIComponent(EVENT_ID),"pmacRules","width=980,height=760,scrollbars=yes,resizable=yes");}
+function openEventInfoModal(type){
+  var isScrim = type === "scrim";
+  var info = isScrim ? scrimInfo : eventInfo;
+  var status = isScrim ? scrimStatus : evStatus;
+  var max = isScrim ? scrimMax : evMax;
+  var list = isScrim ? scrimRegs : regs;
+  var count = Object.keys(list || {}).length;
+  var title = (info.name || (isScrim ? "PMAF Daily Scrim" : "PMAF Event")) + " Information";
+  var dateText = "";
+  if(info.date){
+    try{ dateText = new Date(info.date + "T00:00:00").toLocaleDateString("en-GB"); }
+    catch(e){ dateText = info.date; }
+  }
+  document.getElementById("event-info-title").textContent = title;
+  document.getElementById("event-info-sub").textContent = "Short guide for teams in this " + (isScrim ? "scrim." : "event.");
+  document.getElementById("event-info-list").innerHTML =
+    "<li>Register your team in the correct PMAF Community tab.</li>" +
+    "<li>Admin checks registrations first. Approved teams can continue with the event process.</li>" +
+    "<li>Read and agree with the PMAC rules from the rulebook link.</li>" +
+    "<li>After your agreement, the ID Pass tab becomes visible in PMAF Community on this browser.</li>" +
+    "<li>Open ID Pass to see the room ID and password after admin has added it.</li>" +
+    "<li>Admins can place approved teams into event groups for lobby days and group matches.</li>" +
+    "<li>If admin removes your team, ID Pass access is removed automatically.</li>";
+  document.getElementById("event-info-note").innerHTML =
+    "Status: <b>" + escapeHtml(String(status || "open").toUpperCase()) + "</b><br>" +
+    "Teams: <b>" + count + " / " + max + "</b>" +
+    (dateText ? "<br>Date: <b>" + escapeHtml(dateText) + "</b>" : "") +
+    (info.dailyInfo ? "<br>Daily update: <b>" + escapeHtml(info.dailyInfo) + "</b>" : "");
+  document.getElementById("event-info-overlay").style.display = "flex";
+}
 function rulesAgreementPayload(type){
   return {agreed:true,version:RULEBOOK_VERSION,agreedAt:Date.now(),eventId:EVENT_ID,type:type};
 }
@@ -1140,6 +1191,7 @@ function idPassAccessKey(type){return "pmac_idpass_access_"+EVENT_ID+"_"+type;}
 function rememberRulesAgreementForIdPass(type,teamName){
   try{
     localStorage.setItem(idPassAccessKey(type), JSON.stringify({teamName:teamName||"",type:type,eventId:EVENT_ID,at:Date.now()}));
+    localStorage.setItem(type==="scrim"?"pmac_scrim_name":"pmac_reg_name", teamName||"");
   }catch(e){}
   updateIdPassTabVisibility();
 }
@@ -1156,7 +1208,31 @@ function getRememberedIdPassAccess(){
   });
   return found;
 }
+function storedRegisteredNameForType(type){
+  try{
+    var key=type==="scrim" ? "pmac_scrim_name" : "pmac_reg_name";
+    return (localStorage.getItem(key)||"").trim();
+  }catch(e){return "";}
+}
+function restoreIdPassAccessFromAgreedTeam(){
+  var restored=false;
+  ["event","scrim"].forEach(function(type){
+    if(type==="event"&&!regsLoaded) return;
+    if(type==="scrim"&&!scrimRegsLoaded) return;
+    try{ if(localStorage.getItem(idPassAccessKey(type))) return; }catch(e){}
+    var name=storedRegisteredNameForType(type);
+    if(!name) return;
+    var list=type==="scrim"?scrimRegs:regs;
+    var match=findRegistrationByName(list,name);
+    if(match && !match.duplicate && match.team && match.team.rulesAgreement && match.team.rulesAgreement.agreed){
+      rememberRulesAgreementForIdPass(type,match.team.name||name);
+      restored=true;
+    }
+  });
+  if(restored) updateIdPassTabVisibility();
+}
 function cleanupInvalidIdPassAccess(){
+  restoreIdPassAccessFromAgreedTeam();
   var changed=false;
   ["event","scrim"].forEach(function(type){
     if(type==="event"&&!regsLoaded) return;
@@ -1184,6 +1260,7 @@ function cleanupInvalidIdPassAccess(){
   updateIdPassTabVisibility();
 }
 function updateIdPassTabVisibility(){
+  restoreIdPassAccessFromAgreedTeam();
   var tab=document.getElementById("tab-idpass");
   if(!tab) return;
   var access=getRememberedIdPassAccess();
@@ -1877,6 +1954,7 @@ function exportApprovedTeamsToGroups(){
 document.getElementById("cancel-overlay-btn").onclick=function(){document.getElementById("overlay").style.display="none";};
 document.getElementById("success-close-btn").onclick=function(){document.getElementById("success-overlay").style.display="none";};
 document.getElementById("rules-close-btn").onclick=function(){document.getElementById("rules-overlay").style.display="none";};
+document.getElementById("event-info-close-btn").onclick=function(){document.getElementById("event-info-overlay").style.display="none";};
 document.getElementById("confirm-del-btn").onclick=function(){
   var key=document.getElementById("confirm-key").value;
   var typed=document.getElementById("confirm-code").value.trim().toUpperCase();
@@ -1927,6 +2005,12 @@ function showTab(tab){
 }
 document.getElementById("agree-save-btn").onclick=saveExistingRulesAgreement;
 document.getElementById("idpass-get-btn").onclick=showPublicIdPass;
+window.addEventListener("storage", function(e){
+  if(e && e.key && (e.key.indexOf("pmac_idpass_access_"+EVENT_ID+"_")===0 || e.key==="pmac_reg_name" || e.key==="pmac_scrim_name")){
+    updateIdPassTabVisibility();
+    if(document.getElementById("sec-idpass")&&document.getElementById("sec-idpass").classList.contains("show")) showPublicIdPass();
+  }
+});
 initRulesAgreeLink();
 
 // GFX

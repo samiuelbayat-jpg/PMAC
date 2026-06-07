@@ -407,6 +407,7 @@ function setMessage(text,ok){
 function rememberIdPassAccess(type,teamName){
   try{
     localStorage.setItem("pmac_idpass_access_"+EVENT_ID+"_"+type, JSON.stringify({teamName:teamName||"",type:type,eventId:EVENT_ID,at:Date.now()}));
+    localStorage.setItem(type==="scrim"?"pmac_scrim_name":"pmac_reg_name", teamName||"");
   }catch(e){}
 }
 document.getElementById("agree-save-btn").onclick=function(){
