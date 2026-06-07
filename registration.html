@@ -1102,6 +1102,7 @@ var evStatus = "open";
 var evMax = 24;
 var eventInfo = {};
 var regs = {};
+var regsLoaded = false;
 var filterMode = "all";
 var regLogoFile = null;
 var editEvStatus = "open";
@@ -1142,6 +1143,9 @@ function rememberRulesAgreementForIdPass(type,teamName){
   }catch(e){}
   updateIdPassTabVisibility();
 }
+function clearRememberedIdPassAccess(type){
+  try{localStorage.removeItem(idPassAccessKey(type));}catch(e){}
+}
 function getRememberedIdPassAccess(){
   var found=null;
   ["event","scrim"].forEach(function(type){
@@ -1151,6 +1155,33 @@ function getRememberedIdPassAccess(){
     }catch(e){}
   });
   return found;
+}
+function cleanupInvalidIdPassAccess(){
+  var changed=false;
+  ["event","scrim"].forEach(function(type){
+    if(type==="event"&&!regsLoaded) return;
+    if(type==="scrim"&&!scrimRegsLoaded) return;
+    var access=null;
+    try{
+      var raw=localStorage.getItem(idPassAccessKey(type));
+      if(raw) access=JSON.parse(raw);
+    }catch(e){}
+    if(!access||!access.teamName) return;
+    var list=type==="scrim"?scrimRegs:regs;
+    var match=findRegistrationByName(list,access.teamName);
+    if(!match || match.duplicate || !match.team.rulesAgreement || !match.team.rulesAgreement.agreed){
+      clearRememberedIdPassAccess(type);
+      changed=true;
+    }
+  });
+  if(changed){
+    var result=document.getElementById("idpass-public-result");
+    var msg=document.getElementById("idpass-msg");
+    if(result) result.style.display="none";
+    if(msg){msg.textContent="Your team is no longer registered or rules agreement was removed.";msg.style.color="#ff4444";}
+    if(document.getElementById("sec-idpass")&&document.getElementById("sec-idpass").classList.contains("show")) showTab("reg");
+  }
+  updateIdPassTabVisibility();
 }
 function updateIdPassTabVisibility(){
   var tab=document.getElementById("tab-idpass");
@@ -1250,8 +1281,18 @@ function showPublicIdPass(){
   if(!name){msg.textContent="Agree with the rules first.";msg.style.color="#ff4444";return;}
   var match=findRegistrationByName(list,name);
   if(match&&match.duplicate){msg.textContent="More than one team has this name. Please contact admin.";msg.style.color="#ff4444";return;}
-  if(!match){msg.textContent="Team name was not found.";msg.style.color="#ff4444";return;}
+  if(!match){
+    clearRememberedIdPassAccess(type);
+    updateIdPassTabVisibility();
+    if(document.getElementById("sec-idpass")&&document.getElementById("sec-idpass").classList.contains("show")) showTab("reg");
+    msg.textContent="Your team is no longer registered.";
+    msg.style.color="#ff4444";
+    return;
+  }
   if(!match.team.rulesAgreement || !match.team.rulesAgreement.agreed){
+    clearRememberedIdPassAccess(type);
+    updateIdPassTabVisibility();
+    if(document.getElementById("sec-idpass")&&document.getElementById("sec-idpass").classList.contains("show")) showTab("reg");
     msg.textContent="This team has not agreed with the rules yet.";
     msg.style.color="#ff4444";
     return;
@@ -1361,9 +1402,11 @@ db.ref(eventPath("idpass")).on("value", function(s) {
 });
 db.ref(eventPath("registrations")).on("value", function(s) {
   regs = s.val() || {};
+  regsLoaded = true;
   updateCard();
   renderTeams();
   renderRulesAgreedLog();
+  cleanupInvalidIdPassAccess();
   seedApprovedRegistrationLogos(regs);
   previewSavedRegistrationLogo("reg");
   previewSavedRegistrationLogo("scrim");
@@ -2556,6 +2599,7 @@ var scrimStatus = "open";
 var scrimMax = 24;
 var scrimInfo = {};
 var scrimRegs = {};
+var scrimRegsLoaded = false;
 var scrimFilterMode = "all";
 var scrimLogoFile = null;
 var scrimEditStatus = "open";
@@ -2568,9 +2612,11 @@ db.ref(eventPath("scrim/event")).on("value", function(s) {
 });
 db.ref(eventPath("scrim/registrations")).on("value", function(s) {
   scrimRegs = s.val() || {};
+  scrimRegsLoaded = true;
   scrimUpdateCard();
   scrimRenderTeams();
   renderRulesAgreedLog();
+  cleanupInvalidIdPassAccess();
   seedApprovedRegistrationLogos(scrimRegs);
   previewSavedRegistrationLogo("reg");
   previewSavedRegistrationLogo("scrim");
