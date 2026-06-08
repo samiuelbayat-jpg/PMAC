@@ -626,7 +626,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
         </div>
       </div>
       <div class="rules-agree">
-        <label><input type="checkbox" id="reg-rules-agree"><span>I have read and agree with the PMAC tournament rulebook. <button type="button" class="rules-link-btn" onclick="openRulesModal()">View rules</button></span></label>
+        <span>Review the PMAC tournament rulebook in the standalone page. After registration, agree there with your team name. <button type="button" class="rules-link-btn" onclick="openRulesModal('event','reg-name')">View rules</button></span>
       </div>
       <button class="btn btn-gold" id="reg-btn" style="align-self:flex-end;padding:9px 20px;">Register</button>
     </div>
@@ -750,7 +750,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
         </div>
       </div>
       <div class="rules-agree">
-        <label><input type="checkbox" id="scrim-reg-rules-agree"><span>I have read and agree with the PMAC tournament rulebook. <button type="button" class="rules-link-btn" onclick="openRulesModal()">View rules</button></span></label>
+        <span>Review the PMAC tournament rulebook in the standalone page. After registration, agree there with your team name. <button type="button" class="rules-link-btn" onclick="openRulesModal('scrim','scrim-reg-name')">View rules</button></span>
       </div>
       <button class="btn btn-gold" id="scrim-reg-btn" style="align-self:flex-end;padding:9px 20px;">Register</button>
     </div>
@@ -950,6 +950,10 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <div class="delete-code-value" id="success-delete-code"></div>
     </div>
     <div class="save-code-note">Save this code. You need it if you want to remove your registration later.</div>
+    <div class="payment-box" style="color:#fff;">
+      Next step:
+      <a href="#" id="success-rules-link" target="_blank" style="color:#e8b800;font-weight:900;">View and agree with PMAC rules</a>
+    </div>
     <div class="modal-act">
       <button class="btn btn-gold" id="success-close-btn">I Understand</button>
     </div>
@@ -1189,13 +1193,26 @@ function pendingPaymentText(){
 function rejectedPaymentText(){
   return "Your registration was rejected because the payment was not completed.";
 }
-function showRegistrationSuccessPopup(name,code){
+function showRegistrationSuccessPopup(name,code,type){
   document.getElementById("success-team-name").textContent="✓ "+name+" registered!";
   document.getElementById("success-paypal-email").textContent=PAYPAL_PAYMENT_EMAIL;
   document.getElementById("success-delete-code").textContent=code;
+  type=type==="scrim"?"scrim":"event";
+  var link=document.getElementById("success-rules-link");
+  if(link) link.href="rules.html?event="+encodeURIComponent(EVENT_ID)+"&type="+encodeURIComponent(type)+"&team="+encodeURIComponent(name);
   document.getElementById("success-overlay").style.display="flex";
 }
-function openRulesModal(){window.open("rules.html?event="+encodeURIComponent(EVENT_ID),"pmacRules","width=980,height=760,scrollbars=yes,resizable=yes");}
+function openRulesModal(type,teamFieldId){
+  var team="";
+  if(teamFieldId){
+    var el=document.getElementById(teamFieldId);
+    if(el) team=el.value.trim();
+  }
+  var url="rules.html?event="+encodeURIComponent(EVENT_ID);
+  if(type) url+="&type="+encodeURIComponent(type);
+  if(team) url+="&team="+encodeURIComponent(team);
+  window.open(url,"pmacRules","width=980,height=760,scrollbars=yes,resizable=yes");
+}
 function openEventInfoModal(type){
   var isScrim = type === "scrim";
   var info = isScrim ? scrimInfo : eventInfo;
@@ -1787,7 +1804,6 @@ document.getElementById("reg-btn").onclick = function() {
   if(!tag){msg.textContent="Enter team tag";msg.style.color="#ff4444";return;}
   if(!mgr){msg.textContent="Enter manager name";msg.style.color="#ff4444";return;}
   if(!phone){msg.textContent="Enter manager phone";msg.style.color="#ff4444";return;}
-  if(!document.getElementById("reg-rules-agree").checked){msg.textContent="You must agree with the PMAC tournament rulebook";msg.style.color="#ff4444";return;}
   var keys=Object.keys(regs);
   for(var i=0;i<keys.length;i++){if(regs[keys[i]].name===name){msg.textContent="Team already registered";msg.style.color="#ff4444";return;}}
   if(keys.length>=evMax){msg.textContent="Registration is full";msg.style.color="#ff4444";return;}
@@ -1795,13 +1811,12 @@ document.getElementById("reg-btn").onclick = function() {
   for(var c=0;c<6;c++) code+=chars[Math.floor(Math.random()*chars.length)];
   btn.textContent="Registering...";btn.disabled=true;msg.textContent="Saving...";msg.style.color="#e8b800";
   function doSave(logoUrl){
-    db.ref(eventPath("registrations")+"/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code,rulesAgreement:rulesAgreementPayload("event")}).then(function(){
-      document.getElementById("reg-name").value="";document.getElementById("reg-tag").value="";document.getElementById("reg-manager").value="";document.getElementById("reg-mgr-phone").value="";document.getElementById("reg-logo-file").value="";document.getElementById("reg-logo-prev").style.display="none";document.getElementById("reg-logo-prev").dataset.savedLogo="";document.getElementById("reg-rules-agree").checked=false;regLogoFile=null;
+    db.ref(eventPath("registrations")+"/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code}).then(function(){
+      document.getElementById("reg-name").value="";document.getElementById("reg-tag").value="";document.getElementById("reg-manager").value="";document.getElementById("reg-mgr-phone").value="";document.getElementById("reg-logo-file").value="";document.getElementById("reg-logo-prev").style.display="none";document.getElementById("reg-logo-prev").dataset.savedLogo="";regLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_reg_code",code);localStorage.setItem("pmac_reg_name",name);
-      rememberRulesAgreementForIdPass("event",name);
       if(isAdmin){msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b>";}
-      else{msg.textContent="";showRegistrationSuccessPopup(name,code);}
+      else{msg.textContent="";showRegistrationSuccessPopup(name,code,"event");}
     }).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});
   }
   if(regLogoFile){
@@ -3001,7 +3016,6 @@ document.getElementById("scrim-reg-btn").onclick = function() {
   if(!tag){msg.textContent="Enter team tag";msg.style.color="#ff4444";return;}
   if(!mgr){msg.textContent="Enter manager name";msg.style.color="#ff4444";return;}
   if(!phone){msg.textContent="Enter manager phone";msg.style.color="#ff4444";return;}
-  if(!document.getElementById("scrim-reg-rules-agree").checked){msg.textContent="You must agree with the PMAC tournament rulebook";msg.style.color="#ff4444";return;}
   var keys=Object.keys(scrimRegs);
   for(var i=0;i<keys.length;i++){if(scrimRegs[keys[i]].name===name){msg.textContent="Team already registered";msg.style.color="#ff4444";return;}}
   if(keys.length>=scrimMax){msg.textContent="Registration is full";msg.style.color="#ff4444";return;}
@@ -3009,13 +3023,12 @@ document.getElementById("scrim-reg-btn").onclick = function() {
   for(var c=0;c<6;c++) code+=chars[Math.floor(Math.random()*chars.length)];
   btn.textContent="Registering...";btn.disabled=true;msg.textContent="Saving...";msg.style.color="#e8b800";
   function doSave(logoUrl){
-    db.ref(eventPath("scrim/registrations")+"/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code,rulesAgreement:rulesAgreementPayload("scrim")}).then(function(){
-      document.getElementById("scrim-reg-name").value="";document.getElementById("scrim-reg-tag").value="";document.getElementById("scrim-reg-manager").value="";document.getElementById("scrim-reg-mgr-phone").value="";document.getElementById("scrim-reg-logo-file").value="";document.getElementById("scrim-reg-logo-prev").style.display="none";document.getElementById("scrim-reg-logo-prev").dataset.savedLogo="";document.getElementById("scrim-reg-rules-agree").checked=false;scrimLogoFile=null;
+    db.ref(eventPath("scrim/registrations")+"/r"+Date.now()).set({name:name,tag:tag,manager:mgr,managerPhone:phone,logo:logoUrl,status:"pending",registeredAt:Date.now(),deleteCode:code}).then(function(){
+      document.getElementById("scrim-reg-name").value="";document.getElementById("scrim-reg-tag").value="";document.getElementById("scrim-reg-manager").value="";document.getElementById("scrim-reg-mgr-phone").value="";document.getElementById("scrim-reg-logo-file").value="";document.getElementById("scrim-reg-logo-prev").style.display="none";document.getElementById("scrim-reg-logo-prev").dataset.savedLogo="";scrimLogoFile=null;
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_scrim_code",code);localStorage.setItem("pmac_scrim_name",name);
-      rememberRulesAgreementForIdPass("scrim",name);
       if(isAdmin){msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b>";}
-      else{msg.textContent="";showRegistrationSuccessPopup(name,code);}
+      else{msg.textContent="";showRegistrationSuccessPopup(name,code,"scrim");}
     }).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});
   }
   if(scrimLogoFile){

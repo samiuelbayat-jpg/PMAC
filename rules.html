@@ -385,6 +385,7 @@ firebase.initializeApp({
 });
 var db=firebase.database();
 var EVENT_ID=new URLSearchParams(location.search).get("event")||"default";
+var RULE_PARAMS=new URLSearchParams(location.search);
 var RULEBOOK_VERSION="PMAC_Tournament_Rulebook_v1.0";
 function eventBasePath(){return EVENT_ID==="default"?"pmac":"pmac/events/"+EVENT_ID;}
 function eventPath(child){return eventBasePath()+"/"+child;}
@@ -425,6 +426,12 @@ function rememberIdPassAccess(type,teamName){
     localStorage.setItem(type==="scrim"?"pmac_scrim_name":"pmac_reg_name", teamName||"");
   }catch(e){}
 }
+function initRulePrefill(){
+  var team=RULE_PARAMS.get("team")||"";
+  var type=RULE_PARAMS.get("type")||"";
+  if(team) document.getElementById("agree-team-name").value=team.toUpperCase();
+  if(type==="scrim"||type==="event") document.getElementById("agree-type").value=type;
+}
 document.getElementById("agree-save-btn").onclick=function(){
   var btn=this;
   var name=document.getElementById("agree-team-name").value.trim().toUpperCase();
@@ -457,6 +464,7 @@ document.getElementById("agree-save-btn").onclick=function(){
     setMessage(e.message||"Could not save agreement.",false);
   });
 };
+initRulePrefill();
 </script>
 </body>
 </html>
