@@ -472,6 +472,12 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <div class="idpass-public-box">
     <div class="idpass-public-title">Get ID Pass</div>
     <div class="idpass-public-sub" id="idpass-public-sub">Only teams who agreed with PMAC rules can see the room ID and password.</div>
+    <div id="idpass-rules-help" class="rules-agree" style="margin-top:1rem;">
+      <div class="rules-view-callout">
+        <span class="rules-view-copy"><b>ID Pass locked?</b> Open the rules page, confirm your team agreement, then return here.</span>
+        <button type="button" class="rules-view-btn" onclick="openIdPassRulesHelp()">Agree Now</button>
+      </div>
+    </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:1rem;">
       <button class="btn btn-gold" id="idpass-get-btn">Show ID Pass</button>
       <span class="reg-msg" id="idpass-msg"></span>
@@ -1345,7 +1351,9 @@ function updateIdPassTabVisibility(){
   var access=getRememberedIdPassAccess();
   tab.style.display = "";
   var getBtn=document.getElementById("idpass-get-btn");
+  var rulesHelp=document.getElementById("idpass-rules-help");
   if(getBtn) getBtn.style.display = "";
+  if(rulesHelp) rulesHelp.style.display = access ? "none" : "block";
   if(access){
     var sub=document.getElementById("idpass-public-sub");
     if(sub) sub.textContent="Unlocked for "+(access.teamName||"your team")+" · "+(access.type==="scrim"?"PMAF Daily Scrim":"PMAF Event");
@@ -1441,6 +1449,15 @@ function selectedIdPassType(){
   var access=getRememberedIdPassAccess();
   return access&&access.type?access.type:"event";
 }
+function openIdPassRulesHelp(){
+  var eventName=storedRegisteredNameForType("event");
+  var scrimName=storedRegisteredNameForType("scrim");
+  var type=scrimName&&!eventName ? "scrim" : "event";
+  var team=type==="scrim" ? scrimName : eventName;
+  var url="rules.html?event="+encodeURIComponent(EVENT_ID)+"&type="+encodeURIComponent(type);
+  if(team) url+="&team="+encodeURIComponent(team);
+  window.open(url,"pmacRules","width=980,height=760,scrollbars=yes,resizable=yes");
+}
 function showPublicIdPass(){
   var msg=document.getElementById("idpass-msg");
   var result=document.getElementById("idpass-public-result");
@@ -1449,7 +1466,7 @@ function showPublicIdPass(){
   var type=selectedIdPassType();
   var list=type==="scrim"?scrimRegs:regs;
   if(result) result.style.display="none";
-  if(!name){msg.textContent="ID Pass is not unlocked for this browser yet. Please agree with the rules first from the rules link.";msg.style.color="#ff4444";updateIdPassTabVisibility();return;}
+  if(!name){msg.textContent="ID Pass is not unlocked for this browser yet. Tap Agree Now, confirm your rules agreement, then return here.";msg.style.color="#ff4444";updateIdPassTabVisibility();return;}
   var match=findRegistrationByName(list,name);
   if(match&&match.duplicate){msg.textContent="More than one team has this name. Please contact admin.";msg.style.color="#ff4444";return;}
   if(!match){
@@ -1831,7 +1848,8 @@ document.getElementById("reg-btn").onclick = function() {
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_reg_code",code);localStorage.setItem("pmac_reg_name",name);
       if(isAdmin){msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b>";}
-      else{msg.textContent="";showRegistrationSuccessPopup(name,code,"event");}
+      else{msg.textContent="";}
+      showRegistrationSuccessPopup(name,code,"event");
     }).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});
   }
   if(regLogoFile){
@@ -3085,7 +3103,8 @@ document.getElementById("scrim-reg-btn").onclick = function() {
       btn.textContent="Register";btn.disabled=false;
       localStorage.setItem("pmac_scrim_code",code);localStorage.setItem("pmac_scrim_name",name);
       if(isAdmin){msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b>";}
-      else{msg.textContent="";showRegistrationSuccessPopup(name,code,"scrim");}
+      else{msg.textContent="";}
+      showRegistrationSuccessPopup(name,code,"scrim");
     }).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});
   }
   if(scrimLogoFile){
