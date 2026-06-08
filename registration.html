@@ -1563,6 +1563,9 @@ var GROUP_EXPORT_DEFAULTS = ["A","B","C","D","E","F","G"];
 var idPassInfo = {event:{},scrim:{}};
 var forumMessages = {};
 var forumName = "";
+var forumSeenLatest = 0;
+var forumLoadedOnce = false;
+var forumSoundReady = false;
 
 // Apply admin UI immediately
 applyAdminUI();
@@ -1587,6 +1590,7 @@ db.ref(eventPath("idpass")).on("value", function(s) {
 });
 db.ref(eventPath("forum/messages")).limitToLast(80).on("value", function(s) {
   forumMessages = s.val() || {};
+  handleForumNotification();
   renderCommunityForum();
 });
 db.ref(eventPath("registrations")).on("value", function(s) {
@@ -2069,6 +2073,44 @@ function initCommunityForum(){
   updateForumNameState();
   renderCommunityForum();
 }
+function enableForumSound(){
+  forumSoundReady=true;
+}
+function playForumSound(){
+  if(!forumSoundReady) return;
+  try{
+    var AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx) return;
+    var ctx=new AudioCtx();
+    var osc=ctx.createOscillator();
+    var gain=ctx.createGain();
+    osc.type="sine";
+    osc.frequency.setValueAtTime(880,ctx.currentTime);
+    gain.gain.setValueAtTime(0.0001,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.14,ctx.currentTime+0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+0.22);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime+0.24);
+    setTimeout(function(){ctx.close&&ctx.close();},350);
+  }catch(e){}
+}
+function handleForumNotification(){
+  var latest=0;
+  Object.keys(forumMessages||{}).forEach(function(k){
+    latest=Math.max(latest,(forumMessages[k]||{}).createdAt||0);
+  });
+  if(!forumLoadedOnce){
+    forumLoadedOnce=true;
+    forumSeenLatest=latest;
+    return;
+  }
+  if(latest>forumSeenLatest){
+    forumSeenLatest=latest;
+    playForumSound();
+  }
+}
 function updateForumNameState(){
   var has=!!String(forumName||"").trim();
   var nameBox=document.getElementById("forum-name-box");
@@ -2079,6 +2121,7 @@ function updateForumNameState(){
   if(status) status.textContent=has?"Chatting as "+forumName:"";
 }
 function toggleCommunityForum(){
+  enableForumSound();
   var panel=document.getElementById("forum-panel");
   var icon=document.getElementById("forum-toggle-icon");
   if(!panel) return;
@@ -2091,6 +2134,7 @@ function toggleCommunityForum(){
   },50);
 }
 function saveForumName(){
+  enableForumSound();
   var inp=document.getElementById("forum-name-input");
   var name=(inp&&inp.value?inp.value:"").trim();
   if(!name){toast("Enter your name first",false);return;}
@@ -2126,6 +2170,7 @@ function renderCommunityForum(){
   box.scrollTop=box.scrollHeight;
 }
 function sendForumMessage(){
+  enableForumSound();
   var status=document.getElementById("forum-status");
   var input=document.getElementById("forum-message-input");
   var text=(input&&input.value?input.value:"").trim();
@@ -2207,6 +2252,7 @@ document.getElementById("forum-send-btn").onclick=sendForumMessage;
 document.getElementById("forum-message-input").addEventListener("keydown",function(e){
   if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendForumMessage();}
 });
+document.addEventListener("click",enableForumSound,{once:true});
 window.addEventListener("storage", function(e){
   if(e && e.key && (e.key.indexOf("pmac_idpass_access_"+EVENT_ID+"_")===0 || e.key==="pmac_reg_name" || e.key==="pmac_scrim_name")){
     updateIdPassTabVisibility();
