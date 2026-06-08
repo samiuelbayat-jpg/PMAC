@@ -480,16 +480,19 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   </div>
   <div class="idpass-admin-box">
     <div class="idpass-title">ID Pass for agreed teams</div>
+    <div class="rules-log-sub" style="margin-bottom:.75rem;">For the next match, clear the old room details, enter the new ID/pass, then save. Teams see the latest saved ID/pass.</div>
     <div class="idpass-row">
       <div class="idpass-field"><label>PMAF Event ID</label><input id="idpass-event-id" placeholder="Room ID"></div>
       <div class="idpass-field"><label>PMAF Event Pass</label><input id="idpass-event-pass" placeholder="Password"></div>
       <div class="idpass-field"><label>Event Note</label><input id="idpass-event-note" placeholder="Optional note"></div>
+      <button class="btn" onclick="clearIdPassFields('event')" style="padding:8px 16px;font-size:12px;">Clear</button>
       <button class="btn btn-gold" onclick="saveIdPass('event')" style="padding:8px 16px;font-size:12px;">Save Event</button>
     </div>
     <div class="idpass-row" style="margin-top:10px;">
       <div class="idpass-field"><label>Daily Scrim ID</label><input id="idpass-scrim-id" placeholder="Room ID"></div>
       <div class="idpass-field"><label>Daily Scrim Pass</label><input id="idpass-scrim-pass" placeholder="Password"></div>
       <div class="idpass-field"><label>Scrim Note</label><input id="idpass-scrim-note" placeholder="Optional note"></div>
+      <button class="btn" onclick="clearIdPassFields('scrim')" style="padding:8px 16px;font-size:12px;">Clear</button>
       <button class="btn btn-gold" onclick="saveIdPass('scrim')" style="padding:8px 16px;font-size:12px;">Save Scrim</button>
     </div>
     <div class="idpass-status" id="idpass-admin-status"></div>
@@ -1361,6 +1364,16 @@ function saveIdPass(type){
     toast("Error: "+e.message,false);
   });
 }
+function clearIdPassFields(type){
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
+  ["id","pass","note"].forEach(function(part){
+    var el=document.getElementById("idpass-"+type+"-"+part);
+    if(el) el.value="";
+  });
+  var status=document.getElementById("idpass-admin-status");
+  var label=type==="scrim"?"Daily Scrim":"PMAF Event";
+  if(status){status.textContent=label+" fields cleared. Enter the next match ID/pass and press Save.";status.style.color="#e8b800";}
+}
 function selectedIdPassType(){
   var access=getRememberedIdPassAccess();
   return access&&access.type?access.type:"event";
@@ -1519,6 +1532,9 @@ db.ref(eventPath("eventGroups")).on("value", function(s) {
 db.ref(eventPath("idpass")).on("value", function(s) {
   idPassInfo = s.val() || {event:{},scrim:{}};
   renderIdPassAdmin();
+  if(document.getElementById("sec-idpass") && document.getElementById("sec-idpass").classList.contains("show") && getRememberedIdPassAccess()){
+    showPublicIdPass();
+  }
 });
 db.ref(eventPath("registrations")).on("value", function(s) {
   regs = s.val() || {};
