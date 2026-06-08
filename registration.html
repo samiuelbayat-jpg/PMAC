@@ -467,17 +467,6 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <div class="idpass-public-box">
     <div class="idpass-public-title">Get ID Pass</div>
     <div class="idpass-public-sub" id="idpass-public-sub">Only teams who agreed with PMAC rules can see the room ID and password.</div>
-    <div id="idpass-unlock-box" style="display:none;margin-top:1rem;background:#090b0f;border:1px solid rgba(232,184,0,0.25);border-radius:9px;padding:12px;">
-      <div class="idpass-public-sub" style="margin-bottom:.65rem;">If you already agreed with the rules but the ID Pass is not unlocked, enter your registered team name once.</div>
-      <div class="field-row" style="margin-bottom:.65rem;">
-        <div class="fld"><div class="fl">Team Name *</div><input class="fi fi-name" type="text" id="idpass-unlock-team" placeholder="Team Name"></div>
-      </div>
-      <div class="rules-type-row" style="margin-bottom:.75rem;">
-        <label><input type="radio" name="idpass-unlock-type" value="event" checked>PMAF Event</label>
-        <label><input type="radio" name="idpass-unlock-type" value="scrim">PMAF Daily Scrim</label>
-      </div>
-      <button class="btn btn-gold" id="idpass-unlock-btn" style="padding:8px 16px;font-size:12px;">Unlock ID Pass</button>
-    </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:1rem;">
       <button class="btn btn-gold" id="idpass-get-btn">Show ID Pass</button>
       <span class="reg-msg" id="idpass-msg"></span>
@@ -1327,10 +1316,8 @@ function updateIdPassTabVisibility(){
   if(!tab) return;
   var access=getRememberedIdPassAccess();
   tab.style.display = "";
-  var unlockBox=document.getElementById("idpass-unlock-box");
   var getBtn=document.getElementById("idpass-get-btn");
-  if(unlockBox) unlockBox.style.display = access ? "none" : "block";
-  if(getBtn) getBtn.style.display = access ? "" : "none";
+  if(getBtn) getBtn.style.display = "";
   if(access){
     var sub=document.getElementById("idpass-public-sub");
     if(sub) sub.textContent="Unlocked for "+(access.teamName||"your team")+" · "+(access.type==="scrim"?"PMAF Daily Scrim":"PMAF Event");
@@ -1426,31 +1413,6 @@ function selectedIdPassType(){
   var access=getRememberedIdPassAccess();
   return access&&access.type?access.type:"event";
 }
-function selectedIdPassUnlockType(){
-  var el=document.querySelector('input[name="idpass-unlock-type"]:checked');
-  return el ? el.value : "event";
-}
-function unlockIdPassByTeamName(){
-  var msg=document.getElementById("idpass-msg");
-  var name=(document.getElementById("idpass-unlock-team").value||"").trim().toUpperCase();
-  var type=selectedIdPassUnlockType();
-  var list=type==="scrim"?scrimRegs:regs;
-  if(!name){msg.textContent="Enter your registered team name.";msg.style.color="#ff4444";return;}
-  if(type==="event"&&!regsLoaded){msg.textContent="Loading event teams. Try again in a moment.";msg.style.color="#e8b800";return;}
-  if(type==="scrim"&&!scrimRegsLoaded){msg.textContent="Loading scrim teams. Try again in a moment.";msg.style.color="#e8b800";return;}
-  var match=findRegistrationByName(list,name);
-  if(match&&match.duplicate){msg.textContent="More than one team has this name. Please contact admin.";msg.style.color="#ff4444";return;}
-  if(!match){msg.textContent="Team name was not found. Check spelling or choose the correct Event/Scrim option.";msg.style.color="#ff4444";return;}
-  if(!match.team.rulesAgreement || !match.team.rulesAgreement.agreed){
-    msg.textContent="This team has not agreed with the rules yet.";
-    msg.style.color="#ff4444";
-    return;
-  }
-  rememberRulesAgreementForIdPass(type,match.team.name||name);
-  msg.textContent="ID Pass unlocked for "+(match.team.name||name)+".";
-  msg.style.color="#00c97a";
-  showPublicIdPass();
-}
 function showPublicIdPass(){
   var msg=document.getElementById("idpass-msg");
   var result=document.getElementById("idpass-public-result");
@@ -1459,7 +1421,7 @@ function showPublicIdPass(){
   var type=selectedIdPassType();
   var list=type==="scrim"?scrimRegs:regs;
   if(result) result.style.display="none";
-  if(!name){msg.textContent="Enter your team name above to unlock ID Pass.";msg.style.color="#ff4444";updateIdPassTabVisibility();return;}
+  if(!name){msg.textContent="ID Pass is not unlocked for this browser yet. Please agree with the rules first from the rules link.";msg.style.color="#ff4444";updateIdPassTabVisibility();return;}
   var match=findRegistrationByName(list,name);
   if(match&&match.duplicate){msg.textContent="More than one team has this name. Please contact admin.";msg.style.color="#ff4444";return;}
   if(!match){
@@ -2204,7 +2166,6 @@ function showTab(tab){
 }
 document.getElementById("agree-save-btn").onclick=saveExistingRulesAgreement;
 document.getElementById("idpass-get-btn").onclick=showPublicIdPass;
-document.getElementById("idpass-unlock-btn").onclick=unlockIdPassByTeamName;
 document.getElementById("forum-toggle-btn").onclick=toggleCommunityForum;
 document.getElementById("forum-name-save-btn").onclick=saveForumName;
 document.getElementById("forum-send-btn").onclick=sendForumMessage;
