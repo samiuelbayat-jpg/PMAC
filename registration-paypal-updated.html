@@ -215,6 +215,11 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .rules-agree label{display:flex;gap:9px;align-items:flex-start;cursor:pointer;}
 .rules-agree input{margin-top:2px;accent-color:#e8b800;}
 .rules-link-btn{background:none;border:0;color:#e8b800;font-family:'Share Tech Mono',monospace;font-size:10px;text-decoration:underline;cursor:pointer;padding:0;}
+.rules-view-callout{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:#eef0f5;line-height:1.25;}
+.rules-view-copy{max-width:520px;}
+.rules-view-copy b{color:#e8b800;font-weight:900;}
+.rules-view-btn{background:linear-gradient(135deg,#f0c000,#e8b800);border:1px solid rgba(255,255,255,0.2);color:#050607;border-radius:22px;padding:10px 22px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:16px;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;box-shadow:0 10px 28px rgba(232,184,0,0.18);}
+.rules-view-btn:hover{filter:brightness(1.08);}
 .rules-list{margin:.5rem 0 0;padding-left:1.1rem;color:#8a96a8;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.55;}
 .rules-list li{margin-bottom:5px;}
 .rules-agree-page{background:#0f1115;border:1px solid rgba(232,184,0,0.22);border-radius:10px;padding:1.25rem;margin-bottom:1.5rem;}
@@ -626,7 +631,10 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
         </div>
       </div>
       <div class="rules-agree">
-        <span>Review the PMAC tournament rulebook in the standalone page. After registration, agree there with your team name. <button type="button" class="rules-link-btn" onclick="openRulesModal('event','reg-name')">View rules</button></span>
+        <div class="rules-view-callout">
+          <span class="rules-view-copy"><b>Required:</b> review the PMAC rulebook, then agree in the standalone rules page with your team name.</span>
+          <button type="button" class="rules-view-btn" onclick="openRulesModal('event','reg-name')">View Rules</button>
+        </div>
       </div>
       <button class="btn btn-gold" id="reg-btn" style="align-self:flex-end;padding:9px 20px;">Register</button>
     </div>
@@ -750,7 +758,10 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
         </div>
       </div>
       <div class="rules-agree">
-        <span>Review the PMAC tournament rulebook in the standalone page. After registration, agree there with your team name. <button type="button" class="rules-link-btn" onclick="openRulesModal('scrim','scrim-reg-name')">View rules</button></span>
+        <div class="rules-view-callout">
+          <span class="rules-view-copy"><b>Required:</b> review the PMAC rulebook, then agree in the standalone rules page with your team name.</span>
+          <button type="button" class="rules-view-btn" onclick="openRulesModal('scrim','scrim-reg-name')">View Rules</button>
+        </div>
       </div>
       <button class="btn btn-gold" id="scrim-reg-btn" style="align-self:flex-end;padding:9px 20px;">Register</button>
     </div>
