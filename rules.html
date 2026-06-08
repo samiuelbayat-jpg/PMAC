@@ -412,8 +412,18 @@ function communityIdPassUrl(type,teamName){
 function setAgreementSuccessMessage(type,teamName){
   var msg=document.getElementById("agree-msg");
   var url=communityIdPassUrl(type,teamName);
-  msg.innerHTML='Agreement saved for <b>'+escapeHtml(teamName)+'</b>. <a href="'+url+'" style="color:#e8b800;font-weight:900;text-decoration:underline;">Open PMAF Community ID Pass</a>';
+  msg.innerHTML='Agreement saved for <b>'+escapeHtml(teamName)+'</b>. Returning to PMAF Community... <a href="'+url+'" style="color:#e8b800;font-weight:900;text-decoration:underline;">Open now</a>';
   msg.style.color="#00c97a";
+  setTimeout(function(){
+    try{
+      if(window.opener && !window.opener.closed){
+        window.opener.location.href=url;
+        window.close();
+        return;
+      }
+    }catch(e){}
+    location.href=url;
+  },1200);
 }
 function escapeHtml(v){
   return String(v||"").replace(/[&<>"']/g,function(ch){
