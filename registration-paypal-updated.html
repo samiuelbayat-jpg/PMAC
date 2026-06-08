@@ -1511,6 +1511,15 @@ function initRulesAgreeLink(){
   if(tabs) tabs.style.display="none";
   showTab("rulesagree");
 }
+function initIdPassUnlockLink(){
+  var params=new URLSearchParams(location.search);
+  var team=params.get("idpassTeam")||"";
+  var type=params.get("idpassType")||"event";
+  if(!team) return;
+  if(type!=="scrim") type="event";
+  rememberRulesAgreementForIdPass(type,team.toUpperCase());
+  showTab("idpass");
+}
 var gfxList = [];
 var gfxIdx = 0;
 var gfxLoaded = false;
@@ -2179,6 +2188,7 @@ window.addEventListener("storage", function(e){
   }
 });
 initRulesAgreeLink();
+initIdPassUnlockLink();
 initCommunityForum();
 
 // GFX

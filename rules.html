@@ -404,6 +404,21 @@ function setMessage(text,ok){
   msg.textContent=text;
   msg.style.color=ok?"#00c97a":"#ff5555";
 }
+function communityIdPassUrl(type,teamName){
+  var base=location.href.replace(/rules\.html.*$/i,"registration.html");
+  return base+"?event="+encodeURIComponent(EVENT_ID)+"&idpassType="+encodeURIComponent(type)+"&idpassTeam="+encodeURIComponent(teamName||"");
+}
+function setAgreementSuccessMessage(type,teamName){
+  var msg=document.getElementById("agree-msg");
+  var url=communityIdPassUrl(type,teamName);
+  msg.innerHTML='Agreement saved for <b>'+escapeHtml(teamName)+'</b>. <a href="'+url+'" style="color:#e8b800;font-weight:900;text-decoration:underline;">Open PMAF Community ID Pass</a>';
+  msg.style.color="#00c97a";
+}
+function escapeHtml(v){
+  return String(v||"").replace(/[&<>"']/g,function(ch){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch];
+  });
+}
 function rememberIdPassAccess(type,teamName){
   try{
     localStorage.setItem("pmac_idpass_access_"+EVENT_ID+"_"+type, JSON.stringify({teamName:teamName||"",type:type,eventId:EVENT_ID,at:Date.now()}));
@@ -436,7 +451,7 @@ document.getElementById("agree-save-btn").onclick=function(){
     btn.disabled=false;btn.textContent="Confirm Agreement";
     document.getElementById("agree-check").checked=false;
     rememberIdPassAccess(type,match.team.name||name);
-    setMessage("Agreement saved for "+(match.team.name||name)+". Open PMAF Community and the ID Pass tab will be visible.",true);
+    setAgreementSuccessMessage(type,match.team.name||name);
   }).catch(function(e){
     btn.disabled=false;btn.textContent="Confirm Agreement";
     setMessage(e.message||"Could not save agreement.",false);
