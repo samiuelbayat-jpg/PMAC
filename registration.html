@@ -163,6 +163,28 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .idpass-public-text{font-family:'Share Tech Mono',monospace;font-size:22px;color:#fff;font-weight:900;letter-spacing:.08em;overflow-wrap:anywhere;}
 .idpass-public-note{font-family:'Share Tech Mono',monospace;font-size:11px;color:#f5dc75;margin-top:10px;line-height:1.5;}
 @media(max-width:640px){.idpass-public-grid{grid-template-columns:1fr}.idpass-public-text{font-size:18px;}}
+.community-forum{position:fixed;right:18px;bottom:18px;z-index:850;width:min(360px,calc(100vw - 28px));font-family:'Share Tech Mono',monospace;}
+.forum-toggle{width:100%;background:linear-gradient(135deg,#e8b800,#f5d34f);border:0;border-radius:10px;color:#08090b;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:15px;text-transform:uppercase;letter-spacing:.08em;padding:11px 14px;cursor:pointer;box-shadow:0 16px 40px rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.forum-panel{display:none;margin-bottom:9px;background:#0f1115;border:1px solid rgba(232,184,0,0.32);border-radius:10px;box-shadow:0 22px 70px rgba(0,0,0,0.65);overflow:hidden;}
+.forum-panel.open{display:block;}
+.forum-head{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.08);background:#090b0f;}
+.forum-title{font-weight:900;color:#e8b800;font-size:12px;text-transform:uppercase;letter-spacing:.1em;}
+.forum-sub{font-size:9px;color:#8a96a8;line-height:1.45;margin-top:3px;}
+.forum-name-box,.forum-compose{padding:12px;border-top:1px solid rgba(255,255,255,0.08);background:#0b0d11;}
+.forum-name-row{display:flex;gap:7px;align-items:center;}
+.forum-name-row input,.forum-compose textarea{width:100%;background:#161a1f;border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:#eef0f5;font-family:'Share Tech Mono',monospace;font-size:11px;padding:9px;outline:none;}
+.forum-name-row input:focus,.forum-compose textarea:focus{border-color:#e8b800;}
+.forum-compose textarea{height:62px;resize:none;line-height:1.4;margin-bottom:8px;}
+.forum-messages{height:280px;overflow-y:auto;padding:12px;background:#11141a;}
+.forum-msg{background:#0b0d11;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:9px;margin-bottom:8px;}
+.forum-msg-top{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:5px;}
+.forum-msg-name{font-size:10px;color:#e8b800;font-weight:900;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.forum-msg-time{font-size:8px;color:#606878;white-space:nowrap;}
+.forum-msg-text{font-size:11px;color:#eef0f5;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;}
+.forum-msg-del{background:none;border:0;color:#ff5555;font-size:9px;cursor:pointer;margin-left:5px;}
+.forum-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.forum-status{font-size:9px;color:#8a96a8;min-height:13px;}
+@media(max-width:640px){.community-forum{right:10px;bottom:10px;width:calc(100vw - 20px)}.forum-messages{height:240px;}}
 .tr-actions{display:flex;gap:5px;flex-shrink:0;}
 .ta{background:none;border:1px solid transparent;border-radius:4px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:11px;padding:4px 8px;color:#606878;}
 .ta-ok{color:#00c97a;}.ta-ok:hover{background:rgba(0,201,122,0.1);border-color:rgba(0,201,122,0.3);}
@@ -988,6 +1010,32 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   </div>
 </div>
 
+<div class="community-forum" id="community-forum">
+  <div class="forum-panel" id="forum-panel">
+    <div class="forum-head">
+      <div class="forum-title">PMAF Community Forum</div>
+      <div class="forum-sub">Ask event questions here. Enter your name first, then send your message.</div>
+    </div>
+    <div class="forum-messages" id="forum-messages">
+      <div class="empty">Loading forum...</div>
+    </div>
+    <div class="forum-name-box" id="forum-name-box">
+      <div class="forum-name-row">
+        <input id="forum-name-input" maxlength="32" placeholder="Your name or team name">
+        <button class="btn btn-gold" id="forum-name-save-btn" style="padding:8px 12px;font-size:11px;">Start</button>
+      </div>
+    </div>
+    <div class="forum-compose" id="forum-compose" style="display:none;">
+      <textarea id="forum-message-input" maxlength="500" placeholder="Write your question..."></textarea>
+      <div class="forum-actions">
+        <span class="forum-status" id="forum-status"></span>
+        <button class="btn btn-gold" id="forum-send-btn" style="padding:8px 14px;font-size:11px;">Send</button>
+      </div>
+    </div>
+  </div>
+  <button class="forum-toggle" id="forum-toggle-btn"><span>Community Forum</span><span id="forum-toggle-icon">▲</span></button>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1514,6 +1562,8 @@ var streamersList = [];
 var communityEventGroups = {};
 var GROUP_EXPORT_DEFAULTS = ["A","B","C","D","E","F","G"];
 var idPassInfo = {event:{},scrim:{}};
+var forumMessages = {};
+var forumName = "";
 
 // Apply admin UI immediately
 applyAdminUI();
@@ -1535,6 +1585,10 @@ db.ref(eventPath("idpass")).on("value", function(s) {
   if(document.getElementById("sec-idpass") && document.getElementById("sec-idpass").classList.contains("show") && getRememberedIdPassAccess()){
     showPublicIdPass();
   }
+});
+db.ref(eventPath("forum/messages")).limitToLast(80).on("value", function(s) {
+  forumMessages = s.val() || {};
+  renderCommunityForum();
 });
 db.ref(eventPath("registrations")).on("value", function(s) {
   regs = s.val() || {};
@@ -1565,6 +1619,7 @@ function applyAdminUI() {
   updateIdPassTabVisibility();
   if(!isAdmin && document.getElementById("sec-rulelog") && document.getElementById("sec-rulelog").classList.contains("show")) showTab("reg");
   renderRulesAgreedLog();
+  renderCommunityForum();
 }
 
 function canEditCurrentEvent(meta) {
@@ -2009,6 +2064,92 @@ function exportApprovedTeamsToGroups(){
     document.getElementById("group-export-box").style.display="none";
   }).catch(function(e){toast("Error: "+e.message,false);});
 }
+function forumNameKey(){return "pmac_forum_name_"+EVENT_ID;}
+function initCommunityForum(){
+  try{forumName=localStorage.getItem(forumNameKey())||"";}catch(e){forumName="";}
+  var inp=document.getElementById("forum-name-input");
+  if(inp) inp.value=forumName;
+  updateForumNameState();
+  renderCommunityForum();
+}
+function updateForumNameState(){
+  var has=!!String(forumName||"").trim();
+  var nameBox=document.getElementById("forum-name-box");
+  var compose=document.getElementById("forum-compose");
+  var status=document.getElementById("forum-status");
+  if(nameBox) nameBox.style.display=has?"none":"block";
+  if(compose) compose.style.display=has?"block":"none";
+  if(status) status.textContent=has?"Chatting as "+forumName:"";
+}
+function toggleCommunityForum(){
+  var panel=document.getElementById("forum-panel");
+  var icon=document.getElementById("forum-toggle-icon");
+  if(!panel) return;
+  var open=!panel.classList.contains("open");
+  panel.classList.toggle("open",open);
+  if(icon) icon.textContent=open?"▼":"▲";
+  if(open) setTimeout(function(){
+    var box=document.getElementById("forum-messages");
+    if(box) box.scrollTop=box.scrollHeight;
+  },50);
+}
+function saveForumName(){
+  var inp=document.getElementById("forum-name-input");
+  var name=(inp&&inp.value?inp.value:"").trim();
+  if(!name){toast("Enter your name first",false);return;}
+  forumName=name.slice(0,32);
+  try{localStorage.setItem(forumNameKey(),forumName);}catch(e){}
+  updateForumNameState();
+  toast("Forum name saved",true);
+}
+function fmtForumTime(ts){
+  if(!ts) return "";
+  try{return new Date(ts).toLocaleString([], {hour:"2-digit",minute:"2-digit",day:"2-digit",month:"short"});}catch(e){return "";}
+}
+function forumColorForName(name){
+  var palette=["#e8b800","#00c97a","#43b6ff","#ff6bcb","#ff7a45","#9b7cff","#5ee0d1","#f75f71","#b5e853","#ffffff"];
+  var s=String(name||"Guest").toUpperCase();
+  var hash=0;
+  for(var i=0;i<s.length;i++){hash=(hash*31+s.charCodeAt(i))>>>0;}
+  return palette[hash%palette.length];
+}
+function renderCommunityForum(){
+  var box=document.getElementById("forum-messages");
+  if(!box) return;
+  var keys=Object.keys(forumMessages||{}).sort(function(a,b){
+    return ((forumMessages[a]||{}).createdAt||0)-((forumMessages[b]||{}).createdAt||0);
+  });
+  if(!keys.length){box.innerHTML='<div class="empty">No questions yet. Start the conversation.</div>';return;}
+  box.innerHTML=keys.map(function(key){
+    var m=forumMessages[key]||{};
+    var color=forumColorForName(m.name||"Guest");
+    var del=isAdmin?'<button class="forum-msg-del" onclick="deleteForumMessage(\''+key+'\')">Delete</button>':"";
+    return '<div class="forum-msg" style="border-left:3px solid '+color+';"><div class="forum-msg-top"><div class="forum-msg-name" style="color:'+color+';">'+escapeHtml(m.name||"Guest")+'</div><div class="forum-msg-time">'+escapeHtml(fmtForumTime(m.createdAt))+del+'</div></div><div class="forum-msg-text">'+escapeHtml(m.text||"")+'</div></div>';
+  }).join("");
+  box.scrollTop=box.scrollHeight;
+}
+function sendForumMessage(){
+  var status=document.getElementById("forum-status");
+  var input=document.getElementById("forum-message-input");
+  var text=(input&&input.value?input.value:"").trim();
+  if(!String(forumName||"").trim()){toast("Enter your name first",false);return;}
+  if(!text){if(status){status.textContent="Write a message first.";status.style.color="#ff4444";}return;}
+  if(status){status.textContent="Sending...";status.style.color="#e8b800";}
+  db.ref(eventPath("forum/messages")).push({
+    name:forumName,
+    text:text.slice(0,500),
+    createdAt:Date.now()
+  }).then(function(){
+    input.value="";
+    if(status){status.textContent="Sent.";status.style.color="#00c97a";}
+  }).catch(function(e){
+    if(status){status.textContent="Error: "+e.message;status.style.color="#ff4444";}
+  });
+}
+function deleteForumMessage(key){
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
+  db.ref(eventPath("forum/messages/"+key)).remove().then(function(){toast("Message removed",true);}).catch(function(e){toast("Error: "+e.message,false);});
+}
 // CONFIRM REMOVE
 document.getElementById("cancel-overlay-btn").onclick=function(){document.getElementById("overlay").style.display="none";};
 document.getElementById("success-close-btn").onclick=function(){document.getElementById("success-overlay").style.display="none";};
@@ -2064,6 +2205,12 @@ function showTab(tab){
 document.getElementById("agree-save-btn").onclick=saveExistingRulesAgreement;
 document.getElementById("idpass-get-btn").onclick=showPublicIdPass;
 document.getElementById("idpass-unlock-btn").onclick=unlockIdPassByTeamName;
+document.getElementById("forum-toggle-btn").onclick=toggleCommunityForum;
+document.getElementById("forum-name-save-btn").onclick=saveForumName;
+document.getElementById("forum-send-btn").onclick=sendForumMessage;
+document.getElementById("forum-message-input").addEventListener("keydown",function(e){
+  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendForumMessage();}
+});
 window.addEventListener("storage", function(e){
   if(e && e.key && (e.key.indexOf("pmac_idpass_access_"+EVENT_ID+"_")===0 || e.key==="pmac_reg_name" || e.key==="pmac_scrim_name")){
     updateIdPassTabVisibility();
@@ -2071,6 +2218,7 @@ window.addEventListener("storage", function(e){
   }
 });
 initRulesAgreeLink();
+initCommunityForum();
 
 // GFX
 function loadGFX(){
