@@ -961,7 +961,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <div class="delete-code-value" id="success-delete-code"></div>
     </div>
     <div class="save-code-note">Save this code. You need it if you want to remove your registration later.</div>
-    <div class="payment-box" style="color:#fff;">
+    <div class="payment-box" id="success-next-box" style="color:#fff;">
       <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;text-transform:uppercase;color:#fff;margin-bottom:8px;">Next step: agree with rules</div>
       <a href="#" id="success-rules-link" target="_blank" class="rules-view-btn" style="display:inline-block;text-decoration:none;">View Rules</a>
     </div>
@@ -1211,6 +1211,14 @@ function showRegistrationSuccessPopup(name,code,type){
   type=type==="scrim"?"scrim":"event";
   var link=document.getElementById("success-rules-link");
   if(link) link.href="rules.html?event="+encodeURIComponent(EVENT_ID)+"&type="+encodeURIComponent(type)+"&team="+encodeURIComponent(name);
+  var next=document.getElementById("success-next-box");
+  if(next){
+    if(type==="scrim"){
+      next.innerHTML='<div style="font-family:\'Barlow Condensed\',sans-serif;font-weight:900;font-size:18px;text-transform:uppercase;color:#fff;margin-bottom:8px;">Next step: wait for approval</div><div style="font-family:\'Share Tech Mono\',monospace;font-size:12px;line-height:1.6;color:#dfe7f3;">After admin approves your Daily Scrim registration, return here, open PMAF Daily Scrim, and press Confirm Registration. Then ID Pass will become visible.</div>';
+    }else{
+      next.innerHTML='<div style="font-family:\'Barlow Condensed\',sans-serif;font-weight:900;font-size:18px;text-transform:uppercase;color:#fff;margin-bottom:8px;">Next step: agree with rules</div><a href="rules.html?event='+encodeURIComponent(EVENT_ID)+'&type=event&team='+encodeURIComponent(name)+'" id="success-rules-link" target="_blank" class="rules-view-btn" style="display:inline-block;text-decoration:none;">View Rules</a>';
+    }
+  }
   document.getElementById("success-overlay").style.display="flex";
 }
 function openRulesModal(type,teamFieldId){
@@ -1267,6 +1275,7 @@ function rulesAgreementLabel(team){
   return {ok:true,text:"RULES AGREED",detail:detail};
 }
 function idPassAccessKey(type){return "pmac_idpass_access_"+EVENT_ID+"_"+type;}
+function scrimConfirmKey(){return "pmac_scrim_confirmed_"+EVENT_ID;}
 function rememberRulesAgreementForIdPass(type,teamName){
   try{
     localStorage.setItem(idPassAccessKey(type), JSON.stringify({teamName:teamName||"",type:type,eventId:EVENT_ID,at:Date.now()}));
@@ -1274,15 +1283,29 @@ function rememberRulesAgreementForIdPass(type,teamName){
   }catch(e){}
   updateIdPassTabVisibility();
 }
+function rememberScrimConfirmationForIdPass(teamName){
+  try{
+    localStorage.setItem(scrimConfirmKey(), teamName||"");
+    localStorage.setItem(idPassAccessKey("scrim"), JSON.stringify({teamName:teamName||"",type:"scrim",eventId:EVENT_ID,at:Date.now(),scrimConfirmed:true}));
+    localStorage.setItem("pmac_scrim_name", teamName||"");
+  }catch(e){}
+  updateIdPassTabVisibility();
+}
 function clearRememberedIdPassAccess(type){
   try{localStorage.removeItem(idPassAccessKey(type));}catch(e){}
+  if(type==="scrim"){try{localStorage.removeItem(scrimConfirmKey());}catch(e){}}
 }
+function getScrimConfirmedName(){try{return (localStorage.getItem(scrimConfirmKey())||"").trim();}catch(e){return "";}}
+function isScrimAccessConfirmed(access){return access&&access.type==="scrim"&&access.scrimConfirmed===true;}
 function getRememberedIdPassAccess(){
   var found=null;
   ["event","scrim"].forEach(function(type){
     try{
       var raw=localStorage.getItem(idPassAccessKey(type));
-      if(raw && !found) found=JSON.parse(raw);
+      if(raw){
+        var access=JSON.parse(raw);
+        if(!found || (access.at||0)>(found.at||0)) found=access;
+      }
     }catch(e){}
   });
   return found;
@@ -1303,8 +1326,12 @@ function restoreIdPassAccessFromAgreedTeam(){
     if(!name) return;
     var list=type==="scrim"?scrimRegs:regs;
     var match=findRegistrationByName(list,name);
-    if(match && !match.duplicate && match.team && match.team.rulesAgreement && match.team.rulesAgreement.agreed){
+    if(type==="event" && match && !match.duplicate && match.team && match.team.rulesAgreement && match.team.rulesAgreement.agreed){
       rememberRulesAgreementForIdPass(type,match.team.name||name);
+      restored=true;
+    }
+    if(type==="scrim" && getScrimConfirmedName() && match && !match.duplicate && match.team && match.team.status==="approved"){
+      rememberScrimConfirmationForIdPass(match.team.name||name);
       restored=true;
     }
   });
@@ -1324,7 +1351,10 @@ function cleanupInvalidIdPassAccess(){
     if(!access||!access.teamName) return;
     var list=type==="scrim"?scrimRegs:regs;
     var match=findRegistrationByName(list,access.teamName);
-    if(!match || match.duplicate || !match.team.rulesAgreement || !match.team.rulesAgreement.agreed){
+    var invalid = !match || match.duplicate;
+    if(!invalid && type==="event") invalid = !match.team.rulesAgreement || !match.team.rulesAgreement.agreed;
+    if(!invalid && type==="scrim") invalid = match.team.status!=="approved" || !isScrimAccessConfirmed(access);
+    if(invalid){
       clearRememberedIdPassAccess(type);
       changed=true;
     }
@@ -1333,7 +1363,7 @@ function cleanupInvalidIdPassAccess(){
     var result=document.getElementById("idpass-public-result");
     var msg=document.getElementById("idpass-msg");
     if(result) result.style.display="none";
-    if(msg){msg.textContent="Your team is no longer registered or rules agreement was removed.";msg.style.color="#ff4444";}
+    if(msg){msg.textContent="Your ID Pass access is no longer valid for this team.";msg.style.color="#ff4444";}
     if(document.getElementById("sec-idpass")&&document.getElementById("sec-idpass").classList.contains("show")) showTab("reg");
   }
   updateIdPassTabVisibility();
@@ -1351,7 +1381,7 @@ function updateIdPassTabVisibility(){
     if(sub) sub.textContent="Unlocked for "+(access.teamName||"your team")+" · "+(access.type==="scrim"?"PMAF Daily Scrim":"PMAF Event");
   }else{
     var sub2=document.getElementById("idpass-public-sub");
-    if(sub2) sub2.textContent="Only teams who agreed with PMAC rules can see the room ID and password.";
+    if(sub2) sub2.textContent="PMAF Event unlocks after rules agreement. PMAF Daily Scrim unlocks after admin approval and team confirmation.";
   }
 }
 function fmtRulesDate(ts){
@@ -1449,7 +1479,7 @@ function showPublicIdPass(){
   var type=selectedIdPassType();
   var list=type==="scrim"?scrimRegs:regs;
   if(result) result.style.display="none";
-  if(!name){msg.textContent="ID Pass appears only after the team agrees with the rules.";msg.style.color="#ff4444";updateIdPassTabVisibility();return;}
+  if(!name){msg.textContent="ID Pass appears after Event rules agreement or Daily Scrim confirmation.";msg.style.color="#ff4444";updateIdPassTabVisibility();return;}
   var match=findRegistrationByName(list,name);
   if(match&&match.duplicate){msg.textContent="More than one team has this name. Please contact admin.";msg.style.color="#ff4444";return;}
   if(!match){
@@ -1460,11 +1490,19 @@ function showPublicIdPass(){
     msg.style.color="#ff4444";
     return;
   }
-  if(!match.team.rulesAgreement || !match.team.rulesAgreement.agreed){
+  if(type==="event" && (!match.team.rulesAgreement || !match.team.rulesAgreement.agreed)){
     clearRememberedIdPassAccess(type);
     updateIdPassTabVisibility();
     if(document.getElementById("sec-idpass")&&document.getElementById("sec-idpass").classList.contains("show")) showTab("reg");
     msg.textContent="This team has not agreed with the rules yet.";
+    msg.style.color="#ff4444";
+    return;
+  }
+  if(type==="scrim" && (match.team.status!=="approved" || !isScrimAccessConfirmed(access))){
+    clearRememberedIdPassAccess(type);
+    updateIdPassTabVisibility();
+    if(document.getElementById("sec-idpass")&&document.getElementById("sec-idpass").classList.contains("show")) showTab("scrim");
+    msg.textContent="Daily Scrim ID Pass unlocks after admin approval and team confirmation.";
     msg.style.color="#ff4444";
     return;
   }
@@ -1544,8 +1582,8 @@ function initIdPassUnlockLink(){
   var team=params.get("idpassTeam")||"";
   var type=params.get("idpassType")||"event";
   if(!team) return;
-  if(type!=="scrim") type="event";
-  rememberRulesAgreementForIdPass(type,team.toUpperCase());
+  if(type!=="event") return;
+  rememberRulesAgreementForIdPass("event",team.toUpperCase());
   showTab("idpass");
 }
 var gfxList = [];
@@ -2232,7 +2270,7 @@ function checkStatus(){
 // TABS
 function showTab(tab){
   if(tab==="rulelog"&&!isAdmin){toast("Admin login required",false);return;}
-  if(tab==="idpass"&&!getRememberedIdPassAccess()){toast("Agree with the rules first",false);return;}
+  if(tab==="idpass"&&!getRememberedIdPassAccess()){toast("ID Pass is not unlocked yet",false);return;}
   ["reg","scrim","gfx","lobby","scores","archive","streamers","rulesagree","idpass","rulelog"].forEach(function(t){
     var tb=document.getElementById("tab-"+t); var sc=document.getElementById("sec-"+t);
     if(tb) tb.className="tab"+(t===tab?" active":"");
@@ -3178,12 +3216,35 @@ function scrimCheckStatus(){
     var t=scrimRegs[keys[i]];
     if(t.deleteCode===code&&t.name===name){
       var b=document.getElementById("scrim-notif-banner");var evName=scrimInfo.name||"PMAF Daily Scrim";
-      if(t.status==="approved"){b.className="notif-banner notif-approved";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="✅";document.getElementById("scrim-notif-title").textContent="Congratulations! "+t.name+" is Approved";document.getElementById("scrim-notif-sub").textContent="Your team has been approved for "+evName+".";}
+      if(t.status==="approved"){
+        b.className="notif-banner notif-approved";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="✅";document.getElementById("scrim-notif-title").textContent="Congratulations! "+t.name+" is Approved";
+        var sub=document.getElementById("scrim-notif-sub");
+        var confirmed=getScrimConfirmedName().toUpperCase()===String(t.name||"").trim().toUpperCase();
+        sub.textContent=confirmed?"Your team has confirmed registration. ID Pass is unlocked.":"Your team has been approved for "+evName+".";
+        if(confirmed){rememberScrimConfirmationForIdPass(t.name);}
+        else{
+          var br=document.createElement("br");
+          var btn=document.createElement("button");
+          btn.className="btn btn-gold";
+          btn.type="button";
+          btn.textContent="Confirm Registration";
+          btn.style.marginTop="10px";
+          btn.onclick=function(){confirmScrimRegistration(t.name);};
+          sub.appendChild(br);
+          sub.appendChild(btn);
+        }
+      }
       else if(t.status==="rejected"){b.className="notif-banner notif-rejected";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="❌";document.getElementById("scrim-notif-title").textContent=t.name+" — Registration Rejected";document.getElementById("scrim-notif-sub").textContent=rejectedPaymentText();}
       else{b.className="notif-banner notif-pending";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="⏳";document.getElementById("scrim-notif-title").textContent=t.name+" — Registration Pending";document.getElementById("scrim-notif-sub").textContent=pendingPaymentText();}
       return;
     }
   }
+}
+function confirmScrimRegistration(teamName){
+  rememberScrimConfirmationForIdPass(teamName);
+  toast("Daily Scrim registration confirmed. ID Pass unlocked.",true);
+  scrimCheckStatus();
+  showTab("idpass");
 }
 // ===================== END DAILY SCRIM JS =====================
 </script>

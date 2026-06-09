@@ -407,6 +407,7 @@ function setMessage(text,ok){
 }
 function communityIdPassUrl(type,teamName){
   var base=location.href.replace(/rules\.html.*$/i,"registration.html");
+  if(type==="scrim") return base+"?event="+encodeURIComponent(EVENT_ID);
   return base+"?event="+encodeURIComponent(EVENT_ID)+"&idpassType="+encodeURIComponent(type)+"&idpassTeam="+encodeURIComponent(teamName||"");
 }
 function setAgreementSuccessMessage(type,teamName){
@@ -432,7 +433,7 @@ function escapeHtml(v){
 }
 function rememberIdPassAccess(type,teamName){
   try{
-    localStorage.setItem("pmac_idpass_access_"+EVENT_ID+"_"+type, JSON.stringify({teamName:teamName||"",type:type,eventId:EVENT_ID,at:Date.now()}));
+    if(type==="event") localStorage.setItem("pmac_idpass_access_"+EVENT_ID+"_"+type, JSON.stringify({teamName:teamName||"",type:type,eventId:EVENT_ID,at:Date.now()}));
     localStorage.setItem(type==="scrim"?"pmac_scrim_name":"pmac_reg_name", teamName||"");
   }catch(e){}
 }
