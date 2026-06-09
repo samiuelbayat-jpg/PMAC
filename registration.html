@@ -944,7 +944,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <div class="modal success-modal">
     <div class="modal-title">Registration Pending</div>
     <div class="success-team" id="success-team-name"></div>
-    <div class="payment-box">
+    <div class="payment-box" id="success-payment-box">
       Send your PayPal payment to
       <b class="paypal-email-big" id="success-paypal-email">ztygf020@gmail.com</b>
       Your registration will be accepted after payment.
@@ -1197,18 +1197,30 @@ function pendingPaymentText(){
 function rejectedPaymentText(){
   return "Your registration was rejected because the payment was not completed.";
 }
+function rejectedScrimText(){
+  return "Your Daily Scrim registration was rejected by admin. Please contact PMAF support for details.";
+}
 function showRegistrationSuccessPopup(name,code,type){
   document.getElementById("success-team-name").textContent="✓ "+name+" registered!";
   document.getElementById("success-paypal-email").textContent=PAYPAL_PAYMENT_EMAIL;
   document.getElementById("success-delete-code").textContent=code;
   type=type==="scrim"?"scrim":"event";
+  var payment=document.getElementById("success-payment-box");
   var link=document.getElementById("success-rules-link");
   if(link) link.href="rules.html?event="+encodeURIComponent(EVENT_ID)+"&type="+encodeURIComponent(type)+"&team="+encodeURIComponent(name);
   var next=document.getElementById("success-next-box");
   if(next){
     if(type==="scrim"){
+      if(payment){
+        payment.style.display="block";
+        payment.innerHTML='<b style="font-family:\'Barlow Condensed\',sans-serif;font-size:20px;text-transform:uppercase;color:#00c97a;">No entry payment required</b><br><span style="font-family:\'Share Tech Mono\',monospace;font-size:12px;color:#dfe7f3;">Your Daily Scrim registration is pending admin approval.</span>';
+      }
       next.innerHTML='<div style="font-family:\'Barlow Condensed\',sans-serif;font-weight:900;font-size:18px;text-transform:uppercase;color:#fff;margin-bottom:8px;">Next step: wait for approval</div><div style="font-family:\'Share Tech Mono\',monospace;font-size:12px;line-height:1.6;color:#dfe7f3;">After admin approves your Daily Scrim registration, return here, open PMAF Daily Scrim, and press Confirm Registration. Then ID Pass will become visible.</div>';
     }else{
+      if(payment){
+        payment.style.display="block";
+        payment.innerHTML='Send your PayPal payment to <b class="paypal-email-big" id="success-paypal-email">'+PAYPAL_PAYMENT_EMAIL+'</b> Your registration will be accepted after payment.';
+      }
       next.innerHTML='<div style="font-family:\'Barlow Condensed\',sans-serif;font-weight:900;font-size:18px;text-transform:uppercase;color:#fff;margin-bottom:8px;">Next step: agree with rules</div><a href="rules.html?event='+encodeURIComponent(EVENT_ID)+'&type=event&team='+encodeURIComponent(name)+'" id="success-rules-link" target="_blank" class="rules-view-btn" style="display:inline-block;text-decoration:none;">View Rules</a>';
     }
   }
@@ -3187,7 +3199,7 @@ function scrimRenderTeams() {
     btn.onclick=function(){
       var t=scrimRegs[this.dataset.key];if(!t) return;
       var evName=scrimInfo.name||"PMAF Daily Scrim";
-      var msg=this.dataset.status==="approved"?"Congratulations "+t.name+"! Your team has been APPROVED for "+evName+". - PMAF Afghanistan":"Sorry "+t.name+", your team registration for "+evName+" has been REJECTED because payment was not completed. - PMAF Afghanistan";
+      var msg=this.dataset.status==="approved"?"Congratulations "+t.name+"! Your team has been APPROVED for "+evName+". - PMAF Afghanistan":"Sorry "+t.name+", your team registration for "+evName+" has been REJECTED by admin. Please contact PMAF support for details. - PMAF Afghanistan";
       var phone=(t.managerPhone||"").replace(/[^0-9]/g,"");
       window.open("https://wa.me/"+(phone||"")+"?text="+encodeURIComponent(msg),"_blank");
     };
@@ -3229,7 +3241,7 @@ function scrimCheckStatus(){
           sub.appendChild(btn);
         }
       }
-      else if(t.status==="rejected"){b.className="notif-banner notif-rejected";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="❌";document.getElementById("scrim-notif-title").textContent=t.name+" — Registration Rejected";document.getElementById("scrim-notif-sub").textContent=rejectedPaymentText();}
+      else if(t.status==="rejected"){b.className="notif-banner notif-rejected";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="❌";document.getElementById("scrim-notif-title").textContent=t.name+" — Registration Rejected";document.getElementById("scrim-notif-sub").textContent=rejectedScrimText();}
       else{b.className="notif-banner notif-pending";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="⏳";document.getElementById("scrim-notif-title").textContent=t.name+" — Registration Pending";document.getElementById("scrim-notif-sub").textContent=pendingPaymentText();}
       return;
     }
