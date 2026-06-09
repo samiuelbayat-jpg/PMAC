@@ -1862,7 +1862,12 @@ document.getElementById("reg-btn").onclick = function() {
       if(isAdmin){msg.innerHTML="<b style='color:#00c97a'>✓ "+name+" registered!</b><br>Delete code: <b style='background:#161a1f;border:1px solid rgba(232,184,0,0.4);border-radius:4px;padding:2px 10px;letter-spacing:.2em;color:#e8b800;'>"+code+"</b>";}
       else{msg.textContent="";}
       showRegistrationSuccessPopup(name,code,"event");
-    }).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});
+    }).catch(function(e){
+      btn.textContent="Register";btn.disabled=false;
+      var text=e&&e.message?e.message:"Could not save registration.";
+      if(String(text).toLowerCase().indexOf("permission")>-1) text="Registration is blocked by Firebase permissions. Admin must allow public writes to Daily Scrim registrations.";
+      msg.textContent="Error: "+text;msg.style.color="#ff4444";
+    });
   }
   if(regLogoFile){
     var reader=new FileReader();
@@ -3019,8 +3024,8 @@ function scrimUpdateCard() {
     document.getElementById("scrim-reg-box").style.display = "block";
     document.getElementById("scrim-closed-msg").style.display = "none";
   } else {
-    document.getElementById("scrim-pub-reg-btn-wrap").style.display = canReg ? "block" : "none";
-    document.getElementById("scrim-reg-box").style.display = "none";
+    document.getElementById("scrim-pub-reg-btn-wrap").style.display = "none";
+    document.getElementById("scrim-reg-box").style.display = canReg ? "block" : "none";
     var cm = document.getElementById("scrim-closed-msg");
     if (!canReg) { cm.textContent = isFull?"Registration is full.":"Registration is currently closed."; cm.style.display="block"; }
     else { cm.style.display="none"; }
@@ -3166,8 +3171,7 @@ function scrimRenderTeams() {
     }
     var row=document.createElement("div");row.className="team-row "+st;
     var privateMeta=isAdmin ? " · "+(t.manager||"—")+(t.managerPhone?" · "+t.managerPhone:"") : "";
-    var rule=rulesAgreementLabel(t);
-    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+']'+privateMeta+(isAdmin?rule.detail:"")+"</div></div>"+'<div class="rules-pill '+(rule.ok?"rules-ok":"rules-no")+'">'+rule.text+'</div><div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+"</div>";
+    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+']'+privateMeta+"</div></div>"+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+"</div>";
     row.querySelector(".tr-logo").replaceWith(logoDiv);
     list.appendChild(row);
   });
