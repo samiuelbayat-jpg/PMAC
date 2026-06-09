@@ -21,7 +21,7 @@
 <div class="agree-sub">Enter the registered team name exactly as registered. This saves the rule agreement to that team record.</div>
 <div class="agree-grid">
 <div class="field"><label for="agree-team-name">Team Name</label><input id="agree-team-name" type="text" placeholder="Example: AONE ESPORTS"></div>
-<div class="field"><label for="agree-type">Registration Type</label><select id="agree-type"><option value="event">PMAF Event</option><option value="scrim">PMAF Daily Scrim</option></select></div>
+<div class="field"><label for="agree-type">Registration Type</label><select id="agree-type"><option value="event">PMAF Event</option></select></div>
 <button class="btn gold" id="agree-save-btn" type="button">Confirm Agreement</button>
 </div>
 <label class="agree-check"><input id="agree-check" type="checkbox"><span>I confirm that my team has read, understood, and agrees with the PMAC tournament rules.</span></label>
@@ -407,8 +407,7 @@ function setMessage(text,ok){
 }
 function communityIdPassUrl(type,teamName){
   var base=location.href.replace(/rules\.html.*$/i,"registration.html");
-  if(type==="scrim") return base+"?event="+encodeURIComponent(EVENT_ID);
-  return base+"?event="+encodeURIComponent(EVENT_ID)+"&idpassType="+encodeURIComponent(type)+"&idpassTeam="+encodeURIComponent(teamName||"");
+  return base+"?event="+encodeURIComponent(EVENT_ID)+"&idpassType=event&idpassTeam="+encodeURIComponent(teamName||"");
 }
 function setAgreementSuccessMessage(type,teamName){
   var msg=document.getElementById("agree-msg");
@@ -433,24 +432,23 @@ function escapeHtml(v){
 }
 function rememberIdPassAccess(type,teamName){
   try{
-    if(type==="event") localStorage.setItem("pmac_idpass_access_"+EVENT_ID+"_"+type, JSON.stringify({teamName:teamName||"",type:type,eventId:EVENT_ID,at:Date.now()}));
-    localStorage.setItem(type==="scrim"?"pmac_scrim_name":"pmac_reg_name", teamName||"");
+    localStorage.setItem("pmac_idpass_access_"+EVENT_ID+"_event", JSON.stringify({teamName:teamName||"",type:"event",eventId:EVENT_ID,at:Date.now()}));
+    localStorage.setItem("pmac_reg_name", teamName||"");
   }catch(e){}
 }
 function initRulePrefill(){
   var team=RULE_PARAMS.get("team")||"";
-  var type=RULE_PARAMS.get("type")||"";
   if(team) document.getElementById("agree-team-name").value=team.toUpperCase();
-  if(type==="scrim"||type==="event") document.getElementById("agree-type").value=type;
+  document.getElementById("agree-type").value="event";
 }
 document.getElementById("agree-save-btn").onclick=function(){
   var btn=this;
   var name=document.getElementById("agree-team-name").value.trim().toUpperCase();
-  var type=document.getElementById("agree-type").value;
+  var type="event";
   if(!name){setMessage("Enter your registered team name.",false);return;}
   if(!document.getElementById("agree-check").checked){setMessage("Please tick the agreement checkbox first.",false);return;}
   btn.disabled=true;btn.textContent="Checking...";
-  var base=type==="scrim"?"scrim/registrations":"registrations";
+  var base="registrations";
   db.ref(eventPath(base)).once("value").then(function(snap){
     var match=findRegistrationByName(snap.val()||{},name);
     if(match&&match.duplicate) throw new Error("More than one team has this name. Please contact admin to confirm it.");

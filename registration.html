@@ -456,7 +456,6 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     </div>
     <div class="rules-type-row">
       <label><input type="radio" name="agree-type" value="event" checked>PMAF Event</label>
-      <label><input type="radio" name="agree-type" value="scrim">PMAF Daily Scrim</label>
     </div>
     <div class="rules-agree">
       <label><input type="checkbox" id="agree-rules-check"><span>I have read and agree with the PMAC tournament rulebook. <button type="button" class="rules-link-btn" onclick="openRulesModal()">View rules</button></span></label>
@@ -490,7 +489,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <div class="rules-log-head">
     <div>
       <div class="rules-log-title">Teams Who Agreed With Rules</div>
-      <div class="rules-log-sub">Admin-only list from PMAF Event and PMAF Daily Scrim registrations.</div>
+      <div class="rules-log-sub">Admin-only list from PMAF Event registrations.</div>
     </div>
     <button class="btn" onclick="renderRulesAgreedLog()" style="padding:6px 16px;font-size:12px;">Refresh</button>
   </div>
@@ -755,12 +754,6 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
           <input type="file" id="scrim-reg-logo-file" accept="image/*" style="display:none">
           <button class="logo-btn" id="scrim-reg-logo-btn">📷 Choose Logo</button>
           <img id="scrim-reg-logo-prev" class="logo-prev" src="" alt="">
-        </div>
-      </div>
-      <div class="rules-agree">
-        <div class="rules-view-callout">
-          <span class="rules-view-copy"><b>Required:</b> review the PMAC rulebook, then agree in the standalone rules page with your team name.</span>
-          <button type="button" class="rules-view-btn" onclick="openRulesModal('scrim','scrim-reg-name')">View Rules</button>
         </div>
       </div>
       <button class="btn btn-gold" id="scrim-reg-btn" style="align-self:flex-end;padding:9px 20px;">Register</button>
@@ -1398,7 +1391,6 @@ function collectRulesAgreedTeams(){
     });
   }
   addFrom(regs,"PMAF Event");
-  addFrom((typeof scrimRegs==="undefined"?{}:scrimRegs),"PMAF Daily Scrim");
   out.sort(function(a,b){return (b.agreedAt||0)-(a.agreedAt||0) || a.name.localeCompare(b.name);});
   return out;
 }
@@ -1413,8 +1405,7 @@ function renderRulesAgreedLog(){
   }
   var teams=collectRulesAgreedTeams();
   var eventCount=teams.filter(function(t){return t.type==="PMAF Event";}).length;
-  var scrimCount=teams.filter(function(t){return t.type==="PMAF Daily Scrim";}).length;
-  sum.textContent=teams.length+" agreed team(s) · PMAF Event: "+eventCount+" · Daily Scrim: "+scrimCount;
+  sum.textContent=teams.length+" agreed team(s) · PMAF Event: "+eventCount;
   if(!teams.length){list.innerHTML='<div class="empty">No teams have agreed with rules yet.</div>';return;}
   list.innerHTML="";
   teams.forEach(function(t){
