@@ -204,6 +204,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .ta-msg{color:#25d366;}.ta-msg:hover{background:rgba(37,211,102,0.1);border-color:rgba(37,211,102,0.3);}
 .ta-logo-dl{color:#e8b800;}.ta-logo-dl:hover{background:rgba(232,184,0,0.1);border-color:rgba(232,184,0,0.35);}
 .ta-wa{color:#25d366;}.ta-wa:hover{background:rgba(37,211,102,0.1);border-color:rgba(37,211,102,0.3);}
+.ta-id-link{color:#00c7ff;}.ta-id-link:hover{background:rgba(0,199,255,0.1);border-color:rgba(0,199,255,0.35);}
 .empty{font-family:'Share Tech Mono',monospace;font-size:11px;color:#606878;text-align:center;padding:2rem;}
 
 /* CONFIRM OVERLAY */
@@ -1638,10 +1639,48 @@ function initIdPassUnlockLink(){
   var params=new URLSearchParams(location.search);
   var team=params.get("idpassTeam")||"";
   var type=params.get("idpassType")||"event";
+  var code=params.get("idpassCode")||"";
   if(!team) return;
+  if(type==="scrim"){
+    pendingIdPassUnlock={type:"scrim",team:team,code:code};
+    processPendingIdPassUnlock();
+    return;
+  }
   if(type!=="event") return;
   rememberRulesAgreementForIdPass("event",team.toUpperCase());
   showTab("idpass");
+}
+function processPendingIdPassUnlock(){
+  if(!pendingIdPassUnlock || pendingIdPassUnlock.type!=="scrim" || !scrimRegsLoaded) return;
+  var info=pendingIdPassUnlock;
+  var msg=document.getElementById("idpass-msg");
+  var match=findRegistrationByName(scrimRegs,info.team);
+  if(!match || match.duplicate || !match.team){
+    if(msg){msg.textContent="ID Pass rescue link could not find this team.";msg.style.color="#ff4444";}
+    return;
+  }
+  if(info.code && String(match.team.deleteCode||"").toUpperCase()!==String(info.code||"").toUpperCase()){
+    if(msg){msg.textContent="ID Pass rescue link code does not match this team.";msg.style.color="#ff4444";}
+    return;
+  }
+  if(match.team.status==="approved" && match.team.idPassConfirmed===true){
+    pendingIdPassUnlock=null;
+    rememberScrimConfirmationForIdPass(match.team.name||info.team);
+    toast("ID Pass unlocked for "+(match.team.name||info.team),true);
+    showTab("idpass");
+  }else if(msg){
+    msg.textContent="This Daily Scrim team is not approved and ID-confirmed yet.";
+    msg.style.color="#ff4444";
+  }
+}
+function idPassUnlockLink(type,team){
+  var url=new URL(location.href);
+  url.searchParams.set("event",EVENT_ID);
+  url.searchParams.set("idpassType",type);
+  url.searchParams.set("idpassTeam",team.name||"");
+  if(type==="scrim" && team.deleteCode) url.searchParams.set("idpassCode",team.deleteCode);
+  url.hash="idpass";
+  return url.toString();
 }
 var gfxList = [];
 var gfxIdx = 0;
@@ -1656,6 +1695,7 @@ var streamersList = [];
 var communityEventGroups = {};
 var GROUP_EXPORT_DEFAULTS = ["A","B","C","D","E","F","G"];
 var idPassInfo = {event:{},scrim:{}};
+var pendingIdPassUnlock = null;
 var forumMessages = {};
 var forumName = "";
 var forumSeenLatest = 0;
@@ -3134,6 +3174,7 @@ db.ref(eventPath("scrim/registrations")).on("value", function(s) {
   scrimRenderTeams();
   renderRulesAgreedLog();
   cleanupInvalidIdPassAccess();
+  processPendingIdPassUnlock();
   seedApprovedRegistrationLogos(scrimRegs);
   previewSavedRegistrationLogo("reg");
   previewSavedRegistrationLogo("scrim");
@@ -3317,6 +3358,7 @@ function scrimRenderTeams() {
       if(st!=="rejected") adminBtns+='<button class="ta ta-no" data-key="'+key+'" data-status="rejected">✗</button>';
       if(st==="approved") adminBtns+='<button class="ta ta-wa" data-key="'+key+'" data-status="approved" title="WhatsApp">💬✓</button>';
       if(st==="rejected") adminBtns+='<button class="ta ta-wa" data-key="'+key+'" data-status="rejected" title="WhatsApp">💬✗</button>';
+      if(st==="approved" && t.idPassConfirmed===true) adminBtns+='<button class="ta ta-id-link" data-key="'+key+'" title="Send ID Pass unlock link">ID🔗</button>';
       if(t.logo) adminBtns+='<button class="ta ta-logo-dl" data-key="'+key+'" title="Download logo">⬇</button>';
       adminBtns+='<button class="ta ta-del" data-key="'+key+'">🗑</button>';
     }
@@ -3345,6 +3387,11 @@ function scrimRenderTeams() {
       window.open("https://wa.me/"+(phone||"")+"?text="+encodeURIComponent(msg),"_blank");
     };
   });
+  list.querySelectorAll(".ta-id-link").forEach(function(btn){
+    btn.onclick=function(){
+      sendScrimIdPassUnlockLink(this.dataset.key);
+    };
+  });
   list.querySelectorAll(".ta-logo-dl").forEach(function(btn){
     btn.onclick=function(){
       var t=scrimRegs[this.dataset.key];if(!t) return;
@@ -3364,6 +3411,28 @@ function scrimRenderTeams() {
       setTimeout(function(){document.getElementById("confirm-code").focus();},100);
     };
   });
+}
+
+function sendScrimIdPassUnlockLink(key){
+  if(!isAdmin){toast("Admin login required",false);return;}
+  var t=scrimRegs[key];
+  if(!t){toast("Team not found",false);return;}
+  if(t.status!=="approved" || t.idPassConfirmed!==true){
+    toast("Only approved and ID-confirmed teams can receive an unlock link",false);
+    return;
+  }
+  var link=idPassUnlockLink("scrim",t);
+  var evName=scrimInfo.name||"PMAF Daily Scrim";
+  var msg="Hello "+(t.manager||t.name||"")+"، your team "+(t.name||"")+" is confirmed for "+evName+". Open this link on the phone/browser where you want to see the ID Pass tab: "+link;
+  var phone=(t.managerPhone||"").replace(/[^0-9]/g,"");
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(link).then(function(){toast("ID Pass unlock link copied",true);}).catch(function(){});
+  }
+  if(phone){
+    window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(msg),"_blank");
+  }else{
+    window.prompt("Copy this ID Pass unlock link for "+(t.name||"team"),link);
+  }
 }
 
 function scanScrimIdConfirmations(){
