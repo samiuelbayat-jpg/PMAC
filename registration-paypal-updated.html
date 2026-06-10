@@ -43,6 +43,17 @@ body{color:#eef0f5;font-family:'Barlow Condensed',sans-serif;min-height:100vh;ba
 .tab:hover{border-color:rgba(232,184,0,0.4);color:#eef0f5;}
 .tab.active{background:linear-gradient(135deg,rgba(232,184,0,0.2),rgba(232,184,0,0.08));border-color:#e8b800;color:#e8b800;box-shadow:0 3px 14px rgba(232,184,0,0.2);}
 .section{display:none;}.section.show{display:block;}
+.entry-chooser{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:1rem;}
+.entry-card{background:rgba(10,12,16,0.84);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:16px;text-align:left;cursor:pointer;color:#eef0f5;transition:all .2s;min-height:132px;display:flex;flex-direction:column;gap:8px;}
+.entry-card:hover{border-color:rgba(232,184,0,0.55);transform:translateY(-1px);}
+.entry-card.active{border-color:#e8b800;background:linear-gradient(135deg,rgba(232,184,0,0.18),rgba(10,12,16,0.92));box-shadow:0 10px 28px rgba(232,184,0,0.13);}
+.entry-kicker{font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;text-transform:uppercase;letter-spacing:.12em;}
+.entry-title{font-weight:900;font-size:26px;text-transform:uppercase;letter-spacing:.04em;line-height:1;}
+.entry-card.event .entry-title{color:#e8b800;}
+.entry-card.scrim .entry-title{color:#00c97a;}
+.entry-copy{font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.55;color:#aab0bc;}
+.entry-pill{align-self:flex-start;margin-top:auto;font-family:'Share Tech Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;border:1px solid rgba(255,255,255,0.14);border-radius:20px;padding:5px 10px;color:#fff;background:#161a1f;}
+@media(max-width:680px){.entry-chooser{grid-template-columns:1fr}.entry-card{min-height:0}.entry-title{font-size:22px}}
 
 /* EVENT CARD */
 .event-card{border:1px solid rgba(232,184,0,0.25);border-radius:10px;overflow:hidden;margin-bottom:1.5rem;position:relative;background:rgba(10,12,16,0.75);}
@@ -431,6 +442,21 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <button class="btn" id="logout-btn" style="padding:5px 14px;font-size:12px;">Logout</button>
     </div>
   </div>
+</div>
+
+<div class="entry-chooser">
+  <button type="button" class="entry-card event active" id="entry-card-reg" onclick="showTab('reg')">
+    <span class="entry-kicker">Paid tournament registration</span>
+    <span class="entry-title">PMAF Event</span>
+    <span class="entry-copy">Use this for official PMAF event registration, payment, rule agreement, groups, and event ID pass.</span>
+    <span class="entry-pill">Register for event</span>
+  </button>
+  <button type="button" class="entry-card scrim" id="entry-card-scrim" onclick="showTab('scrim')">
+    <span class="entry-kicker">Free daily room registration</span>
+    <span class="entry-title">PMAF Daily Scrim</span>
+    <span class="entry-copy">Use this for daily scrims with no entry payment. Register, wait for approval, confirm, then unlock scrim ID pass.</span>
+    <span class="entry-pill">Register for scrim</span>
+  </button>
 </div>
 
 <!-- TABS -->
@@ -2371,6 +2397,10 @@ function showTab(tab){
     if(tb) tb.className="tab"+(t===tab?" active":"");
     if(sc) sc.className="section"+(t===tab?" show":"");
   });
+  var eventEntry=document.getElementById("entry-card-reg");
+  var scrimEntry=document.getElementById("entry-card-scrim");
+  if(eventEntry) eventEntry.className="entry-card event"+(tab==="reg"?" active":"");
+  if(scrimEntry) scrimEntry.className="entry-card scrim"+(tab==="scrim"?" active":"");
   if(tab==="gfx"&&!gfxLoaded) loadGFX();
   if(tab==="lobby"&&!lobbyLoaded) loadLobby();
   if(tab==="scores"&&!scoresLoaded) loadScoreboard();
