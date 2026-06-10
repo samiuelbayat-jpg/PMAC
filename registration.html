@@ -3283,8 +3283,8 @@ document.getElementById("scrim-save-reset-btn").onclick = function() {
   var count=Object.keys(scrimRegs).length;
   if(!count){toast("No registrations to save",false);return;}
   if(!confirm("Save "+count+" teams to archive and clear all registrations?")) return;
-  db.ref(eventPath("scrim/archive")+"/ev_"+Date.now()).set({name:scrimInfo.name||"PMAF Daily Scrim",date:scrimInfo.date||"",savedAt:Date.now(),teams:scrimRegs}).then(function(){
-    return Promise.all([db.ref(eventPath("scrim/registrations")).remove(),db.ref(eventPath("scrim/event/regStatus")).set("closed")]);
+  db.ref(eventPath("scrim/archive")+"/ev_"+Date.now()).set({name:scrimInfo.name||"PMAF Daily Scrim",date:scrimInfo.date||"",savedAt:Date.now(),teams:scrimRegs,idpass:idPassInfo.scrim||{}}).then(function(){
+    return Promise.all([db.ref(eventPath("scrim/registrations")).remove(),db.ref(eventPath("scrim/event/regStatus")).set("closed"),db.ref(eventPath("idpass/scrim")).remove()]);
   }).then(function(){toast("Saved and reset!",true);}).catch(function(e){toast("Error: "+e.message,false);});
 };
 
