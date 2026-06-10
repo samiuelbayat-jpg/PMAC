@@ -1242,6 +1242,9 @@ function rejectedPaymentText(){
 function rejectedScrimText(){
   return "Your Daily Scrim registration was rejected by admin. Please contact PMAF support for details.";
 }
+function pendingScrimText(){
+  return "Your Daily Scrim registration is pending admin approval. No entry payment is required.";
+}
 function showRegistrationSuccessPopup(name,code,type){
   document.getElementById("success-team-name").textContent="✓ "+name+" registered!";
   document.getElementById("success-paypal-email").textContent=PAYPAL_PAYMENT_EMAIL;
@@ -1381,7 +1384,7 @@ function restoreIdPassAccessFromAgreedTeam(){
       rememberRulesAgreementForIdPass(type,match.team.name||name);
       restored=true;
     }
-    if(type==="scrim" && getScrimConfirmedName() && match && !match.duplicate && match.team && match.team.status==="approved"){
+    if(type==="scrim" && match && !match.duplicate && match.team && match.team.status==="approved" && (match.team.idPassConfirmed===true || getScrimConfirmedName())){
       rememberScrimConfirmationForIdPass(match.team.name||name);
       restored=true;
     }
@@ -1523,6 +1526,7 @@ function selectedIdPassType(){
 function showPublicIdPass(){
   var msg=document.getElementById("idpass-msg");
   var result=document.getElementById("idpass-public-result");
+  restoreIdPassAccessFromAgreedTeam();
   var access=getRememberedIdPassAccess();
   var name=(access&&access.teamName?access.teamName:"").trim().toUpperCase();
   var type=selectedIdPassType();
@@ -1547,13 +1551,17 @@ function showPublicIdPass(){
     msg.style.color="#ff4444";
     return;
   }
-  if(type==="scrim" && (match.team.status!=="approved" || !isScrimAccessConfirmed(access))){
+  if(type==="scrim" && (match.team.status!=="approved" || (!isScrimAccessConfirmed(access) && match.team.idPassConfirmed!==true))){
     clearRememberedIdPassAccess(type);
     updateIdPassTabVisibility();
     if(document.getElementById("sec-idpass")&&document.getElementById("sec-idpass").classList.contains("show")) showTab("scrim");
     msg.textContent="Daily Scrim ID Pass unlocks after admin approval and team confirmation.";
     msg.style.color="#ff4444";
     return;
+  }
+  if(type==="scrim" && match.team.idPassConfirmed===true && !isScrimAccessConfirmed(access)){
+    rememberScrimConfirmationForIdPass(match.team.name||name);
+    access=getRememberedIdPassAccess();
   }
   msg.textContent="Loading ID/pass...";
   msg.style.color="#e8b800";
@@ -3406,7 +3414,7 @@ function scrimCheckStatus(){
         }
       }
       else if(t.status==="rejected"){b.className="notif-banner notif-rejected";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="❌";document.getElementById("scrim-notif-title").textContent=t.name+" — Registration Rejected";document.getElementById("scrim-notif-sub").textContent=rejectedScrimText();}
-      else{b.className="notif-banner notif-pending";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="⏳";document.getElementById("scrim-notif-title").textContent=t.name+" — Registration Pending";document.getElementById("scrim-notif-sub").textContent=pendingPaymentText();}
+      else{b.className="notif-banner notif-pending";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="⏳";document.getElementById("scrim-notif-title").textContent=t.name+" — Registration Pending";document.getElementById("scrim-notif-sub").textContent=pendingScrimText();}
       return;
     }
   }
