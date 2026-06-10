@@ -694,7 +694,21 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <div class="admin-bar" id="scrim-admin-bar">
     <button class="btn" id="scrim-edit-ev-btn" style="padding:6px 16px;font-size:12px;">✎ Edit Scrim</button>
     <button class="btn" id="scrim-toggle-reg-btn" style="padding:6px 16px;font-size:12px;">● Toggle Registration</button>
+    <button class="btn" onclick="toggleScrimGroupExportBox()" style="padding:6px 16px;font-size:12px;">🎲 Export to Groups</button>
     <button class="btn btn-red" id="scrim-save-reset-btn" style="padding:6px 16px;font-size:12px;">💾 Save & Reset</button>
+  </div>
+  <div class="group-export-box" id="scrim-group-export-box">
+    <div class="group-export-title">Randomly export approved Daily Scrim teams to Event Groups</div>
+    <input class="group-date-inp" type="date" id="scrim-group-export-date">
+    <div class="group-choice-row">
+      <span class="group-export-label">Choose groups:</span>
+      <div class="group-choice-row" id="scrim-group-export-options"></div>
+    </div>
+    <div class="group-export-actions">
+      <button class="btn" style="padding:7px 12px;font-size:11px;" onclick="setScrimGroupExportChecks(true)">Select All Groups</button>
+      <button class="btn" style="padding:7px 12px;font-size:11px;" onclick="setScrimGroupExportChecks(false)">Clear Groups</button>
+      <button class="btn btn-gold" style="padding:7px 16px;font-size:12px;" onclick="exportApprovedScrimTeamsToGroups()">Export Approved Scrim Teams</button>
+    </div>
   </div>
 
   <!-- EDIT SCRIM FORM MODAL -->
@@ -772,6 +786,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <button class="fbtn" id="scrim-f-pending" onclick="scrimSetFilter('pending')">Pending</button>
       <button class="fbtn" id="scrim-f-approved" onclick="scrimSetFilter('approved')">Approved</button>
       <button class="fbtn" id="scrim-f-rejected" onclick="scrimSetFilter('rejected')">Rejected</button>
+      <button class="fbtn" id="scrim-scan-id-btn" onclick="scanScrimIdConfirmations()" style="display:none;">Scan ID</button>
     </div>
   </div>
   <div id="scrim-teams-list"></div>
@@ -1625,6 +1640,7 @@ db.ref(eventPath("event")).on("value", function(s) {
 db.ref(eventPath("eventGroups")).on("value", function(s) {
   communityEventGroups = s.val() || {};
   renderGroupExportOptions();
+  renderScrimGroupExportOptions();
 });
 db.ref(eventPath("idpass")).on("value", function(s) {
   idPassInfo = s.val() || {event:{},scrim:{}};
@@ -2065,8 +2081,26 @@ function renderGroupExportOptions(){
   if(dateEl && !dateEl.value) dateEl.value=eventInfo.date || todayStr();
   refreshGroupChoiceStyles();
 }
+function renderScrimGroupExportOptions(){
+  var box=document.getElementById("scrim-group-export-options");
+  if(!box) return;
+  var previous=Array.from(document.querySelectorAll(".scrim-group-export-check:checked")).map(function(cb){return cb.value;});
+  var ids=groupExportIds();
+  box.innerHTML=ids.map(function(id){
+    var checked=previous.indexOf(id)>-1 ? " checked" : "";
+    return '<label class="group-choice"><input type="checkbox" class="scrim-group-export-check" value="'+id+'"'+checked+'>Group '+id+'</label>';
+  }).join("");
+  box.querySelectorAll(".scrim-group-export-check").forEach(function(cb){cb.onchange=refreshGroupChoiceStyles;});
+  var dateEl=document.getElementById("scrim-group-export-date");
+  if(dateEl && !dateEl.value) dateEl.value=scrimInfo.date || eventInfo.date || todayStr();
+  refreshGroupChoiceStyles();
+}
 function setGroupExportChecks(checked){
   document.querySelectorAll(".group-export-check").forEach(function(cb){cb.checked=checked;});
+  refreshGroupChoiceStyles();
+}
+function setScrimGroupExportChecks(checked){
+  document.querySelectorAll(".scrim-group-export-check").forEach(function(cb){cb.checked=checked;});
   refreshGroupChoiceStyles();
 }
 function toggleGroupExportBox(){
@@ -2076,9 +2110,22 @@ function toggleGroupExportBox(){
   box.style.display = box.style.display==="flex" ? "none" : "flex";
   renderGroupExportOptions();
 }
+function toggleScrimGroupExportBox(){
+  if(!isAdmin){toast("Admin login required",false);return;}
+  var box=document.getElementById("scrim-group-export-box");
+  if(!box) return;
+  box.style.display = box.style.display==="flex" ? "none" : "flex";
+  renderScrimGroupExportOptions();
+}
 function approvedRegistrationTeams(){
   return Object.keys(regs).filter(function(k){return regs[k] && regs[k].status==="approved";}).map(function(k){
     var r=regs[k]||{};
+    return {name:(r.name||"").trim().toUpperCase(),tag:(r.tag||"").trim().toUpperCase(),logo:r.logo||findSavedRegistrationLogo(r.name)||""};
+  }).filter(function(t){return t.name;});
+}
+function approvedScrimRegistrationTeams(){
+  return Object.keys(scrimRegs).filter(function(k){return scrimRegs[k] && scrimRegs[k].status==="approved";}).map(function(k){
+    var r=scrimRegs[k]||{};
     return {name:(r.name||"").trim().toUpperCase(),tag:(r.tag||"").trim().toUpperCase(),logo:r.logo||findSavedRegistrationLogo(r.name)||""};
   }).filter(function(t){return t.name;});
 }
@@ -2125,6 +2172,31 @@ function exportApprovedTeamsToGroups(){
   db.ref().update(updates).then(function(){
     toast("Approved teams exported to groups",true);
     document.getElementById("group-export-box").style.display="none";
+  }).catch(function(e){toast("Error: "+e.message,false);});
+}
+function exportApprovedScrimTeamsToGroups(){
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
+  var selected=Array.from(document.querySelectorAll(".scrim-group-export-check:checked")).map(function(cb){return cb.value;});
+  if(!selected.length){toast("Choose at least one group",false);return;}
+  var date=(document.getElementById("scrim-group-export-date")||{}).value || scrimInfo.date || eventInfo.date || todayStr();
+  var approved=approvedScrimRegistrationTeams();
+  if(!approved.length){toast("No approved Daily Scrim teams found",false);return;}
+  if(!confirm("Randomly export "+approved.length+" approved Daily Scrim teams to "+selected.length+" group(s) for "+date+"? Existing teams for that date in selected groups will be replaced.")) return;
+  var buckets={}; selected.forEach(function(g){buckets[g]=[];});
+  shuffledCopy(approved).forEach(function(team,i){buckets[selected[i%selected.length]].push(team);});
+  var updates={};
+  selected.forEach(function(g){
+    var base=eventPath("eventGroups")+"/"+g+"/sessions/"+date;
+    updates[base+"/teams"]=buckets[g];
+    var scores={};
+    buckets[g].forEach(function(team){ scores[sanitizeKey(team.name)] = emptyScoreRows(); });
+    updates[base+"/scores"]=scores;
+    updates[base+"/exportedFrom"]="pmaf-daily-scrim";
+    updates[base+"/exportedAt"]=Date.now();
+  });
+  db.ref().update(updates).then(function(){
+    toast("Daily Scrim approved teams exported to groups",true);
+    document.getElementById("scrim-group-export-box").style.display="none";
   }).catch(function(e){toast("Error: "+e.message,false);});
 }
 function forumNameKey(){return "pmac_forum_name_"+EVENT_ID;}
@@ -3180,6 +3252,8 @@ function scrimRenderTeams() {
   var approvedKeys=keys.filter(function(k){return (scrimRegs[k].status||"pending")==="approved";});
   var confirmedCount=approvedKeys.filter(function(k){return scrimRegs[k].idPassConfirmed===true;}).length;
   document.getElementById("scrim-teams-count").textContent=Object.keys(scrimRegs).length+" · ID confirmed "+confirmedCount+"/"+approvedKeys.length;
+  var scanBtn=document.getElementById("scrim-scan-id-btn");
+  if(scanBtn) scanBtn.style.display=isAdmin?"":"none";
   if(!filtered.length){list.innerHTML='<div class="empty">No '+(scrimFilterMode==="all"?"registrations":scrimFilterMode+" teams")+' yet.</div>';return;}
   list.innerHTML="";var num=0;
   filtered.forEach(function(key){
@@ -3230,6 +3304,24 @@ function scrimRenderTeams() {
   });
   list.querySelectorAll(".ta-del").forEach(function(btn){
     btn.onclick=function(){if(!confirm("Delete this registration? Admin removal does not need the user delete code.")) return;removeRegistrationByAdmin(this.dataset.key,"scrim/registrations").then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
+  });
+}
+
+function scanScrimIdConfirmations(){
+  if(!isAdmin){toast("Admin login required",false);return;}
+  var btn=document.getElementById("scrim-scan-id-btn");
+  if(btn){btn.disabled=true;btn.textContent="Scanning...";}
+  db.ref(eventPath("scrim/registrations")).once("value").then(function(snap){
+    scrimRegs=snap.val()||{};
+    scrimRenderTeams();
+    var keys=Object.keys(scrimRegs);
+    var approved=keys.filter(function(k){return (scrimRegs[k].status||"pending")==="approved";});
+    var confirmed=approved.filter(function(k){return scrimRegs[k].idPassConfirmed===true;});
+    toast("ID confirmed "+confirmed.length+"/"+approved.length,true);
+  }).catch(function(e){
+    toast("Scan failed: "+e.message,false);
+  }).then(function(){
+    if(btn){btn.disabled=false;btn.textContent="Scan ID";}
   });
 }
 
