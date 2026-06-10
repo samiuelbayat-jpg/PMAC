@@ -1929,6 +1929,8 @@ function renderTeams() {
       if(st!=="rejected") adminBtns+='<button class="ta ta-no" data-key="'+key+'" data-status="rejected">✗</button>';
       if(st==="approved") adminBtns+='<button class="ta ta-wa" data-key="'+key+'" data-status="approved" title="WhatsApp">💬✓</button>';
       if(st==="rejected") adminBtns+='<button class="ta ta-wa" data-key="'+key+'" data-status="rejected" title="WhatsApp">💬✗</button>';
+      if(st==="approved" && !t.idPassConfirmed) adminBtns+='<button class="ta ta-id-ok" data-key="'+key+'" title="Mark ID confirmed">ID✓</button>';
+      if(st==="approved" && t.idPassConfirmed) adminBtns+='<button class="ta ta-id-reset" data-key="'+key+'" title="Reset ID confirmation">ID↺</button>';
       if(t.logo) adminBtns+='<button class="ta ta-logo-dl" data-key="'+key+'" title="Download logo">⬇</button>';
       adminBtns+='<button class="ta ta-del" data-key="'+key+'">🗑</button>';
     }
@@ -1958,6 +1960,15 @@ function renderTeams() {
     btn.onclick=function(){
       var t=regs[this.dataset.key];if(!t) return;
       openTeamWhatsApp(t,this.dataset.status);
+    };
+  });
+  list.querySelectorAll(".ta-id-ok,.ta-id-reset").forEach(function(btn){
+    btn.onclick=function(){
+      var key=this.dataset.key;
+      var confirmed=this.classList.contains("ta-id-ok");
+      setScrimIdPassConfirmationByKey(key,confirmed,true).then(function(){
+        toast(confirmed?"Marked ID confirmed":"ID confirmation reset",true);
+      }).catch(function(e){toast("Error: "+e.message,false);});
     };
   });
   list.querySelectorAll(".ta-logo-dl").forEach(function(btn){
@@ -3166,7 +3177,9 @@ function scrimRenderTeams() {
   var list=document.getElementById("scrim-teams-list");
   var keys=Object.keys(scrimRegs).sort(function(a,b){return (scrimRegs[a].registeredAt||0)-(scrimRegs[b].registeredAt||0);});
   var filtered=keys.filter(function(k){return scrimFilterMode==="all"||scrimRegs[k].status===scrimFilterMode;});
-  document.getElementById("scrim-teams-count").textContent=Object.keys(scrimRegs).length;
+  var approvedKeys=keys.filter(function(k){return (scrimRegs[k].status||"pending")==="approved";});
+  var confirmedCount=approvedKeys.filter(function(k){return scrimRegs[k].idPassConfirmed===true;}).length;
+  document.getElementById("scrim-teams-count").textContent=Object.keys(scrimRegs).length+" · ID confirmed "+confirmedCount+"/"+approvedKeys.length;
   if(!filtered.length){list.innerHTML='<div class="empty">No '+(scrimFilterMode==="all"?"registrations":scrimFilterMode+" teams")+' yet.</div>';return;}
   list.innerHTML="";var num=0;
   filtered.forEach(function(key){
@@ -3233,7 +3246,10 @@ function scrimCheckStatus(){
         var sub=document.getElementById("scrim-notif-sub");
         var confirmed=t.idPassConfirmed===true || getScrimConfirmedName().toUpperCase()===String(t.name||"").trim().toUpperCase();
         sub.textContent=confirmed?"Your team has confirmed registration. ID Pass is unlocked.":"Your team has been approved for "+evName+".";
-        if(confirmed){rememberScrimConfirmationForIdPass(t.name);}
+        if(confirmed){
+          rememberScrimConfirmationForIdPass(t.name);
+          if(t.idPassConfirmed!==true) setScrimIdPassConfirmationByKey(keys[i],true,false).catch(function(){});
+        }
         else{
           var br=document.createElement("br");
           var btn=document.createElement("button");
@@ -3252,15 +3268,24 @@ function scrimCheckStatus(){
     }
   }
 }
+function setScrimIdPassConfirmationByKey(key,confirmed,manual){
+  if(!key) return Promise.reject(new Error("Team key not found"));
+  var data={idPassConfirmed:!!confirmed};
+  if(confirmed){
+    data.idPassConfirmedAt=Date.now();
+    data.idPassConfirmedBy=manual&&currentAdminUid?currentAdminUid:"team";
+  }else{
+    data.idPassConfirmedAt=null;
+    data.idPassConfirmedBy=null;
+  }
+  return db.ref(eventPath("scrim/registrations")+"/"+key).update(data);
+}
 function confirmScrimRegistration(teamName){
   rememberScrimConfirmationForIdPass(teamName);
   var match=findRegistrationByName(scrimRegs,teamName);
   var update=Promise.resolve();
   if(match && !match.duplicate && match.key){
-    update=db.ref(eventPath("scrim/registrations")+"/"+match.key).update({
-      idPassConfirmed:true,
-      idPassConfirmedAt:Date.now()
-    });
+    update=setScrimIdPassConfirmationByKey(match.key,true,false);
   }
   update.then(function(){
     toast("Daily Scrim registration confirmed. ID Pass unlocked.",true);
