@@ -173,6 +173,8 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .idpass-public-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:#8a96a8;text-transform:uppercase;margin-bottom:5px;}
 .idpass-public-text{font-family:'Share Tech Mono',monospace;font-size:22px;color:#fff;font-weight:900;letter-spacing:.08em;overflow-wrap:anywhere;}
 .idpass-public-note{font-family:'Share Tech Mono',monospace;font-size:11px;color:#f5dc75;margin-top:10px;line-height:1.5;}
+.idpass-group-link{display:none;margin-top:12px;text-decoration:none;text-align:center;background:linear-gradient(135deg,#25d366,#11a54b);color:#06100a;border-radius:9px;padding:11px 14px;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;}
+.idpass-group-link:hover{filter:brightness(1.08);}
 @media(max-width:640px){.idpass-public-grid{grid-template-columns:1fr}.idpass-public-text{font-size:18px;}}
 .community-forum{position:fixed;right:18px;bottom:18px;z-index:850;width:min(430px,calc(100vw - 28px));font-family:'Barlow Condensed',sans-serif;}
 .forum-toggle{width:100%;background:linear-gradient(135deg,#e8b800,#f5d34f);border:0;border-radius:10px;color:#08090b;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:15px;text-transform:uppercase;letter-spacing:.08em;padding:11px 14px;cursor:pointer;box-shadow:0 16px 40px rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:space-between;gap:10px;}
@@ -508,6 +510,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
         <div class="idpass-public-value"><div class="idpass-public-label">Room Pass</div><div class="idpass-public-text" id="idpass-public-pass">-</div></div>
       </div>
       <div class="idpass-public-note" id="idpass-public-note"></div>
+      <a class="idpass-group-link" id="idpass-group-link" href="#" target="_blank" rel="noopener">Join Scrim WhatsApp Group</a>
     </div>
   </div>
 </div>
@@ -534,6 +537,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <div class="idpass-field"><label>Daily Scrim ID</label><input id="idpass-scrim-id" placeholder="Room ID"></div>
       <div class="idpass-field"><label>Daily Scrim Pass</label><input id="idpass-scrim-pass" placeholder="Password"></div>
       <div class="idpass-field"><label>Scrim Note</label><input id="idpass-scrim-note" placeholder="Optional note"></div>
+      <div class="idpass-field"><label>Scrim WhatsApp Group</label><input id="idpass-scrim-group" placeholder="https://chat.whatsapp.com/..."></div>
       <button class="btn" onclick="clearIdPassFields('scrim')" style="padding:8px 16px;font-size:12px;">Clear</button>
       <button class="btn btn-gold" onclick="saveIdPass('scrim')" style="padding:8px 16px;font-size:12px;">Save Scrim</button>
     </div>
@@ -1483,9 +1487,11 @@ function renderIdPassAdmin(){
     var idEl=document.getElementById("idpass-"+type+"-id");
     var passEl=document.getElementById("idpass-"+type+"-pass");
     var noteEl=document.getElementById("idpass-"+type+"-note");
+    var groupEl=document.getElementById("idpass-"+type+"-group");
     if(idEl && document.activeElement!==idEl) idEl.value=data.roomId||"";
     if(passEl && document.activeElement!==passEl) passEl.value=data.roomPass||"";
     if(noteEl && document.activeElement!==noteEl) noteEl.value=data.note||"";
+    if(groupEl && document.activeElement!==groupEl) groupEl.value=data.groupLink||"";
   });
 }
 function saveIdPass(type){
@@ -1493,6 +1499,7 @@ function saveIdPass(type){
   var id=(document.getElementById("idpass-"+type+"-id")||{}).value||"";
   var pass=(document.getElementById("idpass-"+type+"-pass")||{}).value||"";
   var note=(document.getElementById("idpass-"+type+"-note")||{}).value||"";
+  var group=(document.getElementById("idpass-"+type+"-group")||{}).value||"";
   var status=document.getElementById("idpass-admin-status");
   var label=type==="scrim"?"Daily Scrim":"PMAF Event";
   if(status){status.textContent="Saving "+label+" ID/pass...";status.style.color="#e8b800";}
@@ -1500,6 +1507,7 @@ function saveIdPass(type){
     roomId:id.trim(),
     roomPass:pass.trim(),
     note:note.trim(),
+    groupLink:type==="scrim"?group.trim():"",
     updatedAt:Date.now(),
     updatedBy:currentAdminUid||""
   }).then(function(){
@@ -1512,7 +1520,7 @@ function saveIdPass(type){
 }
 function clearIdPassFields(type){
   if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
-  ["id","pass","note"].forEach(function(part){
+  ["id","pass","note","group"].forEach(function(part){
     var el=document.getElementById("idpass-"+type+"-"+part);
     if(el) el.value="";
   });
@@ -1527,6 +1535,8 @@ function selectedIdPassType(){
 function showPublicIdPass(){
   var msg=document.getElementById("idpass-msg");
   var result=document.getElementById("idpass-public-result");
+  var groupLinkEl=document.getElementById("idpass-group-link");
+  if(groupLinkEl){groupLinkEl.style.display="none";groupLinkEl.removeAttribute("href");}
   restoreIdPassAccessFromAgreedTeam();
   var access=getRememberedIdPassAccess();
   var name=(access&&access.teamName?access.teamName:"").trim().toUpperCase();
@@ -1571,6 +1581,10 @@ function showPublicIdPass(){
     document.getElementById("idpass-public-id").textContent=data.roomId||"Not set yet";
     document.getElementById("idpass-public-pass").textContent=data.roomPass||"Not set yet";
     document.getElementById("idpass-public-note").textContent=data.note||(!data.roomId&&!data.roomPass?"Admin has not added the ID/pass yet. Please check again later.":"");
+    if(type==="scrim" && data.groupLink && groupLinkEl){
+      groupLinkEl.href=data.groupLink;
+      groupLinkEl.style.display="block";
+    }
     result.style.display="block";
     msg.textContent="ID/pass unlocked for "+(match.team.name||name)+".";
     msg.style.color="#00c97a";
