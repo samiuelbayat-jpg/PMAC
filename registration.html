@@ -973,6 +973,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     <div class="modal-title">Remove Registration</div>
     <div class="modal-sub">Enter the 6-character delete code you received when you registered.</div>
     <input type="hidden" id="confirm-key">
+    <input type="hidden" id="confirm-path" value="registrations">
     <input class="modal-inp" type="text" id="confirm-code" placeholder="Enter delete code" maxlength="6">
     <div class="modal-err" id="confirm-err"></div>
     <div class="modal-act">
@@ -2023,7 +2024,7 @@ function renderTeams() {
     btn.onclick=function(){if(!confirm("Delete this registration? Admin removal does not need the user delete code.")) return;removeRegistrationByAdmin(this.dataset.key,"registrations").then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
   });
   list.querySelectorAll("[data-act=rem]").forEach(function(btn){
-    btn.onclick=function(){document.getElementById("confirm-key").value=this.dataset.key;document.getElementById("confirm-code").value="";document.getElementById("confirm-err").textContent="";document.getElementById("overlay").style.display="flex";setTimeout(function(){document.getElementById("confirm-code").focus();},100);};
+    btn.onclick=function(){document.getElementById("confirm-key").value=this.dataset.key;document.getElementById("confirm-path").value="registrations";document.getElementById("confirm-code").value="";document.getElementById("confirm-err").textContent="";document.getElementById("overlay").style.display="flex";setTimeout(function(){document.getElementById("confirm-code").focus();},100);};
   });
 }
 
@@ -2359,15 +2360,24 @@ document.getElementById("rules-close-btn").onclick=function(){document.getElemen
 document.getElementById("event-info-close-btn").onclick=function(){document.getElementById("event-info-overlay").style.display="none";};
 document.getElementById("confirm-del-btn").onclick=function(){
   var key=document.getElementById("confirm-key").value;
+  var path=document.getElementById("confirm-path").value||"registrations";
   var typed=document.getElementById("confirm-code").value.trim().toUpperCase();
   if(isAdmin && auth.currentUser){
-    return removeRegistrationByAdmin(key,"registrations").then(function(){document.getElementById("overlay").style.display="none";toast("Registration removed",true);}).catch(function(e){toast("Error: "+e.message,false);});
+    return removeRegistrationByAdmin(key,path).then(function(){document.getElementById("overlay").style.display="none";toast("Registration removed",true);}).catch(function(e){toast("Error: "+e.message,false);});
   }
   if(!typed){document.getElementById("confirm-err").textContent="Enter your delete code";return;}
-  db.ref(eventPath("registrations")+"/"+key).once("value").then(function(snap){
+  db.ref(eventPath(path)+"/"+key).once("value").then(function(snap){
     var reg=snap.val();if(!reg){document.getElementById("overlay").style.display="none";return;}
     if(reg.deleteCode!==typed){document.getElementById("confirm-err").textContent="Wrong delete code";return;}
-    return db.ref(eventPath("registrations")+"/"+key).remove().then(function(){document.getElementById("overlay").style.display="none";toast("Registration removed",true);});
+    return db.ref(eventPath(path)+"/"+key).remove().then(function(){
+      if(path==="scrim/registrations"){
+        try{localStorage.removeItem("pmac_scrim_code");localStorage.removeItem("pmac_scrim_name");clearRememberedIdPassAccess("scrim");}catch(e){}
+      }else{
+        try{localStorage.removeItem("pmac_reg_code");localStorage.removeItem("pmac_reg_name");clearRememberedIdPassAccess("event");}catch(e){}
+      }
+      document.getElementById("overlay").style.display="none";
+      toast(path==="scrim/registrations"?"Scrim registration cancelled. Slot is available again.":"Registration removed",true);
+    });
   }).catch(function(e){toast("Error: "+e.message,false);});
 };
 
@@ -3302,10 +3312,11 @@ function scrimRenderTeams() {
       if(t.logo) adminBtns+='<button class="ta ta-logo-dl" data-key="'+key+'" title="Download logo">⬇</button>';
       adminBtns+='<button class="ta ta-del" data-key="'+key+'">🗑</button>';
     }
+    var selfBtn=!isAdmin?'<button class="ta" data-key="'+key+'" data-act="scrim-rem">Cancel</button>':"";
     var row=document.createElement("div");row.className="team-row "+st;
     var privateMeta=isAdmin ? " · "+(t.manager||"—")+(t.managerPhone?" · "+t.managerPhone:"") : "";
     var confirmPill=isAdmin?scrimConfirmLabel(t):"";
-    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+']'+privateMeta+"</div></div>"+confirmPill+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+"</div>";
+    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+']'+privateMeta+"</div></div>"+confirmPill+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+selfBtn+"</div>";
     row.querySelector(".tr-logo").replaceWith(logoDiv);
     list.appendChild(row);
   });
@@ -3334,6 +3345,16 @@ function scrimRenderTeams() {
   });
   list.querySelectorAll(".ta-del").forEach(function(btn){
     btn.onclick=function(){if(!confirm("Delete this registration? Admin removal does not need the user delete code.")) return;removeRegistrationByAdmin(this.dataset.key,"scrim/registrations").then(function(){toast("Removed",true);}).catch(function(e){toast("Error: "+e.message,false);});};
+  });
+  list.querySelectorAll("[data-act=scrim-rem]").forEach(function(btn){
+    btn.onclick=function(){
+      document.getElementById("confirm-key").value=this.dataset.key;
+      document.getElementById("confirm-path").value="scrim/registrations";
+      document.getElementById("confirm-code").value="";
+      document.getElementById("confirm-err").textContent="";
+      document.getElementById("overlay").style.display="flex";
+      setTimeout(function(){document.getElementById("confirm-code").focus();},100);
+    };
   });
 }
 
