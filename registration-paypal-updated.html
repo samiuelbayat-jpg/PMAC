@@ -1302,6 +1302,10 @@ function clearRememberedIdPassAccess(type){
 }
 function getScrimConfirmedName(){try{return (localStorage.getItem(scrimConfirmKey())||"").trim();}catch(e){return "";}}
 function isScrimAccessConfirmed(access){return access&&access.type==="scrim"&&access.scrimConfirmed===true;}
+function scrimConfirmLabel(team){
+  if(!team || team.status!=="approved") return "";
+  return team.idPassConfirmed ? '<div class="rules-pill rules-ok">ID CONFIRMED</div>' : '<div class="rules-pill rules-no">ID NOT CONFIRMED</div>';
+}
 function getRememberedIdPassAccess(){
   var found=null;
   ["event","scrim"].forEach(function(type){
@@ -3183,7 +3187,8 @@ function scrimRenderTeams() {
     }
     var row=document.createElement("div");row.className="team-row "+st;
     var privateMeta=isAdmin ? " · "+(t.manager||"—")+(t.managerPhone?" · "+t.managerPhone:"") : "";
-    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+']'+privateMeta+"</div></div>"+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+"</div>";
+    var confirmPill=isAdmin?scrimConfirmLabel(t):"";
+    row.innerHTML='<div class="tr-num">#'+num+'</div><div class="tr-logo"></div><div class="tr-info"><div class="tr-name">'+(t.name||"")+'</div><div class="tr-meta">['+(t.tag||"")+']'+privateMeta+"</div></div>"+confirmPill+'<div class="tr-badge '+bc+'">'+st+'</div><div class="tr-actions">'+adminBtns+"</div>";
     row.querySelector(".tr-logo").replaceWith(logoDiv);
     list.appendChild(row);
   });
@@ -3226,7 +3231,7 @@ function scrimCheckStatus(){
       if(t.status==="approved"){
         b.className="notif-banner notif-approved";b.style.display="flex";document.getElementById("scrim-notif-icon").textContent="✅";document.getElementById("scrim-notif-title").textContent="Congratulations! "+t.name+" is Approved";
         var sub=document.getElementById("scrim-notif-sub");
-        var confirmed=getScrimConfirmedName().toUpperCase()===String(t.name||"").trim().toUpperCase();
+        var confirmed=t.idPassConfirmed===true || getScrimConfirmedName().toUpperCase()===String(t.name||"").trim().toUpperCase();
         sub.textContent=confirmed?"Your team has confirmed registration. ID Pass is unlocked.":"Your team has been approved for "+evName+".";
         if(confirmed){rememberScrimConfirmationForIdPass(t.name);}
         else{
@@ -3249,9 +3254,23 @@ function scrimCheckStatus(){
 }
 function confirmScrimRegistration(teamName){
   rememberScrimConfirmationForIdPass(teamName);
-  toast("Daily Scrim registration confirmed. ID Pass unlocked.",true);
-  scrimCheckStatus();
-  showTab("idpass");
+  var match=findRegistrationByName(scrimRegs,teamName);
+  var update=Promise.resolve();
+  if(match && !match.duplicate && match.key){
+    update=db.ref(eventPath("scrim/registrations")+"/"+match.key).update({
+      idPassConfirmed:true,
+      idPassConfirmedAt:Date.now()
+    });
+  }
+  update.then(function(){
+    toast("Daily Scrim registration confirmed. ID Pass unlocked.",true);
+    scrimCheckStatus();
+    showTab("idpass");
+  }).catch(function(e){
+    toast("ID Pass unlocked here, but confirmation could not be saved: "+e.message,false);
+    scrimCheckStatus();
+    showTab("idpass");
+  });
 }
 // ===================== END DAILY SCRIM JS =====================
 </script>
