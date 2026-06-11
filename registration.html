@@ -413,6 +413,30 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .toast.show{transform:translateY(0);opacity:1;}
 .tok{background:#e8b800;color:#000;}.terr{background:#ff4444;color:#fff;}
 ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:#0a0b0d;}::-webkit-scrollbar-thumb{background:#161a1f;border-radius:3px;}
+
+/* ROADMAP OBS ADMIN */
+.roadmap-admin{background:#0f1115;border:1px solid rgba(232,184,0,.22);border-radius:10px;padding:1.25rem;margin-bottom:1.25rem;}
+.roadmap-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;}
+.roadmap-title{font-weight:900;font-size:24px;text-transform:uppercase;color:#e8b800;letter-spacing:.04em;}
+.roadmap-sub{font-family:'Share Tech Mono',monospace;color:#8a96a8;font-size:10px;letter-spacing:.08em;line-height:1.5;}
+.roadmap-mode-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;}
+.roadmap-mode{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;background:#161a1f;border:1px solid rgba(255,255,255,.12);color:#8a96a8;border-radius:20px;padding:8px 18px;cursor:pointer;}
+.roadmap-mode.active{background:#e8b800;border-color:#e8b800;color:#000;}
+.roadmap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:1rem;}
+.roadmap-card{background:#10141a;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:12px;}
+.roadmap-card h4{font-family:'Share Tech Mono',monospace;color:#e8b800;font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+.roadmap-field{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
+.roadmap-field label{font-family:'Share Tech Mono',monospace;color:#8a96a8;font-size:8px;letter-spacing:.1em;text-transform:uppercase;}
+.roadmap-field input,.roadmap-field textarea,.roadmap-field select{background:#161a1f;border:1px solid rgba(255,255,255,.12);color:#eef0f5;border-radius:5px;padding:8px 9px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;outline:none;width:100%;}
+.roadmap-field textarea{min-height:56px;resize:vertical;}
+.roadmap-field input:focus,.roadmap-field textarea:focus,.roadmap-field select:focus{border-color:#e8b800;}
+.roadmap-map-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;}
+.roadmap-map-card{background:#0b0d11;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:12px;}
+.roadmap-map-card-title{display:flex;align-items:center;justify-content:space-between;color:#e8b800;font-weight:900;text-transform:uppercase;margin-bottom:8px;}
+.roadmap-preview{height:72px;border-radius:5px;background:#161a1f;background-size:cover;background-position:center;margin-top:6px;border:1px solid rgba(255,255,255,.1);}
+.roadmap-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:1rem;border-top:1px solid rgba(255,255,255,.08);padding-top:1rem;}
+.roadmap-status{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;}
+
 </style>
 </head>
 <body>
@@ -474,6 +498,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <button class="tab" id="tab-streamers" onclick="showTab('streamers')"><span>🔴</span><span>Live Streamers</span></button>
   <button class="tab" id="tab-idpass" onclick="showTab('idpass')" style="display:none;"><span>🔑</span><span>ID Pass</span></button>
   <button class="tab" id="tab-rulelog" onclick="showTab('rulelog')" style="display:none;"><span>✓</span><span>Rules Agreed</span></button>
+  <button class="tab" id="tab-roadmap" onclick="showTab('roadmap')" style="display:none;"><span>🗺</span><span>Roadmap OBS</span></button>
 </div>
 
 <div class="section" id="sec-rulesagree">
@@ -545,6 +570,61 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   </div>
   <div id="rules-agreed-summary" class="rules-log-sub" style="margin-bottom:.75rem;"></div>
   <div id="rules-agreed-list"></div>
+</div>
+
+
+<div class="section" id="sec-roadmap">
+  <div class="roadmap-admin">
+    <div class="roadmap-head">
+      <div>
+        <div class="roadmap-title">OBS Highlights Roadmap</div>
+        <div class="roadmap-sub">Admin-only controls for the OBS overlay. Fill map names, map images, and the right-side highlight picture/text for PMAF Event or Daily Scrim.</div>
+      </div>
+      <button class="btn" onclick="loadRoadmapAdmin()" style="padding:6px 16px;font-size:12px;">Refresh</button>
+    </div>
+
+    <div class="roadmap-mode-row">
+      <button class="roadmap-mode active" id="roadmap-mode-event" onclick="setRoadmapMode('event')">PMAF Event</button>
+      <button class="roadmap-mode" id="roadmap-mode-scrim" onclick="setRoadmapMode('scrim')">Daily Scrim</button>
+    </div>
+
+    <div class="roadmap-grid">
+      <div class="roadmap-card">
+        <h4>Overlay Text</h4>
+        <div class="roadmap-field"><label>Event Title</label><input id="roadmap-event-title" placeholder="Grand Finals"></div>
+        <div class="roadmap-field"><label>Event Count</label><input id="roadmap-event-count" placeholder="1/12"></div>
+        <div class="roadmap-field"><label>Bottom Ticker</label><input id="roadmap-ticker" placeholder="From the drop to the last one standing show!"></div>
+        <div class="roadmap-field"><label>Countdown Text</label><input id="roadmap-countdown" placeholder="04:00"></div>
+        <div class="roadmap-field"><label>Timer Label</label><input id="roadmap-next-label" placeholder="Next Match"></div>
+        <div class="roadmap-field"><label>Left Side Picture</label><input type="file" id="roadmap-side-file" accept="image/*" onchange="previewRoadmapSideFile()"></div>
+        <div class="roadmap-field"><label>Or Left Picture URL</label><input id="roadmap-side-url" placeholder="https://... or uploaded image"></div>
+        <div class="roadmap-preview" id="roadmap-side-prev"></div>
+      </div>
+      <div class="roadmap-card">
+        <h4>Right Side Highlight</h4>
+        <div class="roadmap-field"><label>Choose Preset</label><select id="roadmap-highlight-preset" onchange="applyRoadmapHighlightPreset()"><option value="">Custom / Uploaded</option><option value="drop">Drop Zone</option><option value="fight">Fight Highlights</option><option value="wwcd">Chicken Dinner</option><option value="schedule">Today Schedule</option></select></div>
+        <div class="roadmap-field"><label>Upload Picture</label><input type="file" id="roadmap-highlight-file" accept="image/*,video/*"></div>
+        <div class="roadmap-field"><label>Or Image/Video URL</label><input id="roadmap-highlight-url" placeholder="https://... or file:///..."></div>
+        <div class="roadmap-field"><label>Big Text On Picture</label><input id="roadmap-highlight-title" placeholder="MATCH HIGHLIGHTS"></div>
+        <div class="roadmap-field"><label>Small Text On Picture</label><textarea id="roadmap-highlight-sub" placeholder="Tonight maps, winners, or sponsor text..."></textarea></div>
+      </div>
+    </div>
+
+    <div class="roadmap-head" style="margin-top:.5rem;">
+      <div>
+        <div class="roadmap-title" style="font-size:18px;">Map Roadmap</div>
+        <div class="roadmap-sub">The overlay marks each map winner automatically from Managing Score when a team has Rank 1 in that match.</div>
+      </div>
+    </div>
+    <div class="roadmap-map-list" id="roadmap-map-list"></div>
+
+    <div class="roadmap-actions">
+      <button class="btn" onclick="addRoadmapMap()" style="padding:8px 16px;font-size:12px;">+ Add Map</button>
+      <button class="btn" onclick="resetRoadmapDefaults()" style="padding:8px 16px;font-size:12px;">Load Defaults</button>
+      <button class="btn btn-gold" onclick="saveRoadmapAdmin()" style="padding:8px 20px;font-size:12px;">Save Roadmap</button>
+      <span class="roadmap-status" id="roadmap-status"></span>
+    </div>
+  </div>
 </div>
 
 <!-- REGISTRATION SECTION -->
@@ -1769,8 +1849,10 @@ function applyAdminUI() {
   if(gfxUpload) gfxUpload.style.display = isAdmin ? "block" : "none";
   var ruleTab=document.getElementById("tab-rulelog");
   if(ruleTab) ruleTab.style.display = isAdmin ? "" : "none";
+  var roadmapTab=document.getElementById("tab-roadmap");
+  if(roadmapTab) roadmapTab.style.display = isAdmin ? "" : "none";
   updateIdPassTabVisibility();
-  if(!isAdmin && document.getElementById("sec-rulelog") && document.getElementById("sec-rulelog").classList.contains("show")) showTab("reg");
+  if(!isAdmin && ((document.getElementById("sec-rulelog") && document.getElementById("sec-rulelog").classList.contains("show")) || (document.getElementById("sec-roadmap") && document.getElementById("sec-roadmap").classList.contains("show")))) showTab("reg");
   renderRulesAgreedLog();
   renderCommunityForum();
 }
@@ -2462,9 +2544,9 @@ function checkStatus(){
 
 // TABS
 function showTab(tab){
-  if(tab==="rulelog"&&!isAdmin){toast("Admin login required",false);return;}
+  if((tab==="rulelog"||tab==="roadmap")&&!isAdmin){toast("Admin login required",false);return;}
   if(tab==="idpass"&&!getRememberedIdPassAccess()){toast("ID Pass is not unlocked yet",false);return;}
-  ["reg","scrim","gfx","lobby","scores","archive","streamers","rulesagree","idpass","rulelog"].forEach(function(t){
+  ["reg","scrim","gfx","lobby","scores","archive","streamers","rulesagree","idpass","rulelog","roadmap"].forEach(function(t){
     var tb=document.getElementById("tab-"+t); var sc=document.getElementById("sec-"+t);
     if(tb) tb.className="tab"+(t===tab?" active":"");
     if(sc) sc.className="section"+(t===tab?" show":"");
@@ -2480,6 +2562,7 @@ function showTab(tab){
   if(tab==="streamers"&&!streamersLoaded) loadStreamers();
   if(tab==="idpass") showPublicIdPass();
   if(tab==="rulelog") renderRulesAgreedLog();
+  if(tab==="roadmap") loadRoadmapAdmin();
 }
 document.getElementById("agree-save-btn").onclick=saveExistingRulesAgreement;
 document.getElementById("idpass-get-btn").onclick=showPublicIdPass;
@@ -3532,10 +3615,125 @@ function confirmScrimRegistration(teamName){
   });
 }
 // ===================== END DAILY SCRIM JS =====================
+
+
+/* =================== ROADMAP OBS ADMIN =================== */
+var roadmapMode = "event";
+var roadmapData = null;
+var roadmapMapLibrary = {};
+var ROADMAP_DEFAULTS = {
+  eventTitle:"Grand Finals", eventCount:"1/12", ticker:"From the drop to the last one standing show!", countdownText:"04:00", nextLabel:"Next Match", sideImageUrl:"",
+  highlightUrl:"", highlightType:"auto", highlightTitle:"MATCH HIGHLIGHTS", highlightSub:"PMAF live highlights and daily roadmap",
+  maps:[
+    {name:"RONDO", sub:"MATCH 1", matchIndex:0, bg:"linear-gradient(135deg,#325331,#c9d7a6)", imageUrl:""},
+    {name:"ERANGEL", sub:"MATCH 2", matchIndex:1, bg:"linear-gradient(135deg,#53625d,#c8c0a9)", imageUrl:""},
+    {name:"ERANGEL", sub:"MATCH 3", matchIndex:2, bg:"linear-gradient(135deg,#53625d,#c8c0a9)", imageUrl:""},
+    {name:"ERANGEL", sub:"MATCH 4", matchIndex:3, bg:"linear-gradient(135deg,#53625d,#c8c0a9)", imageUrl:""},
+    {name:"MIRAMAR", sub:"MATCH 5", matchIndex:4, bg:"linear-gradient(135deg,#9d7a48,#e2bc75)", imageUrl:""},
+    {name:"MIRAMAR", sub:"MATCH 6", matchIndex:5, bg:"linear-gradient(135deg,#9d7a48,#e2bc75)", imageUrl:""}
+  ]
+};
+function roadmapPath(){ return roadmapMode==="scrim" ? eventPath("scrim/event/roadmap") : eventPath("event/roadmap"); }
+function roadmapMapLibraryPath(){ return eventPath("event/roadmapMapLibrary"); }
+function normalizeRoadmapMapName(v){ var name=String(v||"").trim().toUpperCase().replace(/\s+/g," "); var aliases={ERANGLE:"ERANGEL",ERENGEL:"ERANGEL",ERENGLE:"ERANGEL",MIRAMER:"MIRAMAR",MIRAMER:"MIRAMAR",MIRAMAR:"MIRAMAR",RONDO:"RONDO",SANHOK:"SANHOK",VIKENDI:"VIKENDI",LIVIK:"LIVIK"}; return aliases[name]||name; }
+function roadmapMapLibraryKey(v){ return normalizeRoadmapMapName(v).replace(/[.#$/\[\]]/g,"_"); }
+function setRoadmapStatus(msg, ok){ var el=document.getElementById("roadmap-status"); if(el){el.textContent=msg||""; el.style.color=ok===false?"#ff4444":"#8a96a8";} }
+function setRoadmapMode(mode){ roadmapMode = mode || "event"; var e=document.getElementById("roadmap-mode-event"), s=document.getElementById("roadmap-mode-scrim"); if(e)e.className="roadmap-mode"+(roadmapMode==="event"?" active":""); if(s)s.className="roadmap-mode"+(roadmapMode==="scrim"?" active":""); loadRoadmapAdmin(); }
+function loadRoadmapAdmin(){ if(!isAdmin) return; setRoadmapStatus("Loading..."); Promise.all([db.ref(roadmapPath()).once("value"),db.ref(roadmapMapLibraryPath()).once("value").catch(function(){return {val:function(){return {};}};})]).then(function(snaps){ roadmapData = snaps[0].val() || JSON.parse(JSON.stringify(ROADMAP_DEFAULTS)); roadmapMapLibrary = Object.assign({}, roadmapData.mapLibrary||{}, snaps[1].val()||{}); fillRoadmapForm(); setRoadmapStatus("Loaded "+(roadmapMode==="event"?"PMAF Event":"Daily Scrim")); }).catch(function(e){ setRoadmapStatus(e.message||"Load failed",false); }); }
+function fillRoadmapForm(){ var d=roadmapData || ROADMAP_DEFAULTS; function val(id,v){var el=document.getElementById(id); if(el) el.value=v||"";} val("roadmap-event-title",d.eventTitle); val("roadmap-event-count",d.eventCount); val("roadmap-ticker",d.ticker); val("roadmap-countdown",d.countdownText); val("roadmap-next-label",d.nextLabel); val("roadmap-side-url",d.sideImageUrl); var sp=document.getElementById("roadmap-side-prev"); if(sp) sp.style.backgroundImage=cssRoadmapBg(d.sideImageUrl||""); val("roadmap-highlight-url",d.highlightUrl); val("roadmap-highlight-title",d.highlightTitle); val("roadmap-highlight-sub",d.highlightSub); renderRoadmapMapEditor(d.maps||[]); }
+function renderRoadmapMapEditor(maps){ var wrap=document.getElementById("roadmap-map-list"); if(!wrap) return; wrap.innerHTML=(maps||[]).map(function(m,i){ var bg=m.imageUrl||m.bg||"linear-gradient(135deg,#53625d,#c8c0a9)"; return '<div class="roadmap-map-card" data-rm-index="'+i+'"><div class="roadmap-map-card-title"><span>Map '+(i+1)+'</span><button class="btn btn-red" onclick="removeRoadmapMap('+i+')" style="padding:4px 10px;font-size:10px;">Remove</button></div><div class="roadmap-field"><label>Map Name</label><input id="rm-name-'+i+'" value="'+escapeHtml(m.name||'')+'" placeholder="ERANGEL" oninput="applyRoadmapMapLibrary('+i+')" onchange="applyRoadmapMapLibrary('+i+')" onblur="applyRoadmapMapLibrary('+i+')"></div><div class="roadmap-field"><label>Match Label</label><input id="rm-sub-'+i+'" value="'+escapeHtml(m.sub||('MATCH '+(i+1)))+'"></div><div class="roadmap-field"><label>Score Match Number</label><input id="rm-match-'+i+'" type="number" value="'+(Number.isFinite(parseInt(m.matchIndex))?parseInt(m.matchIndex)+1:i+1)+'" min="1"></div><div class="roadmap-field"><label>Upload Map Picture</label><input type="file" id="rm-file-'+i+'" accept="image/*" onchange="previewRoadmapMapFile('+i+')"></div><div class="roadmap-field"><label>Or Map Picture URL</label><input id="rm-img-'+i+'" value="'+escapeHtml(m.imageUrl||'')+'" placeholder="https://..."></div><div class="roadmap-field"><label>Fallback Color / Gradient</label><input id="rm-bg-'+i+'" value="'+escapeHtml(m.bg||'')+'" placeholder="linear-gradient(...)"></div><div class="roadmap-preview" id="rm-prev-'+i+'" style="background-image:'+cssRoadmapBg(bg)+'"></div></div>'; }).join(''); }
+function cssRoadmapBg(v){ v=String(v||""); if(!v) return "linear-gradient(135deg,#53625d,#c8c0a9)"; if(/^https?:|^data:|^file:/i.test(v)) return "url('"+v.replace(/'/g,'%27')+"')"; return v; }
+function findRoadmapImageByName(name, skipIndex){
+  var key=roadmapMapLibraryKey(name);
+  var saved=roadmapMapLibrary&&roadmapMapLibrary[key];
+  if(saved&&(saved.imageUrl||saved.url)) return saved.imageUrl||saved.url;
+  var count=document.querySelectorAll(".roadmap-map-card").length;
+  for(var j=0;j<count;j++){
+    if(j===skipIndex) continue;
+    var n=document.getElementById("rm-name-"+j), img=document.getElementById("rm-img-"+j);
+    if(n&&img&&roadmapMapLibraryKey(n.value)===key&&String(img.value||"").trim()) return img.value;
+  }
+  return "";
+}
+function rememberRoadmapImageFromField(i){
+  var nameEl=document.getElementById("rm-name-"+i), imgEl=document.getElementById("rm-img-"+i);
+  if(!nameEl||!imgEl) return;
+  var name=normalizeRoadmapMapName(nameEl.value), image=String(imgEl.value||"").trim();
+  if(name&&image) roadmapMapLibrary[roadmapMapLibraryKey(name)]={name:name,imageUrl:image,updatedAt:Date.now()};
+}
+function applyRoadmapMapLibrary(i){
+  var nameEl=document.getElementById("rm-name-"+i), imgEl=document.getElementById("rm-img-"+i), prev=document.getElementById("rm-prev-"+i);
+  if(!nameEl||!imgEl) return;
+  var url=findRoadmapImageByName(nameEl.value,i);
+  if(url && !String(imgEl.value||"").trim()){
+    imgEl.value=url;
+    if(prev) prev.style.backgroundImage=cssRoadmapBg(url);
+    setRoadmapStatus("Using saved picture for "+normalizeRoadmapMapName(nameEl.value)+". Press Save Roadmap to publish.");
+  }
+}
+function buildRoadmapMapLibraryUpdates(d){
+  var updates={};
+  (d.maps||[]).forEach(function(m){
+    var name=normalizeRoadmapMapName(m.name);
+    var image=String(m.imageUrl||"").trim();
+    if(name&&image){
+      updates[roadmapMapLibraryKey(name)]={name:name,imageUrl:image,updatedAt:firebase.database.ServerValue.TIMESTAMP};
+    }
+  });
+  return updates;
+}
+function collectRoadmapData(){ var d={ eventTitle:document.getElementById("roadmap-event-title").value.trim(), eventCount:document.getElementById("roadmap-event-count").value.trim(), ticker:document.getElementById("roadmap-ticker").value.trim(), countdownText:document.getElementById("roadmap-countdown").value.trim(), nextLabel:document.getElementById("roadmap-next-label").value.trim(), sideImageUrl:(document.getElementById("roadmap-side-url")||{}).value.trim(), highlightUrl:document.getElementById("roadmap-highlight-url").value.trim(), highlightType:"auto", highlightTitle:document.getElementById("roadmap-highlight-title").value.trim(), highlightSub:document.getElementById("roadmap-highlight-sub").value.trim(), updatedAt:firebase.database.ServerValue.TIMESTAMP, maps:[] }; var count=document.querySelectorAll(".roadmap-map-card").length; for(var i=0;i<count;i++){ rememberRoadmapImageFromField(i); d.maps.push({ name:(document.getElementById("rm-name-"+i)||{}).value||"", sub:(document.getElementById("rm-sub-"+i)||{}).value||("MATCH "+(i+1)), matchIndex:Math.max(0,parseInt((document.getElementById("rm-match-"+i)||{}).value||i+1)-1), imageUrl:(document.getElementById("rm-img-"+i)||{}).value||"", bg:(document.getElementById("rm-bg-"+i)||{}).value||"linear-gradient(135deg,#53625d,#c8c0a9)" }); } return d; }
+function addRoadmapMap(){ var d=collectRoadmapData(); d.maps.push({name:"ERANGEL",sub:"MATCH "+(d.maps.length+1),matchIndex:d.maps.length,bg:"linear-gradient(135deg,#53625d,#c8c0a9)",imageUrl:""}); roadmapData=d; fillRoadmapForm(); }
+function removeRoadmapMap(i){ var d=collectRoadmapData(); d.maps.splice(i,1); roadmapData=d; fillRoadmapForm(); }
+function resetRoadmapDefaults(){ roadmapData=JSON.parse(JSON.stringify(ROADMAP_DEFAULTS)); fillRoadmapForm(); setRoadmapStatus("Defaults loaded. Press Save Roadmap to publish."); }
+function applyRoadmapHighlightPreset(){ var p=(document.getElementById("roadmap-highlight-preset")||{}).value; var title=document.getElementById("roadmap-highlight-title"), sub=document.getElementById("roadmap-highlight-sub"); if(!p) return; var presets={drop:["DROP ZONE READY","Teams are loading in. Follow the roadmap below."],fight:["BEST FIGHTS","Big plays, clutches, and live action."],wwcd:["WINNER WINNER CHICKEN DINNER","Map winners appear automatically after score management."],schedule:["TODAY ROADMAP","Maps, match order, and live winners in one screen."]}; if(title)title.value=presets[p][0]; if(sub)sub.value=presets[p][1]; }
+function roadMapImageToDataUrl(file, maxW, maxH, quality){
+  return new Promise(function(resolve,reject){
+    if(!file || !/^image\//i.test(file.type||"")){ reject(new Error("Please choose an image file")); return; }
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var img=new Image();
+      img.onload=function(){
+        var scale=Math.min(1,(maxW||900)/img.width,(maxH||520)/img.height);
+        var w=Math.max(1,Math.round(img.width*scale)), h=Math.max(1,Math.round(img.height*scale));
+        var c=document.createElement("canvas"); c.width=w; c.height=h;
+        var ctx=c.getContext("2d"); ctx.drawImage(img,0,0,w,h);
+        resolve(c.toDataURL("image/jpeg",quality||0.78));
+      };
+      img.onerror=function(){reject(new Error("Could not read image"));};
+      img.src=e.target.result;
+    };
+    reader.onerror=function(){reject(new Error("Could not read file"));};
+    reader.readAsDataURL(file);
+  });
+}
+function previewRoadmapMapFile(i){
+  var f=document.getElementById("rm-file-"+i), prev=document.getElementById("rm-prev-"+i), input=document.getElementById("rm-img-"+i);
+  if(!f||!f.files||!f.files[0]) return;
+  roadMapImageToDataUrl(f.files[0],900,520,0.78).then(function(u){
+    if(input) input.value=u;
+    rememberRoadmapImageFromField(i);
+    if(prev) prev.style.backgroundImage=cssRoadmapBg(u);
+    setRoadmapStatus("Map picture ready and remembered by map name. Press Save Roadmap to publish.");
+  }).catch(function(e){ setRoadmapStatus(e.message||"Image preview failed",false); });
+}
+function previewRoadmapSideFile(){
+  var f=document.getElementById("roadmap-side-file"), prev=document.getElementById("roadmap-side-prev"), input=document.getElementById("roadmap-side-url");
+  if(!f||!f.files||!f.files[0]) return;
+  roadMapImageToDataUrl(f.files[0],900,520,0.82).then(function(u){
+    if(input) input.value=u;
+    if(prev) prev.style.backgroundImage=cssRoadmapBg(u);
+    setRoadmapStatus("Left side picture ready. Press Save Roadmap to publish.");
+  }).catch(function(e){ setRoadmapStatus(e.message||"Image preview failed",false); });
+}
+function uploadRoadmapFile(file, folder){
+  if(file && /^image\//i.test(file.type||"")) return roadMapImageToDataUrl(file,1200,720,0.8);
+  return storage.ref(folder+"/"+Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9_.-]/g,"_")).put(file).then(function(s){return s.ref.getDownloadURL();});
+}
+function saveRoadmapAdmin(){ if(!isAdmin){toast("Admin login required",false);return;} var d=collectRoadmapData(); setRoadmapStatus("Uploading / saving..."); var jobs=[]; var sf=document.getElementById("roadmap-side-file"); if(sf&&sf.files&&sf.files[0]) jobs.push(uploadRoadmapFile(sf.files[0],"pmac/roadmap/"+roadmapMode+"/side").then(function(u){d.sideImageUrl=u;})); var hf=document.getElementById("roadmap-highlight-file"); if(hf&&hf.files&&hf.files[0]) jobs.push(uploadRoadmapFile(hf.files[0],"pmac/roadmap/"+roadmapMode+"/highlight").then(function(u){d.highlightUrl=u;})); d.maps.forEach(function(m,i){ var f=document.getElementById("rm-file-"+i); if(f&&f.files&&f.files[0]) jobs.push(uploadRoadmapFile(f.files[0],"pmac/roadmap/"+roadmapMode+"/maps").then(function(u){m.imageUrl=u;})); }); Promise.all(jobs).then(function(){ var libraryUpdates=buildRoadmapMapLibraryUpdates(d); roadmapMapLibrary=Object.assign({},roadmapMapLibrary,libraryUpdates); d.mapLibrary=roadmapMapLibrary; return db.ref(roadmapPath()).set(d).then(function(){ if(Object.keys(libraryUpdates).length) db.ref(roadmapMapLibraryPath()).update(libraryUpdates).catch(function(){}); }); }).then(function(){ roadmapData=d; fillRoadmapForm(); setRoadmapStatus("Saved. OBS overlay updates automatically. Map pictures remembered by name."); toast("Roadmap saved",true); }).catch(function(e){ setRoadmapStatus(e.message||"Save failed",false); toast("Roadmap save failed",false); }); }
 </script>
 </body>
 </html>
-
 
 
 
