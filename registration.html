@@ -608,6 +608,17 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
         <div class="roadmap-field"><label>Big Text On Picture</label><input id="roadmap-highlight-title" placeholder="MATCH HIGHLIGHTS"></div>
         <div class="roadmap-field"><label>Small Text On Picture</label><textarea id="roadmap-highlight-sub" placeholder="Tonight maps, winners, or sponsor text..."></textarea></div>
       </div>
+      <div class="roadmap-card">
+        <h4>Community Page Background</h4>
+        <div class="roadmap-field"><label>Upload PMAF Community Background</label><input type="file" id="community-bg-file" accept="image/*" onchange="previewCommunityBackgroundFile()"></div>
+        <div class="roadmap-field"><label>Or Background URL</label><input id="community-bg-url" placeholder="https://... or uploaded image" oninput="previewCommunityBackgroundUrl()"></div>
+        <div class="roadmap-preview" id="community-bg-prev" style="height:120px;"></div>
+        <div class="roadmap-actions" style="margin-top:.75rem;padding-top:.75rem;">
+          <button class="btn btn-gold" onclick="saveCommunityBackground()" style="padding:7px 14px;font-size:11px;">Save Background</button>
+          <button class="btn btn-red" onclick="clearCommunityBackground()" style="padding:7px 14px;font-size:11px;">Clear Background</button>
+          <span class="roadmap-status" id="community-bg-status"></span>
+        </div>
+      </div>
     </div>
 
     <div class="roadmap-head" style="margin-top:.5rem;">
@@ -1182,11 +1193,70 @@ var storage = firebase.storage();
 var teamLogoLibrary = {};
 var logoLookupTimers = {};
 function sanitizeKey(n){ return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_"); }
+function cssUrl(v){ return String(v||"").replace(/\\/g,"\\\\").replace(/"/g,'\\"').replace(/\n/g,""); }
 function escapeHtml(v){
   return String(v||"").replace(/[&<>"']/g,function(ch){
     return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch];
   });
 }
+function communityBackgroundPath(){ return eventPath("communitySettings/background"); }
+function setCommunityBgStatus(msg, ok){ var el=document.getElementById("community-bg-status"); if(el){ el.textContent=msg||""; el.style.color=ok===false?"#ff5555":"#8a96a8"; } }
+function applyCommunityBackground(url){
+  var clean=String(url||"").trim();
+  if(clean){
+    document.body.style.backgroundImage='linear-gradient(rgba(5,7,10,0.65),rgba(5,7,10,0.65)),url("'+cssUrl(clean)+'")';
+  }else{
+    document.body.style.backgroundImage="";
+  }
+  var input=document.getElementById("community-bg-url");
+  if(input && input.value!==clean) input.value=clean;
+  var prev=document.getElementById("community-bg-prev");
+  if(prev) prev.style.backgroundImage=clean ? 'url("'+cssUrl(clean)+'")' : "";
+}
+function watchCommunityBackground(){
+  db.ref(communityBackgroundPath()).on("value",function(s){
+    var data=s.val()||{};
+    applyCommunityBackground(data.url||"");
+  },function(e){ console.warn("Community background failed",e); });
+}
+function previewCommunityBackgroundUrl(){ var v=(document.getElementById("community-bg-url")||{}).value||""; applyCommunityBackground(v); }
+function previewCommunityBackgroundFile(){
+  var f=document.getElementById("community-bg-file");
+  if(!f||!f.files||!f.files[0]) return;
+  roadMapImageToDataUrl(f.files[0],1600,900,0.82).then(function(u){
+    var input=document.getElementById("community-bg-url");
+    if(input) input.value=u;
+    applyCommunityBackground(u);
+    setCommunityBgStatus("Background ready. Press Save Background.",true);
+  }).catch(function(e){ setCommunityBgStatus(e.message||"Image preview failed",false); });
+}
+function saveCommunityBackground(){
+  if(!isAdmin || !auth.currentUser){ toast("Admin login required",false); return; }
+  var f=document.getElementById("community-bg-file");
+  var input=document.getElementById("community-bg-url");
+  setCommunityBgStatus("Saving...");
+  var job=(f&&f.files&&f.files[0]) ? roadMapImageToDataUrl(f.files[0],1600,900,0.82) : Promise.resolve((input&&input.value||"").trim());
+  job.then(function(url){
+    url=String(url||"").trim();
+    return db.ref(communityBackgroundPath()).set({url:url,updatedAt:firebase.database.ServerValue.TIMESTAMP,updatedBy:auth.currentUser.uid}).then(function(){return url;});
+  }).then(function(url){
+    applyCommunityBackground(url);
+    setCommunityBgStatus("Saved. This event page background is updated.",true);
+    toast("Community background saved",true);
+  }).catch(function(e){ setCommunityBgStatus(e.message||"Save failed",false); toast("Background save failed",false); });
+}
+function clearCommunityBackground(){
+  if(!isAdmin || !auth.currentUser){ toast("Admin login required",false); return; }
+  db.ref(communityBackgroundPath()).remove().then(function(){
+    var input=document.getElementById("community-bg-url"), file=document.getElementById("community-bg-file");
+    if(input) input.value="";
+    if(file) file.value="";
+    applyCommunityBackground("");
+    setCommunityBgStatus("Cleared. Original background restored.",true);
+    toast("Community background cleared",true);
+  }).catch(function(e){ setCommunityBgStatus(e.message||"Clear failed",false); });
+}
+watchCommunityBackground();
 function logoKey(name){ return String(name||"").trim().toUpperCase(); }
 function refreshSavedTeamLogoList(){
   var dl=document.getElementById("saved-team-logo-list");
@@ -3737,8 +3807,6 @@ function saveRoadmapAdmin(){ if(!isAdmin){toast("Admin login required",false);re
 </script>
 </body>
 </html>
-
-
 
 
 
