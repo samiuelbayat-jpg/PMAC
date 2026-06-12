@@ -1252,7 +1252,7 @@ function lookupFirebaseLogo(kind, name){
   var isScrim = kind === "scrim";
   var fileEl=document.getElementById(isScrim ? "scrim-reg-logo-file" : "reg-logo-file");
   if(fileEl && fileEl.files && fileEl.files[0]) return;
-  db.ref("pmac/teamLogos/"+sanitizeKey(key)).once("value").then(function(s){
+  db.ref(eventPath("teamLogos/"+sanitizeKey(key))).once("value").then(function(s){
     var item=s.val()||{};
     return item.logo || "";
   }).catch(function(){ return ""; }).then(function(savedLogo){
@@ -1269,7 +1269,7 @@ function lookupFirebaseLogo(kind, name){
     if(logo && logoKey(currentName)===key) setRegistrationLogoPreview(kind, logo);
   }).catch(function(e){ console.warn("Saved logo lookup failed", e); });
 }
-db.ref("pmac/teamLogos").on("value", function(s){
+db.ref(eventPath("teamLogos")).on("value", function(s){
   var data=s.val()||{};
   teamLogoLibrary={};
   Object.keys(data).forEach(function(k){
@@ -1284,7 +1284,7 @@ function saveTeamLogoToLibrary(team){
   if(!isAdmin || !auth.currentUser || !team || !team.name || !team.logo) return Promise.resolve();
   var key = sanitizeKey(logoKey(team.name));
   if(!key) return Promise.resolve();
-  return db.ref("pmac/teamLogos/"+key).update({
+  return db.ref(eventPath("teamLogos/"+key)).update({
     name: logoKey(team.name),
     logo: team.logo,
     source: "pmaf-community",
@@ -3645,14 +3645,14 @@ function renderRoadmapMapEditor(maps){ var wrap=document.getElementById("roadmap
 function cssRoadmapBg(v){ v=String(v||""); if(!v) return "linear-gradient(135deg,#53625d,#c8c0a9)"; if(/^https?:|^data:|^file:/i.test(v)) return "url('"+v.replace(/'/g,'%27')+"')"; return v; }
 function findRoadmapImageByName(name, skipIndex){
   var key=roadmapMapLibraryKey(name);
-  var saved=roadmapMapLibrary&&roadmapMapLibrary[key];
-  if(saved&&(saved.imageUrl||saved.url)) return saved.imageUrl||saved.url;
   var count=document.querySelectorAll(".roadmap-map-card").length;
   for(var j=0;j<count;j++){
     if(j===skipIndex) continue;
     var n=document.getElementById("rm-name-"+j), img=document.getElementById("rm-img-"+j);
     if(n&&img&&roadmapMapLibraryKey(n.value)===key&&String(img.value||"").trim()) return img.value;
   }
+  var saved=roadmapMapLibrary&&roadmapMapLibrary[key];
+  if(saved&&(saved.imageUrl||saved.url)) return saved.imageUrl||saved.url;
   return "";
 }
 function rememberRoadmapImageFromField(i){
@@ -3667,7 +3667,7 @@ function applyRoadmapMapLibrary(i){
   var url=findRoadmapImageByName(nameEl.value,i);
   var currentOwner=normalizeRoadmapMapName(imgEl.dataset.mapName||"");
   var wanted=normalizeRoadmapMapName(nameEl.value);
-  if(url && (!String(imgEl.value||"").trim() || (currentOwner && currentOwner!==wanted))){
+  if(url && (!String(imgEl.value||"").trim() || String(imgEl.value||"").trim()!==String(url).trim() || (currentOwner && currentOwner!==wanted))){
     imgEl.value=url;
     imgEl.dataset.mapName=wanted;
     if(prev) prev.style.backgroundImage=cssRoadmapBg(url);
@@ -3685,7 +3685,7 @@ function buildRoadmapMapLibraryUpdates(d){
   });
   return updates;
 }
-function collectRoadmapData(){ var d={ eventTitle:document.getElementById("roadmap-event-title").value.trim(), eventCount:document.getElementById("roadmap-event-count").value.trim(), ticker:document.getElementById("roadmap-ticker").value.trim(), countdownText:document.getElementById("roadmap-countdown").value.trim(), nextLabel:document.getElementById("roadmap-next-label").value.trim(), sideImageUrl:(document.getElementById("roadmap-side-url")||{}).value.trim(), highlightUrl:document.getElementById("roadmap-highlight-url").value.trim(), highlightType:"auto", highlightTitle:document.getElementById("roadmap-highlight-title").value.trim(), highlightSub:document.getElementById("roadmap-highlight-sub").value.trim(), updatedAt:firebase.database.ServerValue.TIMESTAMP, maps:[] }; var count=document.querySelectorAll(".roadmap-map-card").length; for(var i=0;i<count;i++){ rememberRoadmapImageFromField(i); d.maps.push({ name:(document.getElementById("rm-name-"+i)||{}).value||"", sub:(document.getElementById("rm-sub-"+i)||{}).value||("MATCH "+(i+1)), matchIndex:Math.max(0,parseInt((document.getElementById("rm-match-"+i)||{}).value||i+1)-1), imageUrl:(function(){ var nameEl=document.getElementById("rm-name-"+i), imgEl=document.getElementById("rm-img-"+i); var wanted=normalizeRoadmapMapName(nameEl&&nameEl.value); var owner=normalizeRoadmapMapName(imgEl&&imgEl.dataset&&imgEl.dataset.mapName); var found=findRoadmapImageByName(wanted,i); if(found && owner && owner!==wanted){ imgEl.value=found; imgEl.dataset.mapName=wanted; } return (imgEl||{}).value||""; })(), bg:(document.getElementById("rm-bg-"+i)||{}).value||"linear-gradient(135deg,#53625d,#c8c0a9)" }); } return d; }
+function collectRoadmapData(){ var d={ eventTitle:document.getElementById("roadmap-event-title").value.trim(), eventCount:document.getElementById("roadmap-event-count").value.trim(), ticker:document.getElementById("roadmap-ticker").value.trim(), countdownText:document.getElementById("roadmap-countdown").value.trim(), nextLabel:document.getElementById("roadmap-next-label").value.trim(), sideImageUrl:(document.getElementById("roadmap-side-url")||{}).value.trim(), highlightUrl:document.getElementById("roadmap-highlight-url").value.trim(), highlightType:"auto", highlightTitle:document.getElementById("roadmap-highlight-title").value.trim(), highlightSub:document.getElementById("roadmap-highlight-sub").value.trim(), updatedAt:firebase.database.ServerValue.TIMESTAMP, maps:[] }; var count=document.querySelectorAll(".roadmap-map-card").length; for(var i=0;i<count;i++){ applyRoadmapMapLibrary(i); rememberRoadmapImageFromField(i); d.maps.push({ name:(document.getElementById("rm-name-"+i)||{}).value||"", sub:(document.getElementById("rm-sub-"+i)||{}).value||("MATCH "+(i+1)), matchIndex:Math.max(0,parseInt((document.getElementById("rm-match-"+i)||{}).value||i+1)-1), imageUrl:(function(){ var nameEl=document.getElementById("rm-name-"+i), imgEl=document.getElementById("rm-img-"+i); var wanted=normalizeRoadmapMapName(nameEl&&nameEl.value); var owner=normalizeRoadmapMapName(imgEl&&imgEl.dataset&&imgEl.dataset.mapName); var found=findRoadmapImageByName(wanted,i); if(found && String(found).trim()!==String((imgEl||{}).value||"").trim()){ imgEl.value=found; imgEl.dataset.mapName=wanted; var prev=document.getElementById("rm-prev-"+i); if(prev) prev.style.backgroundImage=cssRoadmapBg(found); } return (imgEl||{}).value||""; })(), bg:(document.getElementById("rm-bg-"+i)||{}).value||"linear-gradient(135deg,#53625d,#c8c0a9)" }); } return d; }
 function addRoadmapMap(){ var d=collectRoadmapData(); d.maps.push({name:"ERANGEL",sub:"MATCH "+(d.maps.length+1),matchIndex:d.maps.length,bg:"linear-gradient(135deg,#53625d,#c8c0a9)",imageUrl:""}); roadmapData=d; fillRoadmapForm(); }
 function removeRoadmapMap(i){ var d=collectRoadmapData(); d.maps.splice(i,1); roadmapData=d; fillRoadmapForm(); }
 function resetRoadmapDefaults(){ roadmapData=JSON.parse(JSON.stringify(ROADMAP_DEFAULTS)); fillRoadmapForm(); setRoadmapStatus("Defaults loaded. Press Save Roadmap to publish."); }
@@ -3737,7 +3737,6 @@ function saveRoadmapAdmin(){ if(!isAdmin){toast("Admin login required",false);re
 </script>
 </body>
 </html>
-
 
 
 

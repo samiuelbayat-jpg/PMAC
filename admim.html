@@ -219,6 +219,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="btn" onclick="openStandalone('promotions.html')">📢 Promotions</button>
     <button class="btn" onclick="openStandalone('scoreboard.html')">🏆 Scoreboard</button>
     <button class="btn" onclick="openStandalone('overlay.html')">🎥 OBS Overlay</button>
+    <button class="btn" onclick="openStandalone('highlights-roadmap-overlay.html')">🗺️ Roadmap Overlay</button>
+    <button class="btn" onclick="openStandalone('highlights-roadmap-overlay.html?mode=scrim')">🗺️ Scrim Roadmap</button>
     <button class="btn" onclick="openStandalone('archive.html')">📦 Archive</button>
     <button class="btn" onclick="openStandalone('lobby.html')">🏅 Top Teams Lobby</button>
     <button class="btn" onclick="openStandalone('scoreboard-gfx.html')">✨ GFX Board</button>
@@ -292,6 +294,7 @@ function cleanEventId(name){ return String(name||"").trim().toLowerCase().replac
 function eventBasePath(){ return activeEventId==="default" ? "pmac" : "pmac/events/"+activeEventId; }
 function eventPath(child){ return eventBasePath()+"/"+child; }
 function eventUrl(url){ const sep=url.indexOf("?")>-1?"&":"?"; return url+sep+"event="+encodeURIComponent(activeEventId); }
+function eventStorageKey(key){ return key+"_"+activeEventId; }
 function resetEventRefs(){ dbTeamsRef=db.ref(eventPath("teams")); dbScoresRef=db.ref(eventPath("matches")); dbActiveSessionRef=db.ref(eventPath("activeSession")); dbEgRef=db.ref(eventPath("eventGroups")); overlaySettingsRef=db.ref(eventPath("overlaySettings")); forumRef=db.ref(eventPath("forum/messages")); localStorage.setItem("pmac_active_event", activeEventId); const lbl=document.getElementById("event-path-label"); if(lbl) lbl.textContent=eventBasePath(); }
 
 function canEditEvent(meta){
@@ -421,8 +424,8 @@ function watchActiveSession(){
     const currentKey = egSessionsFromActive(egActiveSession).map(egSessionKey).join(",");
     const nextKey = nextList.map(egSessionKey).join(",");
     egActiveSession = nextList.length ? egActivePayload(nextList) : null;
-    if(egActiveSession) localStorage.setItem('eg_active_session', JSON.stringify(egActiveSession));
-    else localStorage.removeItem('eg_active_session');
+    if(egActiveSession) localStorage.setItem(eventStorageKey('eg_active_session'), JSON.stringify(egActiveSession));
+    else localStorage.removeItem(eventStorageKey('eg_active_session'));
     updateActiveBanner();
     renderEventGroups();
     if(nextList.length){
@@ -444,8 +447,8 @@ function toggleForumPanel(forceOpen){
 function showSection(sec){ if(sec==="forum"){ toggleForumPanel(true); return; } document.getElementById("section-teams").style.display = sec==="teams"?"block":"none"; document.getElementById("section-scores").style.display = sec==="scores"?"block":"none"; document.getElementById("section-eventgroup").style.display = sec==="eventgroup"?"block":"none"; document.getElementById("section-overlay").style.display = sec==="overlay"?"block":"none"; document.getElementById("section-gfx").style.display = sec==="gfx"?"block":"none"; const order=["teams","scores","eventgroup","overlay","gfx","forum"]; document.querySelectorAll(".stab").forEach((b,i)=>{ b.classList.toggle("active", order[i]===sec); }); if(sec==="scores") renderScoreGrid(); if(sec==="eventgroup"){ renderEventGroups(); updateActiveBanner(); } if(sec==="overlay") fillOverlaySettingsForm(); }
 function logoKey(name){ return String(name||"").trim().toUpperCase(); }
 function teamLogoDbKey(name){ return sanitizeKey(logoKey(name)); }
-function loadTeamLogoLibrary(){ try{ teamLogoLibrary = JSON.parse(localStorage.getItem(TEAM_LOGO_LIBRARY_KEY)||"{}") || {}; }catch(e){ teamLogoLibrary={}; } }
-function saveTeamLogoLibrary(){ try{ localStorage.setItem(TEAM_LOGO_LIBRARY_KEY, JSON.stringify(teamLogoLibrary)); }catch(e){} }
+function loadTeamLogoLibrary(){ try{ teamLogoLibrary = JSON.parse(localStorage.getItem(eventStorageKey(TEAM_LOGO_LIBRARY_KEY))||"{}") || {}; }catch(e){ teamLogoLibrary={}; } }
+function saveTeamLogoLibrary(){ try{ localStorage.setItem(eventStorageKey(TEAM_LOGO_LIBRARY_KEY), JSON.stringify(teamLogoLibrary)); }catch(e){} }
 function rememberTeamLogo(name, logo){
   const key = logoKey(name);
   if(!key || !logo) return;
@@ -453,13 +456,13 @@ function rememberTeamLogo(name, logo){
   saveTeamLogoLibrary();
   const dbKey = teamLogoDbKey(key);
   if(dbKey && auth.currentUser){
-    db.ref("pmac/teamLogos/"+dbKey).update({name:key,logo:logo,source:"admin",event:activeEventId,savedAt:Date.now(),savedBy:auth.currentUser.uid}).catch(()=>{});
+    db.ref(eventPath("teamLogos/"+dbKey)).update({name:key,logo:logo,source:"admin",event:activeEventId,savedAt:Date.now(),savedBy:auth.currentUser.uid}).catch(()=>{});
   }
 }
 function watchTeamLogoLibrary(){
   if(window._teamLogoLibraryWatching) return;
   window._teamLogoLibraryWatching = true;
-  db.ref("pmac/teamLogos").on("value", snap=>{
+  db.ref(eventPath("teamLogos")).on("value", snap=>{
     const data=snap.val()||{};
     Object.keys(data).forEach(k=>{
       const item=data[k]||{};
@@ -635,8 +638,8 @@ const EG_GROUPS = [
 // egData structure: { A: { "2025-05-09": [{name,tag,logo},...] }, B: {...}, ... }
 let egData = {};
 // Active session: { group: 'A', date: '2025-05-09' } or null
-let egActiveSession = JSON.parse(localStorage.getItem('eg_active_session') || 'null');
-let egSelectedDates = JSON.parse(localStorage.getItem('eg_selected_dates') || '{}');
+let egActiveSession = JSON.parse(localStorage.getItem(eventStorageKey('eg_active_session')) || 'null');
+let egSelectedDates = JSON.parse(localStorage.getItem(eventStorageKey('eg_selected_dates')) || '{}');
 
 
 
@@ -657,14 +660,14 @@ function egTodayStr(){
 }
 
 // ---- Active session controls ----
-function egDateForGroup(gid){ const dateEl = document.getElementById(`eg-date-${gid}`); const v = dateEl ? dateEl.value : egSelectedDates[gid]; if(v){ egSelectedDates[gid]=v; localStorage.setItem('eg_selected_dates', JSON.stringify(egSelectedDates)); } return v || egTodayStr(); }
-function egSetSelectedDate(gid,date){ if(!date) return; egSelectedDates[gid]=date; localStorage.setItem('eg_selected_dates', JSON.stringify(egSelectedDates)); }
+function egDateForGroup(gid){ const dateEl = document.getElementById(`eg-date-${gid}`); const v = dateEl ? dateEl.value : egSelectedDates[gid]; if(v){ egSelectedDates[gid]=v; localStorage.setItem(eventStorageKey('eg_selected_dates'), JSON.stringify(egSelectedDates)); } return v || egTodayStr(); }
+function egSetSelectedDate(gid,date){ if(!date) return; egSelectedDates[gid]=date; localStorage.setItem(eventStorageKey('eg_selected_dates'), JSON.stringify(egSelectedDates)); }
 function egActivate(gid){
   const date = egDateForGroup(gid);
   if(!date){ showToast("Pick a date first", false); return; }
   const list = [{ group: gid, date }];
   egActiveSession = egActivePayload(list);
-  localStorage.setItem('eg_active_session', JSON.stringify(egActiveSession));
+  localStorage.setItem(eventStorageKey('eg_active_session'), JSON.stringify(egActiveSession));
   dbActiveSessionRef.set(egActiveSession);
   applyActiveSessions(list, true);
   updateActiveBanner();
@@ -678,7 +681,7 @@ function egAddToActive(gid){
   const item = { group: gid, date };
   if(!list.find(s=>egSessionKey(s)===egSessionKey(item))) list.push(item);
   egActiveSession = egActivePayload(list);
-  localStorage.setItem('eg_active_session', JSON.stringify(egActiveSession));
+  localStorage.setItem(eventStorageKey('eg_active_session'), JSON.stringify(egActiveSession));
   dbActiveSessionRef.set(egActiveSession);
   applyActiveSessions(list, true);
   updateActiveBanner();
@@ -689,7 +692,7 @@ function egRemoveFromActive(gid,date){
   const list = egSessionsFromActive(egActiveSession).filter(s=>!(s.group===gid&&s.date===date));
   if(!list.length){ egClearActive(); return; }
   egActiveSession = egActivePayload(list);
-  localStorage.setItem('eg_active_session', JSON.stringify(egActiveSession));
+  localStorage.setItem(eventStorageKey('eg_active_session'), JSON.stringify(egActiveSession));
   dbActiveSessionRef.set(egActiveSession);
   applyActiveSessions(list, true);
   updateActiveBanner();
@@ -698,7 +701,7 @@ function egRemoveFromActive(gid,date){
 }
 function egClearActive(){
   egActiveSession = null;
-  localStorage.removeItem('eg_active_session');
+  localStorage.removeItem(eventStorageKey('eg_active_session'));
   dbActiveSessionRef.remove();
   loadFirebaseData();
   updateActiveBanner();

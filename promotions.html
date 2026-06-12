@@ -388,12 +388,12 @@ function daysUntil(ts) {
 
 // NOTIFY ALL TEAMS
 function notifyAll(key, evName) {
-  db.ref("pmac/lobby_teams").once("value").then(function(s) {
+  db.ref(eventPath("lobby_teams")).once("value").then(function(s) {
     var v = s.val() || {};
     var teams = Object.values(v).filter(function(t){ return t.phone; });
     if (!teams.length) {
       // Try registrations too
-      db.ref("pmac/registrations").once("value").then(function(r) {
+      db.ref(eventPath("registrations")).once("value").then(function(r) {
         var regs = r.val() || {};
         var regTeams = Object.values(regs).filter(function(t){ return t.managerPhone && t.status==="approved"; });
         if (!regTeams.length) { toast("No phone numbers found in lobby or registrations", false); return; }
