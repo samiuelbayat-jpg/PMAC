@@ -3787,7 +3787,7 @@ function previewRoadmapMapFile(i){
     if(input) input.value=u;
     rememberRoadmapImageFromField(i);
     if(prev) prev.style.backgroundImage=cssRoadmapBg(u);
-    setRoadmapStatus("Map picture ready and remembered by map name. Press Save Roadmap to publish.");
+    setRoadmapStatus("Map picture preview ready. Press Save Roadmap to upload it to Firebase Storage.");
   }).catch(function(e){ setRoadmapStatus(e.message||"Image preview failed",false); });
 }
 function previewRoadmapSideFile(){
@@ -3800,14 +3800,15 @@ function previewRoadmapSideFile(){
   }).catch(function(e){ setRoadmapStatus(e.message||"Image preview failed",false); });
 }
 function uploadRoadmapFile(file, folder){
-  if(file && /^image\//i.test(file.type||"")) return roadMapImageToDataUrl(file,1200,720,0.8);
-  return storage.ref(folder+"/"+Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9_.-]/g,"_")).put(file).then(function(s){return s.ref.getDownloadURL();});
+  if(!file) return Promise.reject(new Error("No file selected"));
+  var cleanName=String(file.name||"roadmap-image").replace(/[^a-zA-Z0-9_.-]/g,"_");
+  var path=folder+"/"+Date.now()+"_"+cleanName;
+  return storage.ref(path).put(file,{contentType:file.type||"application/octet-stream"}).then(function(s){return s.ref.getDownloadURL();});
 }
-function saveRoadmapAdmin(){ if(!isAdmin){toast("Admin login required",false);return;} var d=collectRoadmapData(); setRoadmapStatus("Uploading / saving..."); var jobs=[]; var sf=document.getElementById("roadmap-side-file"); if(sf&&sf.files&&sf.files[0]) jobs.push(uploadRoadmapFile(sf.files[0],"pmac/roadmap/"+roadmapMode+"/side").then(function(u){d.sideImageUrl=u;})); var hf=document.getElementById("roadmap-highlight-file"); if(hf&&hf.files&&hf.files[0]) jobs.push(uploadRoadmapFile(hf.files[0],"pmac/roadmap/"+roadmapMode+"/highlight").then(function(u){d.highlightUrl=u;})); d.maps.forEach(function(m,i){ var f=document.getElementById("rm-file-"+i); if(f&&f.files&&f.files[0]) jobs.push(uploadRoadmapFile(f.files[0],"pmac/roadmap/"+roadmapMode+"/maps").then(function(u){m.imageUrl=u;})); }); Promise.all(jobs).then(function(){ var libraryUpdates=buildRoadmapMapLibraryUpdates(d); roadmapMapLibrary=Object.assign({},roadmapMapLibrary,libraryUpdates); d.mapLibrary=roadmapMapLibrary; return db.ref(roadmapPath()).set(d).then(function(){ if(Object.keys(libraryUpdates).length) db.ref(roadmapMapLibraryPath()).update(libraryUpdates).catch(function(){}); }); }).then(function(){ roadmapData=d; fillRoadmapForm(); setRoadmapStatus("Saved. OBS overlay updates automatically. Map pictures remembered by name."); toast("Roadmap saved",true); }).catch(function(e){ setRoadmapStatus(e.message||"Save failed",false); toast("Roadmap save failed",false); }); }
+function saveRoadmapAdmin(){ if(!isAdmin){toast("Admin login required",false);return;} var d=collectRoadmapData(); setRoadmapStatus("Uploading roadmap pictures to Firebase Storage..."); var jobs=[]; var sf=document.getElementById("roadmap-side-file"); if(sf&&sf.files&&sf.files[0]) jobs.push(uploadRoadmapFile(sf.files[0],"pmac/roadmap/"+EVENT_ID+"/"+roadmapMode+"/side").then(function(u){d.sideImageUrl=u; var input=document.getElementById("roadmap-side-url"); if(input) input.value=u;})); var hf=document.getElementById("roadmap-highlight-file"); if(hf&&hf.files&&hf.files[0]) jobs.push(uploadRoadmapFile(hf.files[0],"pmac/roadmap/"+EVENT_ID+"/"+roadmapMode+"/highlight").then(function(u){d.highlightUrl=u;})); d.maps.forEach(function(m,i){ var f=document.getElementById("rm-file-"+i), name=normalizeRoadmapMapName(m.name)||("MAP_"+(i+1)); if(f&&f.files&&f.files[0]) jobs.push(uploadRoadmapFile(f.files[0],"pmac/roadmap/"+EVENT_ID+"/map-library/"+roadmapMapLibraryKey(name)).then(function(u){m.imageUrl=u; var imgEl=document.getElementById("rm-img-"+i), prev=document.getElementById("rm-prev-"+i); if(imgEl){imgEl.value=u; imgEl.dataset.mapName=name;} if(prev) prev.style.backgroundImage=cssRoadmapBg(u); roadmapMapLibrary[roadmapMapLibraryKey(name)]={name:name,imageUrl:u,updatedAt:Date.now()};})); }); Promise.all(jobs).then(function(){ var libraryUpdates=buildRoadmapMapLibraryUpdates(d); roadmapMapLibrary=Object.assign({},roadmapMapLibrary,libraryUpdates); d.mapLibrary=roadmapMapLibrary; return db.ref(roadmapPath()).set(d).then(function(){ if(Object.keys(libraryUpdates).length) db.ref(roadmapMapLibraryPath()).update(libraryUpdates).catch(function(){}); }); }).then(function(){ roadmapData=d; fillRoadmapForm(); setRoadmapStatus("Saved. Firebase Storage pictures are remembered by map name."); toast("Roadmap saved",true); }).catch(function(e){ setRoadmapStatus(e.message||"Save failed",false); toast("Roadmap save failed",false); }); }
 </script>
 </body>
 </html>
-
 
 
 
