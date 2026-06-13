@@ -1199,7 +1199,7 @@ function escapeHtml(v){
     return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch];
   });
 }
-function communityBackgroundPath(){ return eventPath("communitySettings/background"); }
+function communityBackgroundPath(){ return eventPath("event/communityBackground"); }
 function setCommunityBgStatus(msg, ok){ var el=document.getElementById("community-bg-status"); if(el){ el.textContent=msg||""; el.style.color=ok===false?"#ff5555":"#8a96a8"; } }
 function applyCommunityBackground(url){
   var clean=String(url||"").trim();
@@ -1227,7 +1227,7 @@ function previewCommunityBackgroundFile(){
     var input=document.getElementById("community-bg-url");
     if(input) input.value=u;
     applyCommunityBackground(u);
-    setCommunityBgStatus("Background ready. Press Save Background.",true);
+    setCommunityBgStatus("Background preview ready. Press Save Background to upload it to Firebase Storage.",true);
   }).catch(function(e){ setCommunityBgStatus(e.message||"Image preview failed",false); });
 }
 function saveCommunityBackground(){
@@ -1235,13 +1235,14 @@ function saveCommunityBackground(){
   var f=document.getElementById("community-bg-file");
   var input=document.getElementById("community-bg-url");
   setCommunityBgStatus("Saving...");
-  var job=(f&&f.files&&f.files[0]) ? roadMapImageToDataUrl(f.files[0],1600,900,0.82) : Promise.resolve((input&&input.value||"").trim());
+  var job=(f&&f.files&&f.files[0]) ? uploadRoadmapFile(f.files[0],"pmac/community-background/"+EVENT_ID) : Promise.resolve((input&&input.value||"").trim());
   job.then(function(url){
     url=String(url||"").trim();
     return db.ref(communityBackgroundPath()).set({url:url,updatedAt:firebase.database.ServerValue.TIMESTAMP,updatedBy:auth.currentUser.uid}).then(function(){return url;});
   }).then(function(url){
     applyCommunityBackground(url);
-    setCommunityBgStatus("Saved. This event page background is updated.",true);
+    if(input) input.value=url;
+    setCommunityBgStatus("Saved. Firebase Storage background is active for this event.",true);
     toast("Community background saved",true);
   }).catch(function(e){ setCommunityBgStatus(e.message||"Save failed",false); toast("Background save failed",false); });
 }
@@ -3809,7 +3810,6 @@ function saveRoadmapAdmin(){ if(!isAdmin){toast("Admin login required",false);re
 </script>
 </body>
 </html>
-
 
 
 
