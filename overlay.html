@@ -27,6 +27,9 @@ html,body{width:1920px;height:1080px;min-width:1920px;min-height:1080px;overflow
 .pos{font-weight:900;font-size:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:0.9;min-height:22px;}.pos.g{color:var(--ov-accent);}.pos.s{color:#a8b8c8;}.pos.b{color:#d4835a;}.pos.x{color:#8a96a8;font-size:10px;}.rank-move{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:900;margin-top:2px;letter-spacing:0;}.rank-move.up{color:#00ff88;text-shadow:0 0 5px rgba(0,255,136,.65);}.rank-move.down{color:#ff9d00;text-shadow:0 0 5px rgba(255,157,0,.55);}.rank-move.bigdown{color:#ff3535;text-shadow:0 0 5px rgba(255,53,53,.70);}.rank-move.kill{color:#e8d02b;text-shadow:0 0 5px rgba(232,208,43,.65);}
 .t-logo{width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid var(--ov-accent);background:rgba(255,255,255,0.05);}
 .t-info{min-width:0;width:100%;}.t-name{font-weight:900;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;color:var(--ov-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.t-played{font-family:'Share Tech Mono',monospace;font-size:7px;color:#8a96a8;margin-top:1px;}
+.player-strips{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;width:42px;margin-top:2px;}
+.pstrip{height:4px;background:#00d26a;border-radius:1px;box-shadow:0 0 4px rgba(0,210,106,0.55);}
+.pstrip.dead{background:#252a31;box-shadow:none;border:1px solid rgba(255,255,255,0.06);}
 .t-kills,.t-place{font-weight:700;color:#8a96a8;text-align:center;}.t-kills{font-size:13px;}.t-place{font-size:12px;}.t-pts{font-weight:900;font-size:15px;color:var(--ov-accent);text-align:center;}.score-block{display:none;}
 .ticker{position:fixed;bottom:0;left:0;right:260px;height:44px;background:var(--ov-bg);border-top:3px solid var(--ov-accent);display:flex;align-items:center;overflow:hidden;}.ticker-label{background:var(--ov-accent);color:#000;font-weight:900;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;padding:0 14px;height:100%;display:flex;align-items:center;flex-shrink:0;}.ticker-track{flex:1;overflow:hidden;height:100%;}.ticker-inner{display:flex;align-items:center;height:100%;white-space:nowrap;animation:tick 50s linear infinite;}@keyframes tick{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
 .ti{display:inline-flex;align-items:center;gap:8px;margin-right:40px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:0.08em;}.ti-pos{color:var(--ov-accent);font-weight:700;min-width:24px;}.ti-name{color:var(--ov-text);font-weight:700;}.ti-sep{color:#444;}.ti-val{color:#8a96a8;}.ti-pts{color:var(--ov-accent);font-weight:700;}.no-data{padding:20px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#8a96a8;text-align:center;}
@@ -122,6 +125,7 @@ function placementPts(rank) {
 
 let currentTeams = [];
 let currentScores = {};
+let activeMatchIndex = 0;
 let lastStandingSnapshot = null;
 let renderCount = 0;
 let overlaySettings = { design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"" };
@@ -143,8 +147,25 @@ function applyOverlaySettings(){
 }
 db.ref(eventPath("overlaySettings")).on("value",snap=>{ overlaySettings=Object.assign({},overlaySettings,snap.val()||{}); applyOverlaySettings(); });
 function sanitizeKey(n){ return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_"); }
+function playerCount(v){ const n=parseInt(v); if(!Number.isFinite(n)) return 4; return Math.max(0,Math.min(4,n)); }
+function playerStrips(count){
+  const alive=playerCount(count);
+  let html="";
+  for(let i=0;i<4;i++) html+='<span class="pstrip '+(i<alive?'':'dead')+'"></span>';
+  return '<div class="player-strips" title="'+alive+'/4 players">'+html+'</div>';
+}
 
 // Calculate team totals across all matches
+function playerCountForActiveMatch(matches){
+  const list = Array.isArray(matches) ? matches : Object.values(matches || {});
+  const row = list[activeMatchIndex] || {};
+  return playerCount(row.players);
+}
+function updateActiveMatchFromScores(){
+  const data=currentScores && currentScores._activeMatch;
+  const idx=data && data.index!==undefined ? parseInt(data.index) : 0;
+  activeMatchIndex=Math.max(0,Math.min(9,Number.isFinite(idx)?idx:0));
+}
 function calculateTeamStats(team, matches) {
   let totalKills = 0;
   let totalPlacementPoints = 0;
@@ -152,8 +173,12 @@ function calculateTeamStats(team, matches) {
   const matchesList = Array.isArray(matches) ? matches : Object.values(matches || {});
   
   for (const match of matchesList) {
-    if (!match || (match.rank === null && match.kills === null)) continue;
-    matchesPlayed++;
+    if (!match) continue;
+    const rankEmpty = match.rank === null || match.rank === undefined || match.rank === "";
+    const killsEmpty = match.kills === null || match.kills === undefined || match.kills === "";
+    const hasScore = !(rankEmpty && killsEmpty);
+    if (!hasScore) continue;
+    if (hasScore) matchesPlayed++;
     const kills = (match.kills !== null && match.kills !== undefined) ? parseInt(match.kills) : 0;
     const rank = (match.rank !== null && match.rank !== undefined && match.rank !== '') ? parseInt(match.rank) : null;
     totalKills += kills;
@@ -167,7 +192,8 @@ function calculateTeamStats(team, matches) {
     kills: totalKills,
     placePoints: totalPlacementPoints,
     total: totalPoints,
-    played: matchesPlayed
+    played: matchesPlayed,
+    players: playerCountForActiveMatch(matches)
   };
 }
 
@@ -217,6 +243,7 @@ function sortTeams(teams) {
 
 function render() {
   if (currentTeams.length === 0) return;
+  updateActiveMatchFromScores();
   
   // Calculate stats for each team
   let teams = currentTeams.map(t => calculateTeamStats(t, currentScores[t.name] || currentScores[sanitizeKey(t.name)] || []));
@@ -224,7 +251,9 @@ function render() {
   
   // Calculate max matches played
   let maxMatches = 0;
-  Object.values(currentScores).forEach(ms => {
+  Object.keys(currentScores||{}).forEach(key => {
+    if(key.charAt(0)==="_") return;
+    const ms=currentScores[key];
     const matchList = Array.isArray(ms) ? ms : Object.values(ms || {});
     const played = matchList.filter(m => m && m.rank !== null).length;
     if (played > maxMatches) maxMatches = played;
@@ -253,7 +282,7 @@ function render() {
     row.innerHTML =
       '<div class="pos ' + posColorClass + '">' + position + move.html + '</div>' +
       logoHtml +
-      '<div class="t-info"><div class="t-name">' + escapeHtml(team.name) + '</div><div class="t-played">' + team.played + 'M</div></div>' +
+      '<div class="t-info"><div class="t-name">' + escapeHtml(team.name) + '</div>' + playerStrips(team.players) + '</div>' +
       '<div class="t-kills">' + team.kills + '</div>' +
       '<div class="t-place">' + team.placePoints + '</div>' +
       '<div class="t-pts">' + team.total + '</div>';
