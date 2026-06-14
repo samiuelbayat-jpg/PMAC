@@ -290,6 +290,7 @@ const db = firebase.database(), storage = firebase.storage(), auth = firebase.au
 let isSuperAdmin = false, currentMatch = 0, teams = [], scores = {};
 let currentAdminUid = "";
 let teamLogoLibrary = {};
+let killsSaveTimers = {};
 const TEAM_LOGO_LIBRARY_KEY = "pmac_team_logo_library_v1";
 let groqApiKey = localStorage.getItem("groq_api_key") || "";
 let activeEventId = new URLSearchParams(location.search).get("event") || localStorage.getItem("pmac_active_event") || "default";
@@ -628,7 +629,14 @@ function scoreRowFromInputs(team){
   return {rank: rankEl.value?parseInt(rankEl.value):null, kills: killsEl.value?parseInt(killsEl.value):null, players: players};
 }
 function killCount(v){ const n=parseInt(v); if(!Number.isFinite(n)) return 0; return Math.max(0,n); }
-function saveKillsNow(team,el){ if(el && el.value!==""){ const v=killCount(el.value); if(String(el.value)!==String(v)) el.value=v; } autoSave(team); }
+function saveKillsNow(team,el){
+  if(el && el.value!==""){
+    const v=killCount(el.value);
+    if(String(el.value)!==String(v)) el.value=v;
+  }
+  clearTimeout(killsSaveTimers[team]);
+  killsSaveTimers[team]=setTimeout(()=>autoSave(team),300);
+}
 function savePlayersNow(team,el){ if(el){ const v=playerCount(el.value); if(String(el.value)!==String(v)) el.value=v; } autoSave(team); }
 function autoSave(team){ const row=scoreRowFromInputs(team); if(!row) return; const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; _scoresRef().set(scores).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); const savedDiv=document.getElementById(`saved_${team}`); if(savedDiv){ savedDiv.classList.add("show"); setTimeout(()=>savedDiv.classList.remove("show"),1500); } renderScoreGrid(); }); }
 function clearTeamMatch(team){ const safe=sanitizeKey(team); if(scores[safe]) scores[safe][currentMatch]=emptyScoreRow(); else scores[safe]=emptyScoreRows(); _scoresRef().set(scores); renderScoreGrid(); }
