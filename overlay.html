@@ -255,7 +255,7 @@ function render() {
     if(key.charAt(0)==="_") return;
     const ms=currentScores[key];
     const matchList = Array.isArray(ms) ? ms : Object.values(ms || {});
-    const played = matchList.filter(m => m && m.rank !== null).length;
+    const played = matchList.filter(m => m && typeof m==="object" && m.rank !== null && m.rank !== undefined && m.rank !== "").length;
     if (played > maxMatches) maxMatches = played;
   });
   document.getElementById("match-count").textContent = maxMatches + " / 10 matches";

@@ -197,6 +197,9 @@ function teamMatches(team){
 function matchList(ms){
   return Array.isArray(ms) ? ms : Object.values(ms || {});
 }
+function hasPlayedMatch(m){
+  return !!m && typeof m==="object" && m.rank !== null && m.rank !== undefined && m.rank !== "";
+}
 
 
 let sortMode="pts";
@@ -237,7 +240,7 @@ function render(){
   const totalKills=teams.reduce((s,t)=>s+t.kills,0);
   const maxKills=Math.max(0,...teams.map(t=>t.kills));
   const topKiller=teams.find(t=>t.kills===maxKills)||teams[0];
-  const totalMatches=Math.max(0,...Object.values(currentScores).map(ms=>matchList(ms).filter(m=>m&&m.rank!==null).length));
+  const totalMatches=Math.max(0,...Object.keys(currentScores||{}).filter(k=>k.charAt(0)!=="_").map(k=>matchList(currentScores[k]).filter(hasPlayedMatch).length));
 
   // Hero card for #1 team
   const logoHtml = leader.logo
