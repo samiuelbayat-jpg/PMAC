@@ -635,7 +635,7 @@ function saveKillsNow(team,el){
     if(String(el.value)!==String(v)) el.value=v;
   }
   clearTimeout(killsSaveTimers[team]);
-  killsSaveTimers[team]=setTimeout(()=>autoSave(team),300);
+  killsSaveTimers[team]=setTimeout(()=>autoSave(team),2000);
 }
 function savePlayersNow(team,el){ if(el){ const v=playerCount(el.value); if(String(el.value)!==String(v)) el.value=v; } autoSave(team); }
 function autoSave(team){ const row=scoreRowFromInputs(team); if(!row) return; const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; _scoresRef().set(scores).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); const savedDiv=document.getElementById(`saved_${team}`); if(savedDiv){ savedDiv.classList.add("show"); setTimeout(()=>savedDiv.classList.remove("show"),1500); } renderScoreGrid(); }); }
