@@ -8,7 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{width:1920px;height:1080px;min-width:1920px;min-height:1080px;overflow:hidden;background:transparent;font-family:'Barlow Condensed',sans-serif;--ov-accent:#e8b800;--ov-bg:rgba(10,11,13,0.96);--ov-text:#eef0f5;}
+html,body{width:1920px;height:1080px;min-width:1920px;min-height:1080px;overflow:hidden;background:transparent;font-family:'Barlow Condensed',sans-serif;--ov-accent:#e8b800;--ov-bg:rgba(10,11,13,0.96);--ov-text:#eef0f5;--alive-color:#00d26a;--dead-color:#252a31;}
 .panel{position:fixed;right:0;bottom:0;width:260px;background:var(--ov-bg);border-left:3px solid var(--ov-accent);border-top:3px solid var(--ov-accent);display:flex;flex-direction:column;}
 .panel-top{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(10,11,13,0.70);border-bottom:2px solid var(--ov-accent);flex-shrink:0;}
 .panel-logo{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--ov-accent);flex-shrink:0;}
@@ -26,10 +26,15 @@ html,body{width:1920px;height:1080px;min-width:1920px;min-height:1080px;overflow
 .team-row.gold{background:color-mix(in srgb,var(--ov-accent) 16%,transparent);border-left-color:var(--ov-accent);}.team-row.silver{background:rgba(168,184,200,0.06);border-left-color:#a8b8c8;}.team-row.bronze{background:rgba(212,131,90,0.06);border-left-color:#d4835a;}
 .pos{font-weight:900;font-size:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:0.9;min-height:22px;}.pos.g{color:var(--ov-accent);}.pos.s{color:#a8b8c8;}.pos.b{color:#d4835a;}.pos.x{color:#8a96a8;font-size:10px;}.rank-move{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:900;margin-top:2px;letter-spacing:0;}.rank-move.up{color:#00ff88;text-shadow:0 0 5px rgba(0,255,136,.65);}.rank-move.down{color:#ff9d00;text-shadow:0 0 5px rgba(255,157,0,.55);}.rank-move.bigdown{color:#ff3535;text-shadow:0 0 5px rgba(255,53,53,.70);}.rank-move.kill{color:#e8d02b;text-shadow:0 0 5px rgba(232,208,43,.65);}
 .t-logo{width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid var(--ov-accent);background:rgba(255,255,255,0.05);}
-.t-info{min-width:0;width:100%;}.t-name{font-weight:900;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;color:var(--ov-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.t-played{font-family:'Share Tech Mono',monospace;font-size:7px;color:#8a96a8;margin-top:1px;}
+.t-info{min-width:0;width:100%;}.t-line{display:flex;align-items:center;gap:5px;min-width:0;}.t-name{font-weight:900;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;color:var(--ov-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.t-played{font-family:'Share Tech Mono',monospace;font-size:7px;color:#8a96a8;margin-top:1px;}
 .player-strips{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;width:42px;margin-top:2px;}
-.pstrip{height:4px;background:#00d26a;border-radius:1px;box-shadow:0 0 4px rgba(0,210,106,0.55);}
-.pstrip.dead{background:#252a31;box-shadow:none;border:1px solid rgba(255,255,255,0.06);}
+.pstrip{height:4px;background:var(--alive-color);border-radius:1px;box-shadow:0 0 4px color-mix(in srgb,var(--alive-color) 65%,transparent);}
+.pstrip.dead{background:var(--dead-color);box-shadow:none;border:1px solid rgba(255,255,255,0.06);}
+.player-pipes{display:inline-flex;align-items:center;gap:1px;flex-shrink:0;font-family:'Share Tech Mono',monospace;font-weight:900;font-size:15px;line-height:1;color:var(--alive-color);letter-spacing:0;}
+.player-pipes .pmark.dead{color:var(--dead-color);opacity:.9;}
+.player-dots{display:inline-flex;align-items:center;gap:3px;flex-shrink:0;}
+.player-dots .pmark{width:7px;height:7px;border-radius:50%;background:var(--alive-color);box-shadow:0 0 5px color-mix(in srgb,var(--alive-color) 70%,transparent);}
+.player-dots .pmark.dead{background:var(--dead-color);box-shadow:none;border:1px solid rgba(255,255,255,0.10);}
 .t-kills,.t-place{font-weight:700;color:#8a96a8;text-align:center;}.t-kills{font-size:13px;}.t-place{font-size:12px;}.t-pts{font-weight:900;font-size:15px;color:var(--ov-accent);text-align:center;}.score-block{display:none;}
 .ticker{position:fixed;bottom:0;left:0;right:260px;height:44px;background:var(--ov-bg);border-top:3px solid var(--ov-accent);display:flex;align-items:center;overflow:hidden;}.ticker-label{background:var(--ov-accent);color:#000;font-weight:900;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;padding:0 14px;height:100%;display:flex;align-items:center;flex-shrink:0;}.ticker-track{flex:1;overflow:hidden;height:100%;}.ticker-inner{display:flex;align-items:center;height:100%;white-space:nowrap;animation:tick 50s linear infinite;}@keyframes tick{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
 .ti{display:inline-flex;align-items:center;gap:8px;margin-right:40px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:0.08em;}.ti-pos{color:var(--ov-accent);font-weight:700;min-width:24px;}.ti-name{color:var(--ov-text);font-weight:700;}.ti-sep{color:#444;}.ti-val{color:#8a96a8;}.ti-pts{color:var(--ov-accent);font-weight:700;}.no-data{padding:20px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#8a96a8;text-align:center;}
@@ -73,7 +78,7 @@ body.design-redlive .ticker{border-top:3px solid #a00000;background:linear-gradi
   <div class="col-headers">
     <div class="col-h">#</div>
     <div class="col-h"></div>
-    <div class="col-h L">Team</div>
+    <div class="col-h L">Tag</div>
     <div class="col-h">Kills</div>
     <div class="col-h">Place</div>
     <div class="col-h acc">Total</div>
@@ -128,7 +133,7 @@ let currentScores = {};
 let activeMatchIndex = 0;
 let lastStandingSnapshot = null;
 let renderCount = 0;
-let overlaySettings = { design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"" };
+let overlaySettings = { design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"", aliveStyle:"bars", aliveColor:"#00d26a", deadColor:"#252a31" };
 function hexToRgba(hex,a){
   const v=(hex||"#0a0b0d").replace("#","");
   const r=parseInt(v.slice(0,2),16)||10,g=parseInt(v.slice(2,4),16)||11,b=parseInt(v.slice(4,6),16)||13;
@@ -140,19 +145,45 @@ function applyOverlaySettings(){
   document.documentElement.style.setProperty("--ov-accent",s.accent||"#e8b800");
   document.documentElement.style.setProperty("--ov-bg",hexToRgba(s.bg||"#0a0b0d",0.96));
   document.documentElement.style.setProperty("--ov-text",s.text||"#eef0f5");
+  document.documentElement.style.setProperty("--alive-color",s.aliveColor||"#00d26a");
+  document.documentElement.style.setProperty("--dead-color",s.deadColor||"#252a31");
   const card=document.getElementById("streamer-card"), panelLogo=document.getElementById("panel-logo"), panelTitle=document.getElementById("panel-title-text");
   if(card) card.style.display="none";
   if(s.streamerLogo){ panelLogo.src=s.streamerLogo; panelLogo.style.display="block"; }
   panelTitle.textContent=(s.design==="redlive"?(s.streamerName||"LIVE STANDING"):(s.streamerName||"Standings"));
 }
-db.ref(eventPath("overlaySettings")).on("value",snap=>{ overlaySettings=Object.assign({},overlaySettings,snap.val()||{}); applyOverlaySettings(); });
+db.ref(eventPath("overlaySettings")).on("value",snap=>{ overlaySettings=Object.assign({},overlaySettings,snap.val()||{}); applyOverlaySettings(); render(); });
 function sanitizeKey(n){ return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_"); }
 function playerCount(v){ const n=parseInt(v); if(!Number.isFinite(n)) return 4; return Math.max(0,Math.min(4,n)); }
-function playerStrips(count){
+function teamTag(team){
+  const saved=String(team&&team.tag?team.tag:"").trim().toUpperCase();
+  if(saved) return saved.slice(0,8);
+  const name=String(team&&team.name?team.name:"TEAM").trim().toUpperCase();
+  const words=name.split(/\s+/).filter(Boolean);
+  if(words.length>1) return words.map(w=>w[0]).join("").slice(0,5);
+  return name.replace(/[^A-Z0-9]/g,"").slice(0,5) || "TEAM";
+}
+function playerIndicator(count){
   const alive=playerCount(count);
+  const style=(overlaySettings.aliveStyle||"bars").toLowerCase();
   let html="";
+  if(style==="pipes"){
+    for(let i=0;i<4;i++) html+='<span class="pmark '+(i<alive?'':'dead')+'">|</span>';
+    return '<span class="player-pipes" title="'+alive+'/4 players">'+html+'</span>';
+  }
+  if(style==="dots"){
+    for(let i=0;i<4;i++) html+='<span class="pmark '+(i<alive?'':'dead')+'"></span>';
+    return '<span class="player-dots" title="'+alive+'/4 players">'+html+'</span>';
+  }
   for(let i=0;i<4;i++) html+='<span class="pstrip '+(i<alive?'':'dead')+'"></span>';
   return '<div class="player-strips" title="'+alive+'/4 players">'+html+'</div>';
+}
+function teamNameBlock(team){
+  const tag=escapeHtml(teamTag(team));
+  const indicator=playerIndicator(team.players);
+  const style=(overlaySettings.aliveStyle||"bars").toLowerCase();
+  if(style==="pipes"||style==="dots") return '<div class="t-line">'+indicator+'<div class="t-name">'+tag+'</div></div>';
+  return '<div class="t-name">'+tag+'</div>'+indicator;
 }
 
 // Calculate team totals across all matches
@@ -282,7 +313,7 @@ function render() {
     row.innerHTML =
       '<div class="pos ' + posColorClass + '">' + position + move.html + '</div>' +
       logoHtml +
-      '<div class="t-info"><div class="t-name">' + escapeHtml(team.name) + '</div>' + playerStrips(team.players) + '</div>' +
+      '<div class="t-info">' + teamNameBlock(team) + '</div>' +
       '<div class="t-kills">' + team.kills + '</div>' +
       '<div class="t-place">' + team.placePoints + '</div>' +
       '<div class="t-pts">' + team.total + '</div>';
@@ -293,7 +324,7 @@ function render() {
   lastStandingSnapshot = buildStandingSnapshot(teams);
   renderCount++;
   document.getElementById("ticker-inner").innerHTML = teams.map((team, index) =>
-    '<div class="ti"><span class="ti-pos">#' + (index + 1) + '</span><span class="ti-name">' + escapeHtml(team.name) + '</span><span class="ti-sep">|</span><span class="ti-val">' + team.kills + ' kills</span><span class="ti-sep">·</span><span class="ti-val">' + team.placePoints + ' place</span><span class="ti-sep">·</span><span class="ti-pts">' + team.total + ' pts</span></div>'
+    '<div class="ti"><span class="ti-pos">#' + (index + 1) + '</span><span class="ti-name">' + escapeHtml(teamTag(team)) + '</span><span class="ti-sep">|</span><span class="ti-val">' + team.kills + ' kills</span><span class="ti-sep">·</span><span class="ti-val">' + team.placePoints + ' place</span><span class="ti-sep">·</span><span class="ti-pts">' + team.total + ' pts</span></div>'
   ).join("");
 }
 
