@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0" />
+  <title>Starting Soon Timer</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    :root {
+      --timer-color: #ffffff;
+      --timer-shadow: rgba(0, 0, 0, 0.58);
+      --timer-outline: #000000;
+      --timer-glow: #e8b800;
+      --label-color: rgba(255, 255, 255, 0.82);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 1920px;
+      height: 1080px;
+      margin: 0;
+      overflow: hidden;
+      background: transparent;
+      font-family: "Arial Black", Impact, Arial, sans-serif;
+    }
+
+    .stage {
+      width: 1920px;
+      height: 1080px;
+      display: grid;
+      place-items: center;
+      background: transparent;
+    }
+
+    .timer-wrap {
+      text-align: center;
+      transform: translateY(-8px);
+    }
+
+    .label {
+      margin-bottom: 28px;
+      color: var(--label-color);
+      font-family: Arial, sans-serif;
+      font-size: 54px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      text-shadow: 0 6px 24px var(--timer-shadow);
+    }
+
+    .timer {
+      min-width: 820px;
+      color: var(--timer-color);
+      font-size: 220px;
+      font-weight: 900;
+      line-height: 0.92;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0;
+      text-shadow:
+        0 8px 0 rgba(0, 0, 0, 0.32),
+        0 24px 42px var(--timer-shadow);
+    }
+
+    body.clean .label {
+      display: none;
+    }
+
+    body.clean .timer {
+      text-shadow: none;
+    }
+
+    body.shadow .label {
+      display: none;
+    }
+
+    body.digital {
+      font-family: "Share Tech Mono", "Courier New", monospace;
+    }
+
+    body.digital .label {
+      display: none;
+    }
+
+    body.digital .timer {
+      min-width: 900px;
+      font-family: "Share Tech Mono", "Courier New", monospace;
+      font-size: 210px;
+      text-shadow: 0 18px 38px rgba(0, 0, 0, 0.72);
+    }
+
+    body.compact .label {
+      display: none;
+    }
+
+    body.compact .timer {
+      min-width: 560px;
+      font-size: 150px;
+      text-shadow: 0 14px 32px rgba(0, 0, 0, 0.62);
+    }
+
+    body.outline .label {
+      display: none;
+    }
+
+    body.outline .timer {
+      min-width: 900px;
+      font-size: 220px;
+      -webkit-text-stroke: 6px var(--timer-outline);
+      paint-order: stroke fill;
+      text-shadow: 0 18px 36px var(--timer-shadow);
+    }
+
+    body.glow .label {
+      display: none;
+    }
+
+    body.glow .timer {
+      min-width: 900px;
+      font-size: 220px;
+      text-shadow:
+        0 0 20px var(--timer-glow),
+        0 0 54px var(--timer-glow),
+        0 18px 38px var(--timer-shadow);
+    }
+
+    body.block .label {
+      display: none;
+    }
+
+    body.block .timer {
+      min-width: 900px;
+      padding: 22px 56px 30px;
+      border: 8px solid var(--timer-color);
+      font-size: 190px;
+      line-height: 0.9;
+      text-shadow: 0 12px 28px var(--timer-shadow);
+    }
+
+    body.minimal .label {
+      display: none;
+    }
+
+    body.minimal .timer {
+      min-width: 700px;
+      font-family: Arial, sans-serif;
+      font-size: 190px;
+      font-weight: 900;
+      text-shadow: none;
+    }
+  </style>
+</head>
+<body class="shadow">
+  <main class="stage">
+    <section class="timer-wrap" aria-label="Starting soon countdown">
+      <div class="label" id="timerLabel">Starting Soon</div>
+      <div class="timer" id="timer">10:00</div>
+    </section>
+  </main>
+
+  <script>
+    /*
+      This timer is controlled from:
+      PMAF Community > Roadmap OBS > Countdown Text and Timer Label > Save Roadmap
+
+      OBS URL examples:
+      starting-soon-timer.html?event=default
+      starting-soon-timer.html?event=default&mode=scrim
+
+      Manual fallback still works if Firebase is unavailable:
+      starting-soon-timer.html?minutes=15
+      starting-soon-timer.html?time=01:30:00
+      starting-soon-timer.html?timerStyle=clean
+      starting-soon-timer.html?timerColor=%23ffffff
+    */
+    const DEFAULT_TIME = "10:00";
+    const TIMER_LABEL = "";
+    const TIMER_STYLES = ["shadow", "clean", "digital", "compact", "outline", "glow", "block", "minimal"];
+    const FB_CONFIG = {
+      apiKey: "AIzaSyD-RFu-40Igcoqhm8QBbu_PgdFxV6aUIQA",
+      authDomain: "pubg-mobile-afghanistan.firebaseapp.com",
+      databaseURL: "https://pubg-mobile-afghanistan-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "pubg-mobile-afghanistan",
+      storageBucket: "pubg-mobile-afghanistan.firebasestorage.app",
+      messagingSenderId: "279105805502",
+      appId: "1:279105805502:web:8def653069d0b3d73bd2ef"
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const timerEl = document.getElementById("timer");
+    const labelEl = document.getElementById("timerLabel");
+    const EVENT_ID = params.get("event") || localStorage.getItem("pmac_active_event") || "default";
+    const MODE = (params.get("mode") || "event").toLowerCase() === "scrim" ? "scrim" : "event";
+    let endAt = 0;
+    let rafId = 0;
+    let countdownSignature = "";
+
+    if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+    const db = firebase.database();
+
+    function eventBasePath() {
+      return EVENT_ID === "default" ? "pmac" : "pmac/events/" + EVENT_ID;
+    }
+
+    function roadmapPath() {
+      return MODE === "scrim"
+        ? eventBasePath() + "/scrim/event/roadmap"
+        : eventBasePath() + "/event/roadmap";
+    }
+
+    function secondsFromTime(value) {
+      const raw = String(value || "").trim();
+      if (/^\d+$/.test(raw)) return Number(raw);
+      const parts = raw.split(":").map(Number);
+      if (parts.some((part) => !Number.isFinite(part) || part < 0)) return null;
+      if (parts.length === 2) return (parts[0] * 60) + parts[1];
+      if (parts.length === 3) return (parts[0] * 3600) + (parts[1] * 60) + parts[2];
+      return null;
+    }
+
+    function getFallbackSeconds() {
+      const timeParam = params.get("time");
+      const parsedTime = secondsFromTime(timeParam);
+      if (parsedTime !== null) return parsedTime;
+
+      const minutes = Number(params.get("minutes"));
+      if (Number.isFinite(minutes) && minutes >= 0) return Math.round(minutes * 60);
+
+      return secondsFromTime(DEFAULT_TIME);
+    }
+
+    function formatTime(totalSeconds) {
+      const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+      const hours = Math.floor(safeSeconds / 3600);
+      const minutes = Math.floor((safeSeconds % 3600) / 60);
+      const seconds = safeSeconds % 60;
+      const mm = String(minutes).padStart(2, "0");
+      const ss = String(seconds).padStart(2, "0");
+      if (hours > 0) return `${hours}:${mm}:${ss}`;
+      return `${mm}:${ss}`;
+    }
+
+    function validColor(value, fallback) {
+      const raw = String(value || "").trim();
+      if (/^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(raw)) return raw;
+      if (/^rgba?\([\d\s.,%]+\)$/i.test(raw)) return raw;
+      return fallback;
+    }
+
+    function applyTimerColors(config) {
+      const root = document.documentElement;
+      root.style.setProperty("--timer-color", validColor(params.get("timerColor") || config.timerColor, "#ffffff"));
+      root.style.setProperty("--timer-shadow", validColor(params.get("timerShadowColor") || config.timerShadowColor, "rgba(0,0,0,0.58)"));
+      root.style.setProperty("--timer-outline", validColor(params.get("timerOutlineColor") || config.timerOutlineColor, "#000000"));
+      root.style.setProperty("--timer-glow", validColor(params.get("timerGlowColor") || config.timerGlowColor, "#e8b800"));
+    }
+
+    function startCountdown(value, label, signature, requestedStyle, colors) {
+      const seconds = secondsFromTime(value);
+      const startSeconds = seconds !== null ? seconds : getFallbackSeconds();
+      const nextLabel = params.get("label") || label || TIMER_LABEL;
+      const style = TIMER_STYLES.includes(String(params.get("timerStyle") || "").toLowerCase())
+        ? String(params.get("timerStyle")).toLowerCase()
+        : TIMER_STYLES.includes(String(requestedStyle || "").toLowerCase())
+          ? String(requestedStyle).toLowerCase()
+          : "shadow";
+
+      if (signature && signature === countdownSignature) {
+        labelEl.textContent = nextLabel;
+        return;
+      }
+
+      countdownSignature = signature || String(value || "") + "|" + nextLabel + "|" + Date.now();
+      labelEl.textContent = nextLabel;
+      document.body.className = style;
+      applyTimerColors(colors || {});
+      endAt = Date.now() + (Math.max(0, startSeconds) * 1000);
+      if (rafId) cancelAnimationFrame(rafId);
+      tick();
+    }
+
+    function tick() {
+      const remaining = Math.ceil((endAt - Date.now()) / 1000);
+      timerEl.textContent = formatTime(remaining);
+      if (remaining > 0) rafId = requestAnimationFrame(tick);
+    }
+
+    startCountdown(params.get("time") || DEFAULT_TIME, params.get("label") || TIMER_LABEL, "local-start", params.get("timerStyle") || "shadow", {});
+
+    db.ref(roadmapPath()).on("value", function(snapshot) {
+      const cfg = snapshot.val() || {};
+      const countdownText = cfg.countdownText || params.get("time") || DEFAULT_TIME;
+      const label = params.get("label") || TIMER_LABEL;
+      const timerStyle = cfg.timerStyle || params.get("timerStyle") || "shadow";
+      const signature = String(countdownText) + "|" + String(label) + "|" + String(timerStyle) + "|" + String(cfg.timerColor || "") + "|" + String(cfg.timerShadowColor || "") + "|" + String(cfg.timerOutlineColor || "") + "|" + String(cfg.timerGlowColor || "") + "|" + String(cfg.updatedAt || "");
+      startCountdown(countdownText, label, signature, timerStyle, cfg);
+    }, function() {
+      startCountdown(params.get("time") || DEFAULT_TIME, params.get("label") || TIMER_LABEL, "fallback", params.get("timerStyle") || "shadow", {});
+    });
+  </script>
+</body>
+</html>
