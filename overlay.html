@@ -27,8 +27,8 @@ html,body{width:1920px;height:1080px;min-width:1920px;min-height:1080px;overflow
 .pos{font-weight:900;font-size:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:0.9;min-height:22px;}.pos.g{color:var(--ov-accent);}.pos.s{color:#a8b8c8;}.pos.b{color:#d4835a;}.pos.x{color:#8a96a8;font-size:10px;}.rank-move{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:900;margin-top:2px;letter-spacing:0;}.rank-move.up{color:#00ff88;text-shadow:0 0 5px rgba(0,255,136,.65);}.rank-move.down{color:#ff9d00;text-shadow:0 0 5px rgba(255,157,0,.55);}.rank-move.bigdown{color:#ff3535;text-shadow:0 0 5px rgba(255,53,53,.70);}.rank-move.kill{color:#e8d02b;text-shadow:0 0 5px rgba(232,208,43,.65);}
 .t-logo{width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid var(--ov-accent);background:rgba(255,255,255,0.05);}
 .t-info{min-width:0;width:100%;}.t-line{display:flex;align-items:center;gap:5px;min-width:0;}.t-name{font-weight:900;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;color:var(--ov-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.t-played{font-family:'Share Tech Mono',monospace;font-size:7px;color:#8a96a8;margin-top:1px;}
-.player-strips{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;width:42px;margin-top:2px;}
-.pstrip{height:4px;background:var(--alive-color);border-radius:1px;box-shadow:0 0 4px color-mix(in srgb,var(--alive-color) 65%,transparent);}
+.player-strips{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;width:48px;margin-top:3px;}
+.pstrip{height:6px;background:var(--alive-color);border-radius:2px;box-shadow:0 0 5px color-mix(in srgb,var(--alive-color) 70%,transparent);}
 .pstrip.dead{background:var(--dead-color);box-shadow:none;border:1px solid rgba(255,255,255,0.06);}
 .player-pipes{display:inline-flex;align-items:center;gap:1px;flex-shrink:0;font-family:'Share Tech Mono',monospace;font-weight:900;font-size:15px;line-height:1;color:var(--alive-color);letter-spacing:0;}
 .player-pipes .pmark.dead{color:var(--dead-color);opacity:.9;}
@@ -182,7 +182,7 @@ function teamNameBlock(team){
   const tag=escapeHtml(teamTag(team));
   const indicator=playerIndicator(team.players);
   const style=(overlaySettings.aliveStyle||"bars").toLowerCase();
-  if(style==="pipes"||style==="dots") return '<div class="t-line">'+indicator+'<div class="t-name">'+tag+'</div></div>';
+  if(style==="pipes"||style==="dots") return '<div class="t-line"><div class="t-name">'+tag+'</div>'+indicator+'</div>';
   return '<div class="t-name">'+tag+'</div>'+indicator;
 }
 
