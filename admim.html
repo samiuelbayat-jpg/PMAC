@@ -699,31 +699,59 @@ function egTodayStr(){
 // ---- Active session controls ----
 function egDateForGroup(gid){ const dateEl = document.getElementById(`eg-date-${gid}`); const v = dateEl ? dateEl.value : egSelectedDates[gid]; if(v){ egSelectedDates[gid]=v; localStorage.setItem(eventStorageKey('eg_selected_dates'), JSON.stringify(egSelectedDates)); } return v || egTodayStr(); }
 function egSetSelectedDate(gid,date){ if(!date) return; egSelectedDates[gid]=date; localStorage.setItem(eventStorageKey('eg_selected_dates'), JSON.stringify(egSelectedDates)); }
+function egCleanScoresForTeams(teamList){
+  const clean = {_activeMatch:activeMatchPayload()};
+  (teamList||[]).forEach(t=>{ if(t&&t.name) clean[sanitizeKey(t.name)] = emptyScoreRows(); });
+  return clean;
+}
+function egEnsureDateTeams(gid,date){
+  if(!gid||!date) return Promise.resolve(false);
+  const targetPath = `${eventPath("eventGroups")}/${gid}/sessions/${date}`;
+  return db.ref(targetPath).once("value").then(targetSnap=>{
+    const target = targetSnap.val() || {};
+    const targetTeams = target.teams ? (Array.isArray(target.teams) ? target.teams : Object.values(target.teams)) : [];
+    if(targetTeams.length) return false;
+    const groupSessionsPath = `${eventPath("eventGroups")}/${gid}/sessions`;
+    return db.ref(groupSessionsPath).once("value").then(allSnap=>{
+      const sessions = allSnap.val() || {};
+      const sourceDate = Object.keys(sessions).filter(d=>d!==date && sessions[d] && sessions[d].teams).sort().reverse()[0];
+      if(!sourceDate) return false;
+      const sourceTeams = sessions[sourceDate].teams ? (Array.isArray(sessions[sourceDate].teams) ? sessions[sourceDate].teams : Object.values(sessions[sourceDate].teams)) : [];
+      if(!sourceTeams.length) return false;
+      const teamsCopy = sourceTeams.map(t=>({...t}));
+      return db.ref(targetPath).update({teams:teamsCopy,scores:egCleanScoresForTeams(teamsCopy),carriedTeamsFrom:sourceDate,carriedAt:Date.now()}).then(()=>sourceDate);
+    });
+  });
+}
 function egActivate(gid){
   const date = egDateForGroup(gid);
   if(!date){ showToast("Pick a date first", false); return; }
-  const list = [{ group: gid, date }];
-  egActiveSession = egActivePayload(list);
-  localStorage.setItem(eventStorageKey('eg_active_session'), JSON.stringify(egActiveSession));
-  dbActiveSessionRef.set(egActiveSession);
-  applyActiveSessions(list, true);
-  updateActiveBanner();
-  renderEventGroups();
-  showToast(`Active lobby: Group ${gid} · ${date}`, true);
+  egEnsureDateTeams(gid,date).then(fromDate=>{
+    const list = [{ group: gid, date }];
+    egActiveSession = egActivePayload(list);
+    localStorage.setItem(eventStorageKey('eg_active_session'), JSON.stringify(egActiveSession));
+    dbActiveSessionRef.set(egActiveSession);
+    applyActiveSessions(list, true);
+    updateActiveBanner();
+    renderEventGroups();
+    showToast(fromDate?`Group ${gid} copied teams from ${fromDate} with clean points`:`Active lobby: Group ${gid} · ${date}`, true);
+  }).catch(e=>showToast(e.message,false));
 }
 function egAddToActive(gid){
   const date = egDateForGroup(gid);
   if(!date){ showToast("Pick a date first", false); return; }
-  const list = egSessionsFromActive(egActiveSession);
-  const item = { group: gid, date };
-  if(!list.find(s=>egSessionKey(s)===egSessionKey(item))) list.push(item);
-  egActiveSession = egActivePayload(list);
-  localStorage.setItem(eventStorageKey('eg_active_session'), JSON.stringify(egActiveSession));
-  dbActiveSessionRef.set(egActiveSession);
-  applyActiveSessions(list, true);
-  updateActiveBanner();
-  renderEventGroups();
-  showToast(`Active lobby: ${egActiveLabel()}`, true);
+  egEnsureDateTeams(gid,date).then(fromDate=>{
+    const list = egSessionsFromActive(egActiveSession);
+    const item = { group: gid, date };
+    if(!list.find(s=>egSessionKey(s)===egSessionKey(item))) list.push(item);
+    egActiveSession = egActivePayload(list);
+    localStorage.setItem(eventStorageKey('eg_active_session'), JSON.stringify(egActiveSession));
+    dbActiveSessionRef.set(egActiveSession);
+    applyActiveSessions(list, true);
+    updateActiveBanner();
+    renderEventGroups();
+    showToast(fromDate?`Group ${gid} copied teams from ${fromDate} with clean points`:`Active lobby: ${egActiveLabel()}`, true);
+  }).catch(e=>showToast(e.message,false));
 }
 function egRemoveFromActive(gid,date){
   const list = egSessionsFromActive(egActiveSession).filter(s=>!(s.group===gid&&s.date===date));
@@ -921,7 +949,11 @@ function renderEventGroups(){
 function egRefreshGroupDisplay(gid){
   const dateEl = document.getElementById(`eg-date-${gid}`);
   if(dateEl) egSetSelectedDate(gid,dateEl.value);
-  renderEventGroups();
+  const date = dateEl ? dateEl.value : egDateForGroup(gid);
+  egEnsureDateTeams(gid,date).then(fromDate=>{
+    renderEventGroups();
+    if(fromDate) showToast(`Group ${gid} teams copied from ${fromDate}; points are clean`, true);
+  }).catch(e=>showToast(e.message,false));
 }
 
 function egLoadDateIntoForm(gid, date){
@@ -937,17 +969,16 @@ function egCopySessionToSelected(gid, fromDate){
   const toDate = egDateForGroup(gid);
   if(!fromDate || !toDate) return;
   if(fromDate===toDate){ showToast("That session is already open", false); return; }
-  if(!confirm(`Restore Group ${gid} teams and scores from ${fromDate} into ${toDate}? This replaces the teams/scores on ${toDate}.`)) return;
+  if(!confirm(`Copy Group ${gid} teams from ${fromDate} into ${toDate} with CLEAN points? This replaces the selected date for this group.`)) return;
   const fromPath = `${eventPath("eventGroups")}/${gid}/sessions/${fromDate}`;
   const toPath = `${eventPath("eventGroups")}/${gid}/sessions/${toDate}`;
   db.ref(fromPath).once("value").then(snap=>{
     const data = snap.val() || {};
     const teamsCopy = data.teams ? (Array.isArray(data.teams) ? data.teams : Object.values(data.teams)) : [];
-    const scoresCopy = data.scores || {};
     if(!teamsCopy.length){ showToast("No teams found in that session", false); return; }
-    return db.ref(toPath).set({teams:teamsCopy,scores:scoresCopy,restoredFrom:fromDate,restoredAt:Date.now()}).then(()=>{
+    return db.ref(toPath).set({teams:teamsCopy,scores:egCleanScoresForTeams(teamsCopy),restoredTeamsFrom:fromDate,restoredAt:Date.now()}).then(()=>{
       egSetSelectedDate(gid,toDate);
-      showToast(`Restored Group ${gid} from ${fromDate} to ${toDate}`, true);
+      showToast(`Copied Group ${gid} teams from ${fromDate} with clean points`, true);
       renderEventGroups();
     });
   }).catch(e=>showToast(e.message,false));
@@ -994,17 +1025,16 @@ function egRestoreSelectedToToday(gid){
   const toDate = egTodayStr();
   if(!fromDate){ showToast("Open a session first", false); return; }
   if(fromDate===toDate){ showToast("Selected session is already today", false); return; }
-  if(!confirm(`Copy Group ${gid} teams and scores from ${fromDate} into today (${toDate})? This replaces today's session for this group.`)) return;
+  if(!confirm(`Copy Group ${gid} teams from ${fromDate} into today (${toDate}) with CLEAN points? This replaces today's session for this group.`)) return;
   const fromPath = `${eventPath("eventGroups")}/${gid}/sessions/${fromDate}`;
   const toPath = `${eventPath("eventGroups")}/${gid}/sessions/${toDate}`;
   db.ref(fromPath).once("value").then(snap=>{
     const data = snap.val() || {};
     const teamsCopy = data.teams ? (Array.isArray(data.teams) ? data.teams : Object.values(data.teams)) : [];
-    const scoresCopy = data.scores || {};
     if(!teamsCopy.length){ showToast("No teams found in selected session", false); return; }
-    return db.ref(toPath).set({teams:teamsCopy,scores:scoresCopy,restoredFrom:fromDate,restoredAt:Date.now()}).then(()=>{
+    return db.ref(toPath).set({teams:teamsCopy,scores:egCleanScoresForTeams(teamsCopy),restoredTeamsFrom:fromDate,restoredAt:Date.now()}).then(()=>{
       egSetSelectedDate(gid,toDate);
-      showToast(`Copied Group ${gid} from ${fromDate} to today`, true);
+      showToast(`Copied Group ${gid} teams to today with clean points`, true);
       renderEventGroups();
     });
   }).catch(e=>showToast(e.message,false));
