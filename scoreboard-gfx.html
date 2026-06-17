@@ -54,8 +54,7 @@ canvas{display:block;border-radius:4px;}
     <div class="cf"><div class="cl">Title Size</div><select class="ci" id="inp-title-size" style="width:120px;height:34px;"><option value="0.78">Small</option><option value="0.9">Medium</option><option value="1" selected>Normal</option><option value="1.12">Large</option><option value="1.25">XL</option></select></div>
     <div class="cf"><div class="cl">Title Font</div><select class="ci" id="inp-title-font" style="width:170px;height:34px;"><option value="barlow" selected>Condensed</option><option value="impact">Impact</option><option value="broadcast">Broadcast Bold</option><option value="wide">Wide League</option><option value="clean">Clean Sans</option><option value="serif">Classic Serif</option></select></div>
     <div class="cf"><div class="cl">Sub Title</div><input class="ci" type="text" id="inp-sub" placeholder="Overall Rankings" style="width:180px;"></div>
-    <div class="cf"><div class="cl">GFX Design</div><select class="ci" id="inp-design" style="width:210px;height:34px;"><option value="battle">Battle Form</option><option value="bluecompact">Blue Compact</option><option value="wwcd">WWCD Winners</option><option value="neon">Neon Arena</option><option value="inferno">Inferno Cup</option><option value="royal">Royal Gold</option><option value="ice">Ice Storm</option><option value="crimson">Crimson Strike</option><option value="tactical">Tactical Ops</option><option value="emerald">Emerald League</option><option value="cyber">Cyber Pink</option><option value="midnight">Midnight Glass</option><option value="desert">Desert Elite</option><option value="ocean">Ocean Pulse</option><option value="mono">Mono Broadcast</option></select></div>
-    <div class="cf"><div class="cl">Slot Label</div><select class="ci" id="inp-slot-label" style="width:130px;height:34px;"><option value="name" selected>Team Name</option><option value="tag">Team Tag</option></select></div>
+    <div class="cf"><div class="cl">GFX Design</div><select class="ci" id="inp-design" style="width:210px;height:34px;"><option value="battle">Battle Form</option><option value="bluecompact">Blue Compact</option><option value="wwcd">WWCD Winners</option><option value="ngclime">NGC Lime Standings</option><option value="ngcblue">NGC Blue Rankings</option><option value="neon">Neon Arena</option><option value="inferno">Inferno Cup</option><option value="royal">Royal Gold</option><option value="ice">Ice Storm</option><option value="crimson">Crimson Strike</option><option value="tactical">Tactical Ops</option><option value="emerald">Emerald League</option><option value="cyber">Cyber Pink</option><option value="midnight">Midnight Glass</option><option value="desert">Desert Elite</option><option value="ocean">Ocean Pulse</option><option value="mono">Mono Broadcast</option></select></div>
     <div class="cf"><div class="cl">BG Color</div><input class="ci" type="color" id="inp-bg" value="#1a1a2e" style="width:56px;padding:2px;height:34px;cursor:pointer;"></div>
     <div class="cf"><div class="cl">Accent</div><input class="ci" type="color" id="inp-accent" value="#00ff88" style="width:56px;padding:2px;height:34px;cursor:pointer;"></div>
     <div class="cf"><div class="cl">Light Fields</div><input class="ci" type="color" id="inp-light" value="#eaf7f8" style="width:56px;padding:2px;height:34px;cursor:pointer;"></div>
@@ -99,7 +98,7 @@ canvas{display:block;border-radius:4px;}
         <label class="range-row"><span class="cl">Panels</span><input type="range" id="inp-panel-alpha" min="20" max="90" value="55"><span class="range-val" id="val-panel-alpha">55%</span></label>
       </div>
     </div>
-    <button class="btn btn-green" id="slot-gfx-btn" style="align-self:flex-end;">Export Slot GFX</button><button class="btn" id="refresh-btn" style="align-self:flex-end;">↺ Refresh</button><button class="btn" id="clear-setup-btn" style="align-self:flex-end;">Clear Setup</button>
+    <button class="btn" id="refresh-btn" style="align-self:flex-end;">↺ Refresh</button><button class="btn" id="clear-setup-btn" style="align-self:flex-end;">Clear Setup</button>
   </div>
   <div class="status" id="status">Connecting...</div>
   <div id="canvas-wrap"><canvas id="gfx" width="1920" height="1080"></canvas></div>
@@ -132,7 +131,7 @@ var EVENT_LOGO_NAME = "";
 var BG_IMAGE_NAME = "";
 var GFX_SETUP_KEY = "pmac_gfx_generator_setup_v2";
 var gfxRestoringSetup = false;
-function gfxInputIds(){return ["inp-title","inp-title-size","inp-title-font","inp-sub","inp-design","inp-slot-label","inp-bg","inp-accent","inp-light","inp-secondary","inp-stage","inp-qualify","inp-group","inp-date","inp-time","inp-matches","inp-bg-bright","inp-bg-contrast","inp-bg-blur","inp-bg-tint","inp-panel-alpha"];}
+function gfxInputIds(){return ["inp-title","inp-title-size","inp-title-font","inp-sub","inp-design","inp-bg","inp-accent","inp-light","inp-secondary","inp-stage","inp-qualify","inp-group","inp-date","inp-time","inp-matches","inp-bg-bright","inp-bg-contrast","inp-bg-blur","inp-bg-tint","inp-panel-alpha"];}
 function saveGfxSetup(){
   if(gfxRestoringSetup) return;
   var fields={};
@@ -173,6 +172,8 @@ var GFX_PRESETS = {
   battle:{label:"Battle Form",bg:"#120707",accent:"#ff1808",bright:48,contrast:128,blur:2,tint:76,panel:70,header:"battle",rows:"battle",pattern:"slashes",layout:"battle"},
   bluecompact:{label:"Blue Compact",bg:"#082a4d",accent:"#50d8ff",bright:58,contrast:118,blur:1,tint:66,panel:66,header:"blue",rows:"blue",pattern:"grid",layout:"bluecompact"},
   wwcd:{label:"WWCD Winners",bg:"#101010",accent:"#f5a400",bright:72,contrast:112,blur:1,tint:42,panel:74,header:"wwcd",rows:"wwcd",pattern:"scan",layout:"wwcd"},
+  ngclime:{label:"NGC Lime Standings",bg:"#f2f4f1",accent:"#b4c837",bright:80,contrast:106,blur:0,tint:20,panel:78,header:"ngc",rows:"ngc",pattern:"paper",layout:"ngclime"},
+  ngcblue:{label:"NGC Blue Rankings",bg:"#062c78",accent:"#ffe800",bright:72,contrast:112,blur:0,tint:38,panel:72,header:"ngcblue",rows:"ngcblue",pattern:"water",layout:"ngcblue"},
   neon:{label:"Neon Arena",bg:"#1a1a2e",accent:"#00ff88",bright:68,contrast:95,blur:2,tint:62,panel:55,header:"bar",rows:"stripe",pattern:"dots"},
   inferno:{label:"Inferno Cup",bg:"#210b08",accent:"#ff5a1f",bright:58,contrast:118,blur:3,tint:70,panel:62,header:"angled",rows:"heat",pattern:"diagonal"},
   royal:{label:"Royal Gold",bg:"#11101d",accent:"#ffd166",bright:62,contrast:105,blur:2,tint:66,panel:60,header:"crest",rows:"cards",pattern:"rings"},
@@ -331,7 +332,6 @@ document.getElementById("dl-btn").onclick = function(){
   a.click();
   toast("Downloaded!", true);
 };
-document.getElementById("slot-gfx-btn").onclick = exportApprovedSlotGfx;
 
 function san(n){return n.replace(/[.#$\/\[\]]/g,"_");}
 
@@ -409,11 +409,6 @@ function drawCoverImage(ctx,img,x,y,w,h){
   var sw=w/scale,sh=h/scale;
   var sx=(img.naturalWidth-sw)/2,sy=(img.naturalHeight-sh)/2;
   ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h);
-}
-function drawContainImage(ctx,img,x,y,w,h){
-  var scale=Math.min(w/img.naturalWidth,h/img.naturalHeight);
-  var dw=img.naturalWidth*scale,dh=img.naturalHeight*scale;
-  ctx.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh);
 }
 function drawDesignPattern(ctx,p,W,H,ac,acRgb){
   ctx.save();
@@ -501,77 +496,6 @@ function drawBlueCompactCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBri
   ctx.fillStyle="rgba(0,0,0,0.50)";ctx.fillRect(120,930,1680,54);ctx.fillStyle="#fff";ctx.font="900 25px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText(metaVal("inp-stage","GROUP STAGE")+" / "+metaVal("inp-group","GROUP B"),150,966);ctx.textAlign="center";ctx.fillText(metaVal("inp-qualify","TOP 2 WILL QUALIFY TO SEMI-FINAL"),W/2,966);ctx.textAlign="right";ctx.fillText(metaVal("inp-matches","4 MATCHES"),1770,966);
 }
 
-function approvedRegistrationList(raw){
-  var list=Array.isArray(raw)?raw:Object.keys(raw||{}).map(function(k){return raw[k];});
-  return list.filter(function(t){return t&&String(t.status||"").toLowerCase()==="approved"&&t.name;})
-    .sort(function(a,b){return (a.registeredAt||0)-(b.registeredAt||0);})
-    .map(function(t){return {name:String(t.name||"").trim().toUpperCase(),tag:String(t.tag||"").trim().toUpperCase(),logo:t.logo||""};});
-}
-function exportApprovedSlotGfx(){
-  document.getElementById("status").textContent="Loading approved registrations...";
-  db.ref(eventPath("registrations")).once("value").then(function(snap){
-    var approved=approvedRegistrationList(snap.val());
-    if(!approved.length){toast("No approved registrations found",false);document.getElementById("status").textContent="No approved registrations.";return;}
-    var slotTeams=approved.slice(0,18);
-    document.getElementById("status").textContent="Loading "+slotTeams.length+" approved team logos...";
-    return Promise.all(slotTeams.map(function(t){return loadImage(t.logo);})).then(function(logos){
-      var ctx=document.getElementById("gfx").getContext("2d");
-      drawMiniLeagueSlotCanvas(ctx,slotTeams,logos);
-      scaleCanvas();
-      var canvas=document.getElementById("gfx"),a=document.createElement("a");
-      var t=(document.getElementById("inp-title").value||"Mini_League").replace(/ /g,"_");
-      a.download="PMAC_SLOT_GFX_"+t+"_1920x1080.png";
-      a.href=canvas.toDataURL("image/png");
-      a.click();
-      document.getElementById("status").textContent="Slot GFX exported: "+slotTeams.length+(approved.length>18?" of "+approved.length:"")+" approved teams";
-      toast("Slot GFX downloaded",true);
-    });
-  }).catch(function(e){toast("Error: "+e.message,false);document.getElementById("status").textContent="Error loading registrations.";});
-}
-function drawMiniLeagueSlotCanvas(ctx,slotTeams,logos){
-  var W=1920,H=1080,bg=colorVal("inp-bg","#2a0f08"),ac=colorVal("inp-accent","#ff6a22"),second=colorVal("inp-secondary","#bf241c");
-  var title=(document.getElementById("inp-title").value||eventInfo.name||"MINI LEAGUE").toUpperCase();
-  var stage=metaVal("inp-stage","SEASON 2026 • GROUP STAGE").toUpperCase();
-  var labelMode=(document.getElementById("inp-slot-label")||{}).value||"name";
-  drawBaseCanvasBg(ctx,W,H,bg,ac,rangeVal("inp-bg-bright"),rangeVal("inp-bg-contrast"),rangeVal("inp-bg-blur"),rangeVal("inp-bg-tint")/100);
-  if(!(BG_IMAGE&&BG_IMAGE.complete&&BG_IMAGE.naturalWidth>0)){
-    var g=ctx.createRadialGradient(W/2,260,60,W/2,H/2,980);g.addColorStop(0,"#6a2a14");g.addColorStop(0.45,"#2b0d07");g.addColorStop(1,"#070403");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  }
-  ctx.fillStyle="rgba(20,5,2,0.64)";ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle=hexAlpha(ac,0.13);ctx.lineWidth=2;
-  for(var r=280;r<1400;r+=210){ctx.beginPath();ctx.arc(W/2,500,r,0,Math.PI*2);ctx.stroke();}
-  ctx.fillStyle="rgba(0,0,0,0.55)";ctx.beginPath();ctx.moveTo(0,950);for(var x=0;x<=W;x+=145){ctx.lineTo(x,900+(x%290?55:0));ctx.lineTo(x+70,940);}ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
-
-  ctx.textAlign="center";ctx.fillStyle="#d9a67a";ctx.font="900 28px 'Barlow Condensed',sans-serif";ctx.letterSpacing="0.3em";ctx.fillText(stage,W/2,66,1180);ctx.letterSpacing="0";
-  var tg=ctx.createLinearGradient(0,92,0,180);tg.addColorStop(0,"#fff4dc");tg.addColorStop(0.55,"#ffb065");tg.addColorStop(1,ac);ctx.fillStyle=tg;ctx.shadowColor="rgba(255,90,22,0.65)";ctx.shadowBlur=16;ctx.font=titleFontSpec(900,104);ctx.fillText(title,W/2,158,1080);ctx.shadowBlur=0;
-  function capsule(x,y,w,text){ctx.fillStyle="rgba(13,20,27,0.94)";drawSkewRect(ctx,x,y,w,70,28);ctx.fill();ctx.strokeStyle=ac;ctx.lineWidth=4;drawSkewRect(ctx,x,y,w,70,28);ctx.stroke();ctx.fillStyle="#fff";ctx.font="900 31px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(text,x+w/2,y+46,w-38);}
-  capsule(352,188,380,metaVal("inp-group","GROUP").toUpperCase());
-  capsule(770,188,380,metaVal("inp-date","DATE").toUpperCase());
-  capsule(1188,188,380,metaVal("inp-matches","MATCHES").toUpperCase());
-  function headerBar(x,y,w){var lg=ctx.createLinearGradient(x,y,x+w,y);lg.addColorStop(0,ac);lg.addColorStop(0.45,"#ef3629");lg.addColorStop(1,"rgba(120,20,12,0.12)");ctx.fillStyle=lg;drawSkewRect(ctx,x,y,w,70,24);ctx.fill();}
-  headerBar(84,275,820);headerBar(1014,275,820);headerBar(404,600,1112);
-  function slotCard(idx,x,y){
-    var team=slotTeams[idx],logo=logos[idx],cw=264,ch=182;
-    ctx.fillStyle="rgba(4,7,12,0.95)";drawSkewRect(ctx,x,y,cw,ch,24);ctx.fill();
-    var cg=ctx.createLinearGradient(x,y,x+cw,y+ch);cg.addColorStop(0,"rgba(255,219,150,0.78)");cg.addColorStop(0.34,"rgba(21,24,32,0.96)");cg.addColorStop(1,"rgba(8,9,14,0.98)");ctx.fillStyle=cg;drawSkewRect(ctx,x+5,y+5,cw-10,ch-54,20);ctx.fill();
-    ctx.strokeStyle=ac;ctx.lineWidth=4;drawSkewRect(ctx,x,y,cw,ch,24);ctx.stroke();
-    ctx.fillStyle=ac;drawSkewRect(ctx,x-8,y+ch-48,cw+16,50,18);ctx.fill();
-    if(team&&logo){drawContainImage(ctx,logo,x+44,y+24,cw-88,82);}
-    else if(team){ctx.fillStyle=hexAlpha(ac,0.18);ctx.beginPath();ctx.arc(x+cw/2,y+65,38,0,Math.PI*2);ctx.fill();ctx.fillStyle=ac;ctx.font="900 32px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText((team.name||"?").slice(0,2),x+cw/2,y+77);}
-    else{ctx.fillStyle="rgba(215,170,110,0.72)";ctx.font="900 18px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText("LOGO",x+cw/2,y+82);}
-    var label=team?(labelMode==="tag"?(team.tag||team.name):team.name):"";
-    ctx.fillStyle="#fff";ctx.font="900 23px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.shadowColor="rgba(0,0,0,0.8)";ctx.shadowBlur=5;ctx.fillText(label.toUpperCase(),x+cw/2,y+ch-16,cw-24);ctx.shadowBlur=0;
-  }
-  var xsL=[84,374,664],xsR=[1014,1304,1594],ysTop=[345,545],xsB=[540,830,1120],ysB=[675,875],i=0;
-  ysTop.forEach(function(y){xsL.forEach(function(x){slotCard(i++,x,y);});});
-  ysTop.forEach(function(y){xsR.forEach(function(x){slotCard(i++,x,y);});});
-  ysB.forEach(function(y){xsB.forEach(function(x){slotCard(i++,x,y);});});
-  if(EVENT_LOGO&&EVENT_LOGO.complete&&EVENT_LOGO.naturalWidth>0)drawContainImage(ctx,EVENT_LOGO,780,1004,140,48);
-  if(PMAC_LOGO.complete&&PMAC_LOGO.naturalWidth>0)drawContainImage(ctx,PMAC_LOGO,1000,1000,140,56);
-  ctx.fillStyle="#d9a67a";ctx.font="900 22px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText(metaVal("inp-qualify","APPROVED TEAMS").toUpperCase(),66,1035,520);
-  ctx.textAlign="right";ctx.fillText("ORGANIZED BY PMAC",W-66,1035);
-}
-
 function getWWCDCards(st,logos){
   var logoByName={};
   st.forEach(function(t,i){logoByName[t.name]=logos[i]||null;});
@@ -620,6 +544,78 @@ function drawWWCDCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgC
   ctx.fillStyle="#ffffff";ctx.font="900 26px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText(metaVal("inp-stage","GROUP STAGE")+"  |  "+metaVal("inp-group","GROUP"),46,1054);
   ctx.textAlign="center";ctx.fillStyle=ac;ctx.fillText(metaVal("inp-qualify","WWCD WINNERS"),W/2,1054,780);
   ctx.textAlign="right";ctx.fillStyle="#ffffff";ctx.fillText(metaVal("inp-date",today)+"  |  "+metaVal("inp-matches","MATCHES"),W-46,1054);
+}
+
+function drawLogoBox(ctx,img,x,y,w,h,bg,fg,text){
+  ctx.save();
+  ctx.fillStyle=bg;ctx.fillRect(x,y,w,h);
+  if(img&&img.complete){
+    var r=Math.min(w,h)/2-5;
+    drawCircleImage(ctx,img,x+w/2,y+h/2,r);
+  } else {
+    ctx.fillStyle=fg;ctx.font="900 18px 'Barlow Condensed',sans-serif";ctx.textAlign="center";
+    ctx.fillText(String(text||"").substring(0,2).toUpperCase(),x+w/2,y+h/2+6,w-8);
+  }
+  ctx.restore();
+}
+
+function drawNGCLimeCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha){
+  var W=1920,H=1080,count=Math.min(st.length,20),lime=ac||"#b4c837";
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=bg||"#f2f4f1";ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="rgba(0,0,0,0.035)";
+  for(var i=0;i<90;i++){ctx.fillRect((i*137)%W,(i*67)%H,2+(i%9),2+(i%11));}
+  ctx.strokeStyle=hexAlpha(lime,0.55);ctx.lineWidth=8;
+  for(var d=-180;d<260;d+=28){ctx.beginPath();ctx.moveTo(d,0);ctx.lineTo(d+190,190);ctx.stroke();}
+  for(var d2=W-260;d2<W+180;d2+=28){ctx.beginPath();ctx.moveTo(d2,H);ctx.lineTo(d2+190,H-190);ctx.stroke();}
+  var leftLogo=EVENT_LOGO||PMAC_LOGO;
+  if(leftLogo&&leftLogo.complete&&leftLogo.naturalWidth>0)drawCircleImage(ctx,leftLogo,260,115,72);
+  ctx.fillStyle="#5b5d62";ctx.font="900 80px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText((title||"NGC").toUpperCase(),340,100,260);
+  ctx.fillStyle=lime;ctx.fillRect(610,50,6,126);
+  ctx.fillStyle=lime;ctx.font=titleFontSpec(900,82);ctx.textAlign="left";ctx.fillText((sub||"OVERALL STANDINGS").toUpperCase(),660,92,760);
+  ctx.fillText("STANDINGS",660,165,760);
+  function header(x,y,w){ctx.fillStyle="#111217";ctx.fillRect(x+92,y,w-92,46);ctx.fillStyle="#f6f6f6";ctx.font="900 23px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText("TEAM NAME",x+360,y-8);ctx.fillText("WIN",x+w-295,y-8);ctx.fillText("PP",x+w-205,y-8);ctx.fillText("KP",x+w-115,y-8);ctx.fillText("TP",x+w-35,y-8);}
+  function row(x,y,w,t,pos,logo){
+    var h=66;
+    ctx.fillStyle=lime;ctx.fillRect(x,y,84,h-5);
+    ctx.fillStyle="#ffffff";ctx.font="800 30px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(pos,x+42,y+43);
+    ctx.fillStyle=pos%2?"rgba(25,26,30,0.92)":"rgba(36,37,41,0.92)";ctx.fillRect(x+94,y,w-420,h-5);
+    drawLogoBox(ctx,logo,x+110,y+8,48,48,"rgba(255,255,255,0.08)",lime,t.name);
+    ctx.fillStyle="#ffffff";ctx.font="900 28px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText(t.name,x+178,y+42,w-600);
+    var sx=x+w-314,vals=[t.wins,t.plc,t.kills,t.pts];
+    for(var j=0;j<4;j++){ctx.fillStyle="rgba(115,117,120,0.92)";ctx.fillRect(sx+j*84,y,74,h-5);ctx.fillStyle="#ffffff";ctx.font="900 28px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(vals[j],sx+j*84+37,y+42);}
+  }
+  header(48,250,890);header(982,250,890);
+  for(var n=0;n<count;n++){var x=n<10?48:982,y=292+(n%10)*70;row(x,y,890,st[n],n+1,logos[n]);}
+  ctx.fillStyle="#33363a";ctx.font="900 42px 'Barlow Condensed',sans-serif";ctx.textAlign="center";
+  ctx.fillText("KRAFTON",650,1022);ctx.fillText("NGC",960,1022);ctx.fillText("LIGHTSPEED",1260,1022);
+}
+
+function drawNGCBlueCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha){
+  var W=1920,H=1080,count=Math.min(st.length,20),yellow=ac||"#ffe800",blue=bg||"#062c78";
+  ctx.clearRect(0,0,W,H);
+  var g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,"#046fa7");g.addColorStop(0.42,blue);g.addColorStop(1,"#061b61");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="rgba(255,255,255,0.04)";for(var i=0;i<70;i++){ctx.beginPath();ctx.arc((i*173)%W,(i*89)%H,18+(i%5)*8,0,Math.PI*2);ctx.fill();}
+  ctx.textAlign="center";ctx.font=titleFontSpec(900,116);ctx.fillStyle="#ffffff";ctx.fillText("OVERALL",W/2-150,118,560);ctx.fillStyle=yellow;ctx.fillText("RANKINGS",W/2+350,118,620);
+  ctx.save();ctx.translate(68,160);ctx.rotate(-0.52);ctx.strokeStyle="#ffffff";ctx.lineWidth=5;ctx.fillStyle="#54a9ec";ctx.fillRect(-36,-32,108,70);ctx.strokeRect(-36,-32,108,70);ctx.fillStyle="#ffffff";ctx.font="900 26px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(metaVal("inp-time","23:00").replace("TIME:",""),18,12);ctx.restore();
+  function header(x,y,w){ctx.fillStyle=yellow;ctx.fillRect(x,y,w,64);ctx.fillStyle="#071015";ctx.font="900 28px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText("RANK",x+54,y+42);ctx.textAlign="left";ctx.fillText("TEAM NAME",x+230,y+42);ctx.textAlign="center";ctx.fillText("WIN",x+w-306,y+42);ctx.fillText("PP",x+w-205,y+42);ctx.fillText("KP",x+w-115,y+42);ctx.fillText("TP",x+w-35,y+42);}
+  function row(x,y,w,t,pos,logo){
+    var h=62,rankW=84;
+    ctx.fillStyle="#55aeee";ctx.fillRect(x,y,rankW,h);
+    ctx.fillStyle="#ffffff";ctx.font="800 28px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(pos,x+rankW/2,y+40);
+    ctx.fillStyle="rgba(255,255,255,0.96)";ctx.fillRect(x+rankW+12,y,w-rankW-12,h);
+    ctx.strokeStyle="#173b78";ctx.lineWidth=4;ctx.strokeRect(x+rankW+12,y,w-rankW-12,h);
+    drawLogoBox(ctx,logo,x+rankW+24,y+7,48,48,"#ffffff","#173b78",t.name);
+    ctx.fillStyle="#05080e";ctx.font="900 27px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText(t.name,x+rankW+110,y+40,w-560);
+    var sx=x+w-306,vals=[t.wins,t.plc,t.kills,t.pts];
+    ctx.textAlign="center";ctx.font="900 27px 'Barlow Condensed',sans-serif";ctx.fillStyle="#05080e";
+    for(var j=0;j<4;j++)ctx.fillText(vals[j],sx+j*90,y+40);
+  }
+  header(42,178,888);header(984,178,888);
+  for(var n=0;n<count;n++){var x=n<10?42:984,y=258+(n%10)*70;row(x,y,888,st[n],n+1,logos[n]);}
+  ctx.fillStyle="#ffffff";ctx.font="900 48px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText("KRAFTON",44,1024);
+  ctx.textAlign="center";ctx.fillText("LIGHTSPEED STUDIOS",W/2,1024);
+  ctx.fillStyle=yellow;ctx.fillRect(W-360,990,230,44);ctx.fillStyle="#071015";ctx.font="900 25px 'Barlow Condensed',sans-serif";ctx.fillText((title||"NGC ESPORTS").toUpperCase(),W-245,1022,210);
 }
 function loadImage(url){
   return new Promise(function(resolve){
@@ -684,6 +680,8 @@ function drawCanvas(st,logos,title,sub,bg,ac,today,maxTeams){
   if(preset.layout==="battle"){drawBattleCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha);return;}
   if(preset.layout==="bluecompact"){drawBlueCompactCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha);return;}
   if(preset.layout==="wwcd"){drawWWCDCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha);return;}
+  if(preset.layout==="ngclime"){drawNGCLimeCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha);return;}
+  if(preset.layout==="ngcblue"){drawNGCBlueCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha);return;}
 
   // BG: keep this area clean so uploaded backgrounds show without added design shapes.
   drawBaseCanvasBg(ctx,W,H,bg,ac,bgBright,bgContrast,bgBlur,bgTint);
