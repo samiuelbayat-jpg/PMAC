@@ -301,7 +301,7 @@ function render() {
     const rankClass = position === 1 ? "gold" : position === 2 ? "silver" : position === 3 ? "bronze" : "";
     const posColorClass = position === 1 ? "g" : position === 2 ? "s" : position === 3 ? "b" : "x";
     
-    const move = movementFor(team, position);
+    const move = { html:"", rowClass:"" };
     const row = document.createElement("div");
     row.className = "team-row " + rankClass + " " + move.rowClass;
     
