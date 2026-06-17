@@ -577,12 +577,6 @@ function drawLogoBox(ctx,img,x,y,w,h,bg,fg,text){
 function drawNGCLimeCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha){
   var W=1920,H=1080,count=Math.min(st.length,20),lime=ac||"#b4c837";
   ctx.clearRect(0,0,W,H);
-  ctx.fillStyle=bg||"#f2f4f1";ctx.fillRect(0,0,W,H);
-  ctx.fillStyle="rgba(0,0,0,0.035)";
-  for(var i=0;i<90;i++){ctx.fillRect((i*137)%W,(i*67)%H,2+(i%9),2+(i%11));}
-  ctx.strokeStyle=hexAlpha(lime,0.55);ctx.lineWidth=8;
-  for(var d=-180;d<260;d+=28){ctx.beginPath();ctx.moveTo(d,0);ctx.lineTo(d+190,190);ctx.stroke();}
-  for(var d2=W-260;d2<W+180;d2+=28){ctx.beginPath();ctx.moveTo(d2,H);ctx.lineTo(d2+190,H-190);ctx.stroke();}
   var leftLogo=EVENT_LOGO||PMAC_LOGO;
   if(leftLogo&&leftLogo.complete&&leftLogo.naturalWidth>0)drawCircleImage(ctx,leftLogo,260,115,72);
   ctx.fillStyle="#5b5d62";ctx.font="900 80px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText((title||"NGC").toUpperCase(),340,100,260);
@@ -608,8 +602,6 @@ function drawNGCLimeCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,
 function drawNGCBlueCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha){
   var W=1920,H=1080,count=Math.min(st.length,20),yellow=ac||"#ffe800",blue=bg||"#062c78";
   ctx.clearRect(0,0,W,H);
-  var g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,"#046fa7");g.addColorStop(0.42,blue);g.addColorStop(1,"#061b61");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  ctx.fillStyle="rgba(255,255,255,0.04)";for(var i=0;i<70;i++){ctx.beginPath();ctx.arc((i*173)%W,(i*89)%H,18+(i%5)*8,0,Math.PI*2);ctx.fill();}
   ctx.textAlign="center";ctx.font=titleFontSpec(900,116);ctx.fillStyle="#ffffff";ctx.fillText("OVERALL",W/2-150,118,560);ctx.fillStyle=yellow;ctx.fillText("RANKINGS",W/2+350,118,620);
   ctx.save();ctx.translate(68,160);ctx.rotate(-0.52);ctx.strokeStyle="#ffffff";ctx.lineWidth=5;ctx.fillStyle="#54a9ec";ctx.fillRect(-36,-32,108,70);ctx.strokeRect(-36,-32,108,70);ctx.fillStyle="#ffffff";ctx.font="900 26px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(metaVal("inp-time","23:00").replace("TIME:",""),18,12);ctx.restore();
   function header(x,y,w){ctx.fillStyle=yellow;ctx.fillRect(x,y,w,64);ctx.fillStyle="#071015";ctx.font="900 28px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText("RANK",x+54,y+42);ctx.textAlign="left";ctx.fillText("TEAM NAME",x+230,y+42);ctx.textAlign="center";ctx.fillText("WIN",x+w-306,y+42);ctx.fillText("PP",x+w-205,y+42);ctx.fillText("KP",x+w-115,y+42);ctx.fillText("TP",x+w-35,y+42);}
