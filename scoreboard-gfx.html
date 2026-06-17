@@ -55,7 +55,7 @@ canvas{display:block;border-radius:4px;}
     <div class="cf"><div class="cl">Title Font</div><select class="ci" id="inp-title-font" style="width:170px;height:34px;"><option value="barlow" selected>Condensed</option><option value="impact">Impact</option><option value="broadcast">Broadcast Bold</option><option value="wide">Wide League</option><option value="clean">Clean Sans</option><option value="serif">Classic Serif</option></select></div>
     <div class="cf"><div class="cl">Team Font</div><select class="ci" id="inp-team-font" style="width:170px;height:34px;"><option value="clean" selected>Clean Readable</option><option value="barlow">Condensed</option><option value="bold">Bold Sans</option><option value="wide">Wide League</option><option value="impact">Impact</option><option value="serif">Classic Serif</option></select></div>
     <div class="cf"><div class="cl">Sub Title</div><input class="ci" type="text" id="inp-sub" placeholder="Overall Rankings" style="width:180px;"></div>
-    <div class="cf"><div class="cl">GFX Design</div><select class="ci" id="inp-design" style="width:210px;height:34px;"><option value="battle">Battle Form</option><option value="bluecompact">Blue Compact</option><option value="wwcd">WWCD Winners</option><option value="ngclime">NGC Lime Standings</option><option value="ngcblue">NGC Blue Rankings</option><option value="neon">Neon Arena</option><option value="inferno">Inferno Cup</option><option value="royal">Royal Gold</option><option value="ice">Ice Storm</option><option value="crimson">Crimson Strike</option><option value="tactical">Tactical Ops</option><option value="emerald">Emerald League</option><option value="cyber">Cyber Pink</option><option value="midnight">Midnight Glass</option><option value="desert">Desert Elite</option><option value="ocean">Ocean Pulse</option><option value="mono">Mono Broadcast</option></select></div>
+    <div class="cf"><div class="cl">GFX Design</div><select class="ci" id="inp-design" style="width:210px;height:34px;"><option value="battle">Battle Form</option><option value="bluecompact">Blue Compact</option><option value="wwcd">WWCD Winners</option><option value="cleanpsd">Photoshop Clean Export</option><option value="ngclime">NGC Lime Standings</option><option value="ngcblue">NGC Blue Rankings</option><option value="neon">Neon Arena</option><option value="inferno">Inferno Cup</option><option value="royal">Royal Gold</option><option value="ice">Ice Storm</option><option value="crimson">Crimson Strike</option><option value="tactical">Tactical Ops</option><option value="emerald">Emerald League</option><option value="cyber">Cyber Pink</option><option value="midnight">Midnight Glass</option><option value="desert">Desert Elite</option><option value="ocean">Ocean Pulse</option><option value="mono">Mono Broadcast</option></select></div>
     <div class="cf"><div class="cl">BG Color</div><input class="ci" type="color" id="inp-bg" value="#1a1a2e" style="width:56px;padding:2px;height:34px;cursor:pointer;"></div>
     <div class="cf"><div class="cl">Accent</div><input class="ci" type="color" id="inp-accent" value="#00ff88" style="width:56px;padding:2px;height:34px;cursor:pointer;"></div>
     <div class="cf"><div class="cl">Light Fields</div><input class="ci" type="color" id="inp-light" value="#eaf7f8" style="width:56px;padding:2px;height:34px;cursor:pointer;"></div>
@@ -173,6 +173,7 @@ var GFX_PRESETS = {
   battle:{label:"Battle Form",bg:"#120707",accent:"#ff1808",bright:48,contrast:128,blur:2,tint:76,panel:70,header:"battle",rows:"battle",pattern:"slashes",layout:"battle"},
   bluecompact:{label:"Blue Compact",bg:"#082a4d",accent:"#50d8ff",bright:58,contrast:118,blur:1,tint:66,panel:66,header:"blue",rows:"blue",pattern:"grid",layout:"bluecompact"},
   wwcd:{label:"WWCD Winners",bg:"#101010",accent:"#f5a400",bright:72,contrast:112,blur:1,tint:42,panel:74,header:"wwcd",rows:"wwcd",pattern:"scan",layout:"wwcd"},
+  cleanpsd:{label:"Photoshop Clean Export",bg:"#000000",accent:"#ffffff",bright:100,contrast:100,blur:0,tint:0,panel:0,header:"clean",rows:"clean",pattern:"none",layout:"cleanpsd"},
   ngclime:{label:"NGC Lime Standings",bg:"#f2f4f1",accent:"#b4c837",bright:80,contrast:106,blur:0,tint:20,panel:78,header:"ngc",rows:"ngc",pattern:"paper",layout:"ngclime"},
   ngcblue:{label:"NGC Blue Rankings",bg:"#062c78",accent:"#ffe800",bright:72,contrast:112,blur:0,tint:38,panel:72,header:"ngcblue",rows:"ngcblue",pattern:"water",layout:"ngcblue"},
   neon:{label:"Neon Arena",bg:"#1a1a2e",accent:"#00ff88",bright:68,contrast:95,blur:2,tint:62,panel:55,header:"bar",rows:"stripe",pattern:"dots"},
@@ -621,6 +622,39 @@ function drawNGCBlueCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,
   for(var n=0;n<count;n++){var x=n<10?42:984,y=258+(n%10)*70;row(x,y,888,st[n],n+1,logos[n]);}
   ctx.fillStyle=hexAlpha(yellow,0.9);ctx.fillRect(42,1002,W-84,5);
 }
+
+function drawCleanPSDCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha){
+  var W=1920,H=1080,count=Math.min(st.length,20);
+  ctx.clearRect(0,0,W,H);
+  function row(x,y,w,t,pos,logo){
+    var h=70;
+    ctx.fillStyle="#ffffff";
+    ctx.font=teamFontSpec(900,30);
+    ctx.textAlign="center";
+    ctx.fillText(String(pos),x+34,y+45);
+    if(logo&&logo.complete)drawCircleImage(ctx,logo,x+92,y+35,26);
+    else{
+      ctx.strokeStyle="rgba(255,255,255,0.75)";ctx.lineWidth=3;ctx.beginPath();ctx.arc(x+92,y+35,26,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle="#ffffff";ctx.font=teamFontSpec(900,17);ctx.fillText(String(t.name||"").substring(0,2).toUpperCase(),x+92,y+41);
+    }
+    ctx.fillStyle="#ffffff";ctx.font=teamFontSpec(900,30);ctx.textAlign="left";ctx.fillText(t.name,x+138,y+45,w-430);
+    ctx.textAlign="center";ctx.font=teamFontSpec(900,28);
+    ctx.fillText(t.plc,x+w-250,y+45);
+    ctx.fillText(t.kills,x+w-160,y+45);
+    ctx.fillText(t.pts,x+w-70,y+45);
+  }
+  function headers(x,y,w){
+    ctx.fillStyle="#ffffff";ctx.font=teamFontSpec(900,24);ctx.textAlign="center";
+    ctx.fillText("#",x+34,y);
+    ctx.textAlign="left";ctx.fillText("TEAM NAME",x+138,y);
+    ctx.textAlign="center";ctx.fillText("PP",x+w-250,y);ctx.fillText("KP",x+w-160,y);ctx.fillText("TP",x+w-70,y);
+  }
+  headers(120,180,780);headers(1020,180,780);
+  for(var i=0;i<count;i++){
+    var left=i<10,x=left?120:1020,y=220+(i%10)*74;
+    row(x,y,780,st[i],i+1,logos[i]);
+  }
+}
 function loadImage(url){
   return new Promise(function(resolve){
     if(!url){resolve(null);return;}
@@ -684,6 +718,7 @@ function drawCanvas(st,logos,title,sub,bg,ac,today,maxTeams){
   if(preset.layout==="battle"){drawBattleCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha);return;}
   if(preset.layout==="bluecompact"){drawBlueCompactCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha);return;}
   if(preset.layout==="wwcd"){drawWWCDCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha);return;}
+  if(preset.layout==="cleanpsd"){drawCleanPSDCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha);return;}
   if(preset.layout==="ngclime"){drawNGCLimeCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha);return;}
   if(preset.layout==="ngcblue"){drawNGCBlueCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgContrast,bgBlur,bgTint,panelAlpha);return;}
 
