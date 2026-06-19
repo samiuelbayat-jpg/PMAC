@@ -357,7 +357,14 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .pub-overall-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:rgba(245,200,66,0.06);border-bottom:1px solid rgba(255,255,255,0.08);flex-wrap:wrap;}
 .pub-overall-title{font-weight:900;font-size:18px;color:#f5c842;text-transform:uppercase;letter-spacing:.06em;}
 .pub-overall-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;letter-spacing:.08em;text-transform:uppercase;}
+.pub-overall-range{display:none;align-items:flex-end;gap:8px;flex-wrap:wrap;}
+.pub-overall-range .range-field{display:flex;flex-direction:column;gap:3px;}
+.pub-overall-range label{font-family:'Share Tech Mono',monospace;font-size:8px;color:#8c95a3;letter-spacing:.08em;text-transform:uppercase;}
+.pub-overall-range input{height:30px;background:#171b21;border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;padding:0 8px;font-size:12px;}
 .pub-overall-body{overflow-x:auto;padding:0 10px 10px;}
+#sec-scores.overall-only .pub-current-view{display:none;}
+#sec-scores.overall-only .pub-overall{margin-top:0;}
+#sec-scores.current-only .pub-overall{display:none;}
 .arch-card{background:#0f1115;border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:1rem;overflow:hidden;}
 .arch-hdr{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);}
 .arch-hdr:hover{background:rgba(255,255,255,0.02);}
@@ -1007,7 +1014,8 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 </div>
 
 <!-- SCOREBOARD SECTION -->
-<div class="section" id="sec-scores">
+<div class="section current-only" id="sec-scores">
+  <div class="pub-current-view">
   <div style="display:flex;gap:8px;align-items:center;margin-bottom:1rem;flex-wrap:wrap;">
     <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;letter-spacing:.1em;text-transform:uppercase;">Sort by</span>
     <button class="ctrl-btn active" id="pub-btn-pts" onclick="pubSortBy('pts')">Total Pts</button>
@@ -1028,11 +1036,17 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <tbody id="pub-tbody"></tbody>
     </table>
   </div>
+  </div>
   <div class="pub-overall">
     <div class="pub-overall-head">
       <div>
         <div class="pub-overall-title">Overall Event Rankings</div>
         <div class="pub-overall-sub" id="pub-overall-sub">All saved nights for this event</div>
+      </div>
+      <div class="pub-overall-range" id="pub-overall-range">
+        <div class="range-field"><label>Start date</label><input type="date" id="pub-overall-start"></div>
+        <div class="range-field"><label>Finish date</label><input type="date" id="pub-overall-end"></div>
+        <button class="ctrl-btn" onclick="savePublicOverallRange()">Save Dates</button>
       </div>
     </div>
     <div class="pub-overall-body">
@@ -1910,6 +1924,8 @@ db.ref(eventPath("event")).on("value", function(s) {
   evStatus = eventInfo.regStatus || "open";
   evMax = parseInt(eventInfo.maxTeams) || 24;
   updateCard();
+  updateOverallRangeControls();
+  if(document.getElementById("sec-scores") && document.getElementById("sec-scores").classList.contains("show")) loadOverallEventRankings();
 });
 db.ref(eventPath("eventGroups")).on("value", function(s) {
   communityEventGroups = s.val() || {};
@@ -1956,6 +1972,8 @@ function applyAdminUI() {
   if(ruleTab) ruleTab.style.display = isAdmin ? "" : "none";
   var roadmapTab=document.getElementById("tab-roadmap");
   if(roadmapTab) roadmapTab.style.display = isAdmin ? "" : "none";
+  var overallRange=document.getElementById("pub-overall-range");
+  if(overallRange) overallRange.style.display = isAdmin ? "flex" : "none";
   updateIdPassTabVisibility();
   if(!isAdmin && ((document.getElementById("sec-rulelog") && document.getElementById("sec-rulelog").classList.contains("show")) || (document.getElementById("sec-roadmap") && document.getElementById("sec-roadmap").classList.contains("show")))) showTab("reg");
   renderRulesAgreedLog();
@@ -2661,7 +2679,7 @@ function showTab(tab){
   ["reg","scrim","gfx","lobby","scores","overall","archive","streamers","rulesagree","idpass","rulelog","roadmap"].forEach(function(t){
     var tb=document.getElementById("tab-"+t); var sc=document.getElementById("sec-"+t);
     if(tb) tb.className="tab"+(t===tab?" active":"");
-    if(sc) sc.className="section"+(t===tab?" show":"");
+    if(sc) sc.className="section"+(t===tab?" show":"")+(t==="scores"&&tab==="scores"?" current-only":"");
   });
   var eventEntry=document.getElementById("entry-card-reg");
   var scrimEntry=document.getElementById("entry-card-scrim");
@@ -2947,6 +2965,27 @@ function pubOverallRangeLabel(){
   if(start) return "From "+start+" until finish";
   return "All saved nights for this event";
 }
+function updateOverallRangeControls(){
+  var start=document.getElementById("pub-overall-start");
+  var end=document.getElementById("pub-overall-end");
+  if(start) start.value=String(eventInfo.overallStartDate||eventInfo.date||"").slice(0,10);
+  if(end) end.value=String(eventInfo.overallEndDate||"").slice(0,10);
+}
+function savePublicOverallRange(){
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
+  var start=(document.getElementById("pub-overall-start")||{}).value||"";
+  var end=(document.getElementById("pub-overall-end")||{}).value||"";
+  if(start&&end&&end<start){toast("Finish date must be after start date",false);return;}
+  eventInfo.overallStartDate=start;
+  eventInfo.overallEndDate=end;
+  updateOverallRangeControls();
+  loadOverallEventRankings();
+  db.ref(eventPath("event")).update({overallStartDate:start,overallEndDate:end}).then(function(){
+    toast("Overall date range saved",true);
+  }).catch(function(e){
+    toast("Date save failed: "+(e&&e.message?e.message:"permission denied"),false);
+  });
+}
 function pubRankCls(r){if(!r&&r!==0)return"rb";return r<=3?"r1":r<=6?"r2":"rb";}
 function pubKillCls(k){var n=parseInt(k)||0;return n>=10?"kh":n>=5?"km":"kl";}
 function pubActiveSessions(active){
@@ -3069,6 +3108,9 @@ function pubSortBy(mode){
 }
 function showOverallRankings(){
   showTab("scores");
+  var sec=document.getElementById("sec-scores");
+  if(sec) sec.className="section show overall-only";
+  updateOverallRangeControls();
   var sb=document.getElementById("tab-scores"), ob=document.getElementById("tab-overall");
   if(sb) sb.className="tab";
   if(ob) ob.className="tab active";
