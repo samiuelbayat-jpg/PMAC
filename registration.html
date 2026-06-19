@@ -342,6 +342,8 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .pub-p2{background:rgba(192,192,192,0.1);border:1px solid rgba(192,192,192,0.3);color:#d0d0d0;}
 .pub-p3{background:rgba(205,127,50,0.1);border:1px solid rgba(205,127,50,0.3);color:#ffa500;}
 .pub-pX{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:#606878;}
+.pub-rank-wrap{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:48px;}
+.pub-qual-arrow{font-size:13px;line-height:1;color:#00d47e;font-weight:900;text-shadow:0 0 10px rgba(0,212,126,0.55);}
 .pub-tname{font-weight:800;font-size:13px;text-transform:uppercase;}
 .pub-tmeta{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;}
 .pub-logo-cell{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.1);}
@@ -3117,8 +3119,9 @@ function renderOverallEventRankings(list){
     var pc=pos===1?"pub-p1":pos===2?"pub-p2":pos===3?"pub-p3":"pub-pX";
     var rc=pos===1?"rk1":pos===2?"rk2":pos===3?"rk3":"";
     var lc=t.logo?'<img class="pub-logo-cell" src="'+t.logo+'" alt="" onerror="this.style.opacity=0.1">':'';
+    var q=pos<=16?'<span class="pub-qual-arrow" title="Qualified to final">▲</span>':'';
     var tr=document.createElement("tr");tr.className=rc;
-    tr.innerHTML='<td><span class="pub-pos '+pc+'">'+pos+'</span></td>'+
+    tr.innerHTML='<td><span class="pub-rank-wrap"><span class="pub-pos '+pc+'">'+pos+'</span>'+q+'</span></td>'+
       '<td>'+lc+'</td>'+
       '<td class="left"><div class="pub-tname">'+t.name+'</div><div class="pub-tmeta">'+(t.tag?("["+t.tag+"] · "):"")+'All nights combined</div></td>'+
       '<td><span class="pub-kv">'+t.nights+'</span></td>'+
