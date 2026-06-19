@@ -1046,6 +1046,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <div class="pub-overall-range" id="pub-overall-range">
         <div class="range-field"><label>Start date</label><input type="date" id="pub-overall-start"></div>
         <div class="range-field"><label>Finish date</label><input type="date" id="pub-overall-end"></div>
+        <div class="range-field"><label>Max matches</label><input type="number" min="1" max="50" id="pub-overall-max" style="width:84px;"></div>
         <button class="ctrl-btn" onclick="savePublicOverallRange()">Save Dates</button>
       </div>
     </div>
@@ -2128,7 +2129,7 @@ document.getElementById("save-ev-btn").onclick = function() {
   if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var bf=document.getElementById("banner-file").files[0];
   function save(burl) {
-    var d={name:document.getElementById("ei-name").value.trim()||"PMAC Tournament",date:document.getElementById("ei-date").value,overallStartDate:document.getElementById("ei-overall-start").value,overallEndDate:document.getElementById("ei-overall-end").value,maxTeams:parseInt(document.getElementById("ei-max").value)||24,prize:document.getElementById("ei-prize").value.trim(),platform:document.getElementById("ei-platform").value.trim(),description:document.getElementById("ei-desc").value.trim(),dailyInfo:document.getElementById("ei-daily-info").value.trim(),regStatus:editEvStatus};
+    var d={name:document.getElementById("ei-name").value.trim()||"PMAC Tournament",date:document.getElementById("ei-date").value,overallStartDate:document.getElementById("ei-overall-start").value,overallEndDate:document.getElementById("ei-overall-end").value,overallMaxMatches:eventInfo.overallMaxMatches||"",maxTeams:parseInt(document.getElementById("ei-max").value)||24,prize:document.getElementById("ei-prize").value.trim(),platform:document.getElementById("ei-platform").value.trim(),description:document.getElementById("ei-desc").value.trim(),dailyInfo:document.getElementById("ei-daily-info").value.trim(),regStatus:editEvStatus};
     if(burl) d.banner=burl; else if(eventInfo.banner) d.banner=eventInfo.banner;
     db.ref(eventPath("event")).update(d).then(function(){document.getElementById("edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
   }
@@ -2981,26 +2982,33 @@ function pubDateInOverallRange(date){
 function pubOverallRangeLabel(){
   var start=pubCleanDate(eventInfo.overallStartDate||eventInfo.date||"");
   var end=pubCleanDate(eventInfo.overallEndDate||"");
-  if(start&&end) return "From "+start+" to "+end;
-  if(start) return "From "+start+" until finish";
-  return "All saved nights for this event";
+  var max=parseInt(eventInfo.overallMaxMatches,10)||0;
+  var cap=max?(" · Max "+max+" matches"):"";
+  if(start&&end) return "From "+start+" to "+end+cap;
+  if(start) return "From "+start+" until finish"+cap;
+  return "All saved nights for this event"+cap;
 }
 function updateOverallRangeControls(){
   var start=document.getElementById("pub-overall-start");
   var end=document.getElementById("pub-overall-end");
+  var max=document.getElementById("pub-overall-max");
   if(start) start.value=pubCleanDate(eventInfo.overallStartDate||eventInfo.date||"");
   if(end) end.value=pubCleanDate(eventInfo.overallEndDate||"");
+  if(max) max.value=eventInfo.overallMaxMatches||"";
 }
 function savePublicOverallRange(){
   if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var start=(document.getElementById("pub-overall-start")||{}).value||"";
   var end=(document.getElementById("pub-overall-end")||{}).value||"";
+  var max=parseInt((document.getElementById("pub-overall-max")||{}).value,10)||0;
   if(start&&end&&end<start){toast("Finish date must be after start date",false);return;}
+  if(max<0||max>50){toast("Max matches must be between 1 and 50",false);return;}
   eventInfo.overallStartDate=start;
   eventInfo.overallEndDate=end;
+  eventInfo.overallMaxMatches=max||"";
   updateOverallRangeControls();
   loadOverallEventRankings();
-  db.ref(eventPath("event")).update({overallStartDate:start,overallEndDate:end}).then(function(){
+  db.ref(eventPath("event")).update({overallStartDate:start,overallEndDate:end,overallMaxMatches:max||null}).then(function(){
     toast("Overall date range saved",true);
   }).catch(function(e){
     toast("Date save failed: "+(e&&e.message?e.message:"permission denied"),false);
@@ -3047,9 +3055,14 @@ function pubLoadSessionScoreboard(sessions){
     renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
   });
 }
-function pubAddOverallMatch(total,m){
+function pubAddOverallMatch(total,m,slotKey){
   var st=pubMatchStats(m);
   if(!st) return false;
+  var max=parseInt(eventInfo.overallMaxMatches,10)||0;
+  if(max && total.matches>=max) return false;
+  total.matchSlots=total.matchSlots||{};
+  if(slotKey && total.matchSlots[slotKey]) return false;
+  if(slotKey) total.matchSlots[slotKey]=true;
   var rp=st.placement;
   var kp=st.kills;
   total.kills+=kp;
@@ -3065,9 +3078,9 @@ function loadOverallEventRankings(){
   db.ref(eventPath("eventGroups")).once("value").then(function(snap){
     var groups=snap.val()||{};
     var totals={}, nights={};
-    Object.keys(groups).forEach(function(gid){
+    Object.keys(groups).sort().forEach(function(gid){
       var sessions=(groups[gid]&&groups[gid].sessions)||{};
-      Object.keys(sessions).forEach(function(date){
+      Object.keys(sessions).sort().forEach(function(date){
         var sess=sessions[date]||{};
         var sessionDate=pubCleanDate(sess.date||date);
         if(!pubDateInOverallRange(sessionDate)) return;
@@ -3077,16 +3090,16 @@ function loadOverallEventRankings(){
         teamList.forEach(function(t){
           if(!t||!t.name) return;
           var key=pubTeamKey(t);
-          if(!totals[key]) totals[key]={name:t.name,tag:t.tag||"",logo:t.logo||"",kills:0,placement:0,total:0,matches:0,nights:0};
+          if(!totals[key]) totals[key]={name:t.name,tag:t.tag||"",logo:t.logo||"",kills:0,placement:0,total:0,matches:0,nights:0,matchSlots:{}};
           if(t.logo&&!totals[key].logo) totals[key].logo=t.logo;
           var md=pubScoreRowsForTeam(scores,t);
           var playedThisNight=false;
-          for(var i=0;i<10;i++) if(pubAddOverallMatch(totals[key],(md&&md[i])||null)) playedThisNight=true;
-          if(playedThisNight){ nights[key]=nights[key]||{}; nights[key][gid+"|"+sessionDate]=true; }
+          for(var i=0;i<10;i++) if(pubAddOverallMatch(totals[key],(md&&md[i])||null,sessionDate+"|M"+(i+1))) playedThisNight=true;
+          if(playedThisNight){ nights[key]=nights[key]||{}; nights[key][sessionDate]=true; }
         });
       });
     });
-    var list=Object.keys(totals).map(function(k){ totals[k].nights=Object.keys(nights[k]||{}).length; return totals[k]; }).filter(function(t){return t.matches>0;});
+    var list=Object.keys(totals).map(function(k){ totals[k].nights=Object.keys(nights[k]||{}).length; delete totals[k].matchSlots; return totals[k]; }).filter(function(t){return t.matches>0;});
     list.sort(function(a,b){return b.total-a.total||b.kills-a.kills||b.placement-a.placement;});
     renderOverallEventRankings(list);
     if(sub) sub.textContent=list.length ? (list.length+" teams · "+pubOverallRangeLabel()) : ("No saved night points yet · "+pubOverallRangeLabel());
