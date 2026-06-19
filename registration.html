@@ -353,6 +353,11 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .pub-kv,.pub-pv{display:inline-flex;align-items:center;justify-content:center;min-width:42px;min-height:28px;padding:4px 9px;border-radius:6px;background:rgba(0,0,0,0.62);border:1px solid rgba(255,255,255,0.12);box-shadow:0 6px 14px rgba(0,0,0,0.24);font-family:'Share Tech Mono',monospace;}
 .pub-kv{font-weight:900;font-size:13px;color:#f5c842;}
 .pub-pv{font-weight:900;font-size:15px;color:#071015;background:linear-gradient(180deg,#ffe06a,#d9a900);border-color:rgba(255,224,106,0.55);box-shadow:0 0 18px rgba(245,200,66,0.22),0 6px 14px rgba(0,0,0,0.24);}
+.pub-overall{margin-top:1.25rem;background:#0f1115;border:1px solid rgba(245,200,66,0.18);border-radius:10px;overflow:hidden;}
+.pub-overall-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:rgba(245,200,66,0.06);border-bottom:1px solid rgba(255,255,255,0.08);flex-wrap:wrap;}
+.pub-overall-title{font-weight:900;font-size:18px;color:#f5c842;text-transform:uppercase;letter-spacing:.06em;}
+.pub-overall-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;letter-spacing:.08em;text-transform:uppercase;}
+.pub-overall-body{overflow-x:auto;padding:0 10px 10px;}
 .arch-card{background:#0f1115;border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:1rem;overflow:hidden;}
 .arch-hdr{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);}
 .arch-hdr:hover{background:rgba(255,255,255,0.02);}
@@ -494,6 +499,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <button class="tab" id="tab-gfx" onclick="showTab('gfx')"><span>🎪</span><span>GFX Results</span></button>
   <button class="tab" id="tab-lobby" onclick="showTab('lobby')"><span>🏆</span><span>Top Teams Lobby</span></button>
   <button class="tab" id="tab-scores" onclick="showTab('scores')"><span>📊</span><span>Scoreboard</span></button>
+  <button class="tab" id="tab-overall" onclick="showOverallRankings()"><span>🏅</span><span>Overall Rankings</span></button>
   <button class="tab" id="tab-archive" onclick="showTab('archive')"><span>🗄</span><span>Archive</span></button>
   <button class="tab" id="tab-events" onclick="window.location.href='promotions.html'"><span>📣</span><span>Events</span></button>
   <button class="tab" id="tab-streamers" onclick="showTab('streamers')"><span>🔴</span><span>Live Streamers</span></button>
@@ -711,6 +717,8 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <div class="eg">
         <div class="ef"><div class="el">Event Name</div><input class="ei" type="text" id="ei-name" placeholder="PMAC Cup"></div>
         <div class="ef"><div class="el">Date</div><input class="ei" type="date" id="ei-date"></div>
+        <div class="ef"><div class="el">Overall Start Date</div><input class="ei" type="date" id="ei-overall-start"></div>
+        <div class="ef"><div class="el">Overall Finish Date</div><input class="ei" type="date" id="ei-overall-end"></div>
         <div class="ef"><div class="el">Max Teams</div><input class="ei" type="number" id="ei-max" placeholder="24"></div>
         <div class="ef"><div class="el">Prize Pool</div><input class="ei" type="text" id="ei-prize" placeholder="e.g. $500"></div>
         <div class="ef"><div class="el">Platform</div><input class="ei" type="text" id="ei-platform" placeholder="Online - PUBG Mobile"></div>
@@ -1019,6 +1027,22 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       </thead>
       <tbody id="pub-tbody"></tbody>
     </table>
+  </div>
+  <div class="pub-overall">
+    <div class="pub-overall-head">
+      <div>
+        <div class="pub-overall-title">Overall Event Rankings</div>
+        <div class="pub-overall-sub" id="pub-overall-sub">All saved nights for this event</div>
+      </div>
+    </div>
+    <div class="pub-overall-body">
+      <table class="pub-table">
+        <thead>
+          <tr><th>#</th><th>Logo</th><th class="left">Team</th><th>Nights</th><th>Matches</th><th>Kills</th><th>Place Pts</th><th>Total</th></tr>
+        </thead>
+        <tbody id="pub-overall-tbody"><tr><td colspan="8" style="color:#606878;padding:1rem;">Loading overall rankings...</td></tr></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -2056,6 +2080,8 @@ document.getElementById("edit-ev-btn").onclick = function() {
   if (w.style.display==="block") { w.style.display="none"; return; }
   document.getElementById("ei-name").value = eventInfo.name||"";
   document.getElementById("ei-date").value = eventInfo.date||"";
+  document.getElementById("ei-overall-start").value = eventInfo.overallStartDate||eventInfo.date||"";
+  document.getElementById("ei-overall-end").value = eventInfo.overallEndDate||"";
   document.getElementById("ei-max").value = eventInfo.maxTeams||24;
   document.getElementById("ei-prize").value = eventInfo.prize||"";
   document.getElementById("ei-platform").value = eventInfo.platform||"";
@@ -2084,7 +2110,7 @@ document.getElementById("save-ev-btn").onclick = function() {
   if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var bf=document.getElementById("banner-file").files[0];
   function save(burl) {
-    var d={name:document.getElementById("ei-name").value.trim()||"PMAC Tournament",date:document.getElementById("ei-date").value,maxTeams:parseInt(document.getElementById("ei-max").value)||24,prize:document.getElementById("ei-prize").value.trim(),platform:document.getElementById("ei-platform").value.trim(),description:document.getElementById("ei-desc").value.trim(),dailyInfo:document.getElementById("ei-daily-info").value.trim(),regStatus:editEvStatus};
+    var d={name:document.getElementById("ei-name").value.trim()||"PMAC Tournament",date:document.getElementById("ei-date").value,overallStartDate:document.getElementById("ei-overall-start").value,overallEndDate:document.getElementById("ei-overall-end").value,maxTeams:parseInt(document.getElementById("ei-max").value)||24,prize:document.getElementById("ei-prize").value.trim(),platform:document.getElementById("ei-platform").value.trim(),description:document.getElementById("ei-desc").value.trim(),dailyInfo:document.getElementById("ei-daily-info").value.trim(),regStatus:editEvStatus};
     if(burl) d.banner=burl; else if(eventInfo.banner) d.banner=eventInfo.banner;
     db.ref(eventPath("event")).update(d).then(function(){document.getElementById("edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
   }
@@ -2387,6 +2413,9 @@ function shuffledCopy(list){
   return arr;
 }
 function emptyScoreRows(){ return Array(10).fill(null).map(function(){return {rank:null,kills:null};}); }
+function currentEventScope(){
+  return {eventId:EVENT_ID,eventName:eventInfo.name||"PMAF Event",eventDate:eventInfo.date||"",overallStartDate:eventInfo.overallStartDate||eventInfo.date||"",overallEndDate:eventInfo.overallEndDate||""};
+}
 function removeRegistrationByAdmin(key, path){
   if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return Promise.reject(new Error("Admin login required"));}
   return db.ref(eventPath(path)+"/"+key).remove();
@@ -2420,6 +2449,7 @@ function exportApprovedTeamsToGroups(){
     updates[base+"/scores"]=scores;
     updates[base+"/exportedFrom"]="pmaf-community";
     updates[base+"/exportedAt"]=Date.now();
+    updates[base+"/eventScope"]=currentEventScope();
   });
   db.ref().update(updates).then(function(){
     toast("Approved teams exported to groups",true);
@@ -2445,6 +2475,7 @@ function exportApprovedScrimTeamsToGroups(){
     updates[base+"/scores"]=scores;
     updates[base+"/exportedFrom"]="pmaf-daily-scrim";
     updates[base+"/exportedAt"]=Date.now();
+    updates[base+"/eventScope"]=currentEventScope();
   });
   db.ref().update(updates).then(function(){
     toast("Daily Scrim approved teams exported to groups",true);
@@ -2627,7 +2658,7 @@ function checkStatus(){
 function showTab(tab){
   if((tab==="rulelog"||tab==="roadmap")&&!isAdmin){toast("Admin login required",false);return;}
   if(tab==="idpass"&&!getRememberedIdPassAccess()){toast("ID Pass is not unlocked yet",false);return;}
-  ["reg","scrim","gfx","lobby","scores","archive","streamers","rulesagree","idpass","rulelog","roadmap"].forEach(function(t){
+  ["reg","scrim","gfx","lobby","scores","overall","archive","streamers","rulesagree","idpass","rulelog","roadmap"].forEach(function(t){
     var tb=document.getElementById("tab-"+t); var sc=document.getElementById("sec-"+t);
     if(tb) tb.className="tab"+(t===tab?" active":"");
     if(sc) sc.className="section"+(t===tab?" show":"");
@@ -2884,7 +2915,38 @@ function pubCalc(t, md){
   });
   return {name:t.name,logo:t.logo||"",kills:tk,placement:plc,total:tp,played:played,matches:ms};
 }
-function pubSan(n){return n.replace(/[.#$\/\[\]]/g,"_");}
+function pubSan(n){return String(n||"").replace(/[.#$\/\[\]]/g,"_");}
+function pubNorm(v){return String(v||"").trim().toUpperCase().replace(/\s+/g," ");}
+function pubTeamKey(t){var tag=pubNorm(t&&t.tag);return tag ? "TAG:"+tag : "NAME:"+pubNorm(t&&t.name);}
+function pubScoreRowsForTeam(scores,t){
+  var keys=[t&&t.name,t&&t.tag,pubNorm(t&&t.name),pubNorm(t&&t.tag)].map(pubSan).filter(Boolean);
+  for(var i=0;i<keys.length;i++){ if(scores&&scores[keys[i]]) return scores[keys[i]]; }
+  return [];
+}
+function pubSessionBelongsToCurrentEvent(sess){
+  var scope=sess&&sess.eventScope;
+  if(!scope) return true;
+  if(scope.eventId && scope.eventId!==EVENT_ID) return false;
+  var cur=pubNorm(eventInfo.name||"");
+  var saved=pubNorm(scope.eventName||"");
+  return !cur || !saved || cur===saved;
+}
+function pubDateInOverallRange(date){
+  date=String(date||"").slice(0,10);
+  if(!date) return false;
+  var start=String(eventInfo.overallStartDate||eventInfo.date||"").slice(0,10);
+  var end=String(eventInfo.overallEndDate||"").slice(0,10);
+  if(start && date<start) return false;
+  if(end && date>end) return false;
+  return true;
+}
+function pubOverallRangeLabel(){
+  var start=String(eventInfo.overallStartDate||eventInfo.date||"").slice(0,10);
+  var end=String(eventInfo.overallEndDate||"").slice(0,10);
+  if(start&&end) return "From "+start+" to "+end;
+  if(start) return "From "+start+" until finish";
+  return "All saved nights for this event";
+}
 function pubRankCls(r){if(!r&&r!==0)return"rb";return r<=3?"r1":r<=6?"r2":"rb";}
 function pubKillCls(k){var n=parseInt(k)||0;return n>=10?"kh":n>=5?"km":"kl";}
 function pubActiveSessions(active){
@@ -2916,7 +2978,7 @@ function pubLoadSessionScoreboard(sessions){
     var combinedTeams=[], combinedScores={};
     parts.forEach(function(part){
       (part.teams||[]).forEach(function(t){
-        if(!combinedTeams.find(function(x){return pubSan(x.name||"")===pubSan(t.name||"");})) combinedTeams.push(t);
+        if(!combinedTeams.find(function(x){return pubTeamKey(x)===pubTeamKey(t);})) combinedTeams.push(t);
       });
       Object.keys(part.scores||{}).forEach(function(k){ if(k.charAt(0)!=="_") combinedScores[k]=part.scores[k]; });
     });
@@ -2924,6 +2986,73 @@ function pubLoadSessionScoreboard(sessions){
     pubTeamsGlobal=combinedTeams;
     pubScoresGlobal=combinedScores;
     renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
+  });
+}
+function pubAddOverallMatch(total,m){
+  if(!m || (m.rank===null&&m.kills===null)) return false;
+  var rp=(m.rank&&m.rank>=1&&m.rank<=25)?RANK_PTS[m.rank-1]:0;
+  var kp=m.kills?parseInt(m.kills)||0:0;
+  total.kills+=kp;
+  total.placement+=rp;
+  total.total+=kp+rp;
+  total.matches++;
+  return true;
+}
+function loadOverallEventRankings(){
+  var tbody=document.getElementById("pub-overall-tbody");
+  var sub=document.getElementById("pub-overall-sub");
+  if(tbody) tbody.innerHTML='<tr><td colspan="8" style="color:#606878;padding:1rem;">Loading overall rankings...</td></tr>';
+  db.ref(eventPath("eventGroups")).once("value").then(function(snap){
+    var groups=snap.val()||{};
+    var totals={}, nights={};
+    Object.keys(groups).forEach(function(gid){
+      var sessions=(groups[gid]&&groups[gid].sessions)||{};
+      Object.keys(sessions).forEach(function(date){
+        if(!pubDateInOverallRange(date)) return;
+        var sess=sessions[date]||{};
+        if(!pubSessionBelongsToCurrentEvent(sess)) return;
+        var teamList=sess.teams?(Array.isArray(sess.teams)?sess.teams:Object.values(sess.teams)):[];
+        var scores=sess.scores||{};
+        teamList.forEach(function(t){
+          if(!t||!t.name) return;
+          var key=pubTeamKey(t);
+          if(!totals[key]) totals[key]={name:t.name,tag:t.tag||"",logo:t.logo||"",kills:0,placement:0,total:0,matches:0,nights:0};
+          if(t.logo&&!totals[key].logo) totals[key].logo=t.logo;
+          var md=pubScoreRowsForTeam(scores,t);
+          var playedThisNight=false;
+          for(var i=0;i<10;i++) if(pubAddOverallMatch(totals[key],(md&&md[i])||null)) playedThisNight=true;
+          if(playedThisNight){ nights[key]=nights[key]||{}; nights[key][gid+"|"+date]=true; }
+        });
+      });
+    });
+    var list=Object.keys(totals).map(function(k){ totals[k].nights=Object.keys(nights[k]||{}).length; return totals[k]; }).filter(function(t){return t.matches>0;});
+    list.sort(function(a,b){return b.total-a.total||b.kills-a.kills||b.placement-a.placement;});
+    renderOverallEventRankings(list);
+    if(sub) sub.textContent=list.length ? (list.length+" teams · "+pubOverallRangeLabel()) : ("No saved night points yet · "+pubOverallRangeLabel());
+  }).catch(function(e){
+    if(tbody) tbody.innerHTML='<tr><td colspan="8" style="color:#ff4444;padding:1rem;">Overall rankings failed to load.</td></tr>';
+  });
+}
+function renderOverallEventRankings(list){
+  var tbody=document.getElementById("pub-overall-tbody");
+  if(!tbody) return;
+  if(!list.length){ tbody.innerHTML='<tr><td colspan="8" style="color:#606878;padding:1rem;">No overall points saved yet.</td></tr>'; return; }
+  tbody.innerHTML="";
+  list.forEach(function(t,i){
+    var pos=i+1;
+    var pc=pos===1?"pub-p1":pos===2?"pub-p2":pos===3?"pub-p3":"pub-pX";
+    var rc=pos===1?"rk1":pos===2?"rk2":pos===3?"rk3":"";
+    var lc=t.logo?'<img class="pub-logo-cell" src="'+t.logo+'" alt="" onerror="this.style.opacity=0.1">':'';
+    var tr=document.createElement("tr");tr.className=rc;
+    tr.innerHTML='<td><span class="pub-pos '+pc+'">'+pos+'</span></td>'+
+      '<td>'+lc+'</td>'+
+      '<td class="left"><div class="pub-tname">'+t.name+'</div><div class="pub-tmeta">'+(t.tag?("["+t.tag+"] · "):"")+'All nights combined</div></td>'+
+      '<td><span class="pub-kv">'+t.nights+'</span></td>'+
+      '<td><span class="pub-kv">'+t.matches+'</span></td>'+
+      '<td><span class="pub-kv">'+t.kills+'</span></td>'+
+      '<td><span class="pub-kv">'+t.placement+'</span></td>'+
+      '<td><span class="pub-pv">'+t.total+'</span></td>';
+    tbody.appendChild(tr);
   });
 }
 
@@ -2938,9 +3067,21 @@ function pubSortBy(mode){
   });
   if(pubTeamsGlobal.length) renderPubScoreboard(pubTeamsGlobal, pubScoresGlobal);
 }
+function showOverallRankings(){
+  showTab("scores");
+  var sb=document.getElementById("tab-scores"), ob=document.getElementById("tab-overall");
+  if(sb) sb.className="tab";
+  if(ob) ob.className="tab active";
+  if(!scoresLoaded) loadScoreboard();
+  setTimeout(function(){
+    var box=document.querySelector(".pub-overall");
+    if(box) box.scrollIntoView({behavior:"smooth",block:"start"});
+  },150);
+}
 
 function loadScoreboard(){
   scoresLoaded=true;
+  loadOverallEventRankings();
   db.ref(eventPath("activeSession")).once("value").then(function(s){
     var sessions=pubActiveSessions(s.val());
     if(sessions.length) return pubLoadSessionScoreboard(sessions);
@@ -2953,7 +3094,7 @@ function renderPubScoreboard(pubTeams,pubScores){
     document.getElementById("pub-hero-wrap").innerHTML='<div style="font-size:11px;color:#606878;padding:2rem;text-align:center;">No teams yet.</div>';
     return;
   }
-  var calced=pubTeams.map(function(t){return pubCalc(t,pubScores[pubSan(t.name)]);});
+  var calced=pubTeams.map(function(t){return pubCalc(t,pubScoreRowsForTeam(pubScores,t));});
   if(pubSortMode==="kills") calced.sort(function(a,b){return b.kills-a.kills;});
   else if(pubSortMode==="name") calced.sort(function(a,b){return a.name.localeCompare(b.name);});
   else calced.sort(function(a,b){return b.total-a.total||b.placement-a.placement||b.kills-a.kills;});
