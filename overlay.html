@@ -133,6 +133,7 @@ let currentScores = {};
 let activeMatchIndex = 0;
 let lastStandingSnapshot = null;
 let renderCount = 0;
+let overlayMessage = "Connecting...";
 let overlaySettings = { design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"", aliveStyle:"bars", aliveColor:"#00d26a", deadColor:"#252a31" };
 function hexToRgba(hex,a){
   const v=(hex||"#0a0b0d").replace("#","");
@@ -184,6 +185,11 @@ function teamNameBlock(team){
   const style=(overlaySettings.aliveStyle||"bars").toLowerCase();
   if(style==="pipes"||style==="dots") return '<div class="t-line"><div class="t-name">'+tag+'</div>'+indicator+'</div>';
   return '<div class="t-name">'+tag+'</div>'+indicator;
+}
+function setOverlayMessage(msg){
+  overlayMessage = msg || "";
+  const list = document.getElementById("teams-list");
+  if(list && currentTeams.length===0) list.innerHTML = '<div class="no-data">'+escapeHtml(overlayMessage)+'</div>';
 }
 
 // Calculate team totals across all matches
@@ -273,7 +279,12 @@ function sortTeams(teams) {
 }
 
 function render() {
-  if (currentTeams.length === 0) return;
+  if (currentTeams.length === 0) {
+    const list = document.getElementById("teams-list");
+    if(list) list.innerHTML = '<div class="no-data">'+escapeHtml(overlayMessage || ("No teams found for event: "+EVENT_ID))+'</div>';
+    document.getElementById("ticker-inner").innerHTML = '<div class="ti"><span style="color:#606878">'+escapeHtml(overlayMessage || "No teams found")+'</span></div>';
+    return;
+  }
   updateActiveMatchFromScores();
   
   // Calculate stats for each team
@@ -343,8 +354,8 @@ function stopFallbackRefs(){ if(fallbackTeamsRef) fallbackTeamsRef.off(); if(fal
 function loadMainFallback(){
   if(fallbackTeamsRef || fallbackScoresRef) return;
   fallbackTeamsRef=db.ref(eventPath("teams")); fallbackScoresRef=db.ref(eventPath("matches"));
-  fallbackTeamsRef.on("value", snap=>{ const val=snap.val(); currentTeams=val?(Array.isArray(val)?val:Object.values(val)):[]; render(); });
-  fallbackScoresRef.on("value", snap=>{ currentScores=snap.val()||{}; render(); });
+  fallbackTeamsRef.on("value", snap=>{ const val=snap.val(); currentTeams=val?(Array.isArray(val)?val:Object.values(val)):[]; if(!currentTeams.length)setOverlayMessage("No teams found for event: "+EVENT_ID); render(); }, err=>{ setOverlayMessage("Firebase teams blocked: "+err.message); render(); });
+  fallbackScoresRef.on("value", snap=>{ currentScores=snap.val()||{}; render(); }, err=>{ setOverlayMessage("Firebase scores blocked: "+err.message); render(); });
 }
 function activeSessions(session){
   if(!session) return [];
@@ -368,12 +379,13 @@ function bindLiveSession(session){
     if(active && list.length===0){ loadMainFallback(); return; }
     stopFallbackRefs();
     currentTeams = list;
+    if(!currentTeams.length) setOverlayMessage(active ? "No teams in active session. Check group/date in admin." : "No teams found for event: "+EVENT_ID);
     render();
-  });
+  }, err=>{ setOverlayMessage("Firebase teams blocked: "+err.message); render(); });
   liveScoresRef.on("value", snap => {
     currentScores = snap.val() || {};
     render();
-  });
+  }, err=>{ setOverlayMessage("Firebase scores blocked: "+err.message); render(); });
 }
 function bindMultiLiveSession(sessions){
   const teamRefs=[], scoreRefs=[], teamBuckets={}, scoreBuckets={};
@@ -390,14 +402,14 @@ function bindMultiLiveSession(sessions){
     const key=s.group+"|"+s.date;
     const tr=db.ref(`${eventPath("eventGroups")}/${s.group}/sessions/${s.date}/teams`), sr=db.ref(`${eventPath("eventGroups")}/${s.group}/sessions/${s.date}/scores`);
     teamRefs.push(tr); scoreRefs.push(sr);
-    tr.on("value",snap=>{ const val=snap.val(); teamBuckets[key]=val?(Array.isArray(val)?val:Object.values(val)):[]; combine(); });
-    sr.on("value",snap=>{ scoreBuckets[key]=snap.val()||{}; combine(); });
+    tr.on("value",snap=>{ const val=snap.val(); teamBuckets[key]=val?(Array.isArray(val)?val:Object.values(val)):[]; if(!teamBuckets[key].length)setOverlayMessage("No teams in Group "+s.group+" · "+s.date); combine(); }, err=>{ setOverlayMessage("Firebase teams blocked: "+err.message); render(); });
+    sr.on("value",snap=>{ scoreBuckets[key]=snap.val()||{}; combine(); }, err=>{ setOverlayMessage("Firebase scores blocked: "+err.message); render(); });
   });
   liveTeamsRef={off:function(){teamRefs.forEach(r=>r.off());}};
   liveScoresRef={off:function(){scoreRefs.forEach(r=>r.off());}};
   const status=document.getElementById("fb-status"); if(status) status.textContent=`● ${sessions.length} Groups Active`;
 }
-db.ref(eventPath("activeSession")).on("value", snap => bindLiveSession(snap.val()));
+db.ref(eventPath("activeSession")).on("value", snap => bindLiveSession(snap.val()), err=>{ setOverlayMessage("Firebase active session blocked: "+err.message); loadMainFallback(); });
 </script>
 </body>
 </html>
