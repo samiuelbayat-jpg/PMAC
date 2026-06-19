@@ -349,7 +349,7 @@ function getStandings(){
       if(m.rank==1) wins++;
     }
     return {name:t.name,logo:t.logo||"",kills:tk,pts:tp,plc:tp-tk,wins:wins};
-  }).sort(function(a,b){return b.pts-a.pts||b.kills-a.kills;});
+  }).sort(function(a,b){return b.pts-a.pts||b.plc-a.plc||b.kills-a.kills;});
 }
 
 function hexToRgb(hex){

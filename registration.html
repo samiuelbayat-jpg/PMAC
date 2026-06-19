@@ -3102,7 +3102,7 @@ function loadOverallEventRankings(){
       });
     });
     var list=Object.keys(totals).map(function(k){ totals[k].nights=Object.keys(nights[k]||{}).length; delete totals[k].matchSlots; return totals[k]; }).filter(function(t){return t.matches>0;});
-    list.sort(function(a,b){return b.total-a.total||b.kills-a.kills||b.placement-a.placement;});
+    list.sort(function(a,b){return b.total-a.total||b.placement-a.placement||b.kills-a.kills;});
     renderOverallEventRankings(list);
     if(sub) sub.textContent=list.length ? (list.length+" teams · "+pubOverallRangeLabel()) : ("No saved night points yet · "+pubOverallRangeLabel());
   }).catch(function(e){
