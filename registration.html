@@ -2886,6 +2886,45 @@ function pubCalc(t, md){
 function pubSan(n){return n.replace(/[.#$\/\[\]]/g,"_");}
 function pubRankCls(r){if(!r&&r!==0)return"rb";return r<=3?"r1":r<=6?"r2":"rb";}
 function pubKillCls(k){var n=parseInt(k)||0;return n>=10?"kh":n>=5?"km":"kl";}
+function pubActiveSessions(active){
+  if(!active) return [];
+  if(Array.isArray(active.sessions)) return active.sessions.filter(function(s){return s&&s.group&&s.date;});
+  if(active.group&&active.date) return [{group:active.group,date:active.date}];
+  return [];
+}
+function pubLoadMainScoreboard(){
+  return db.ref(eventPath("teams")).once("value").then(function(s){
+    var v=s.val()||[];
+    pubTeamsGlobal=Array.isArray(v)?v:Object.values(v);
+    return db.ref(eventPath("matches")).once("value").then(function(s2){
+      pubScoresGlobal=s2.val()||{};
+      renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
+    });
+  });
+}
+function pubLoadSessionScoreboard(sessions){
+  var jobs=[];
+  sessions.forEach(function(s){
+    var base=eventPath("eventGroups")+"/"+s.group+"/sessions/"+s.date;
+    jobs.push(Promise.all([db.ref(base+"/teams").once("value"),db.ref(base+"/scores").once("value")]).then(function(snaps){
+      var tv=snaps[0].val()||[], sv=snaps[1].val()||{};
+      return {group:s.group,date:s.date,teams:Array.isArray(tv)?tv:Object.values(tv),scores:sv};
+    }));
+  });
+  return Promise.all(jobs).then(function(parts){
+    var combinedTeams=[], combinedScores={};
+    parts.forEach(function(part){
+      (part.teams||[]).forEach(function(t){
+        if(!combinedTeams.find(function(x){return pubSan(x.name||"")===pubSan(t.name||"");})) combinedTeams.push(t);
+      });
+      Object.keys(part.scores||{}).forEach(function(k){ if(k.charAt(0)!=="_") combinedScores[k]=part.scores[k]; });
+    });
+    if(!combinedTeams.length) return pubLoadMainScoreboard();
+    pubTeamsGlobal=combinedTeams;
+    pubScoresGlobal=combinedScores;
+    renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
+  });
+}
 
 var pubSortMode = "pts";
 var pubTeamsGlobal = [], pubScoresGlobal = {};
@@ -2901,14 +2940,11 @@ function pubSortBy(mode){
 
 function loadScoreboard(){
   scoresLoaded=true;
-  var pubTeams=[],pubScores={};
-  db.ref(eventPath("teams")).once("value").then(function(s){
-    var v=s.val()||[];pubTeamsGlobal=Array.isArray(v)?v:Object.values(v);
-    db.ref(eventPath("matches")).once("value").then(function(s2){
-      pubScoresGlobal=s2.val()||{};
-      renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
-    });
-  });
+  db.ref(eventPath("activeSession")).once("value").then(function(s){
+    var sessions=pubActiveSessions(s.val());
+    if(sessions.length) return pubLoadSessionScoreboard(sessions);
+    return pubLoadMainScoreboard();
+  }).catch(function(){ pubLoadMainScoreboard(); });
 }
 
 function renderPubScoreboard(pubTeams,pubScores){
