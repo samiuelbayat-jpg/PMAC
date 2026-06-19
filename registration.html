@@ -2921,14 +2921,30 @@ document.getElementById("lb-add-btn").onclick = function(){
 
 // PUBG rank/kill helpers
 var RANK_PTS=[10,6,5,4,3,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+function pubNumOrNull(v){
+  if(v===null||v===undefined||String(v).trim()==="") return null;
+  var n=parseInt(v,10);
+  return isNaN(n)?null:n;
+}
+function pubMatchStats(m){
+  if(!m) return null;
+  var rank=pubNumOrNull(m.rank), kills=pubNumOrNull(m.kills);
+  var hasRank=rank!==null&&rank>=1&&rank<=25;
+  var hasKills=kills!==null&&kills>0;
+  if(!hasRank&&!hasKills) return null;
+  var rp=hasRank?RANK_PTS[rank-1]:0;
+  var kp=kills!==null?Math.max(0,kills):0;
+  return {rank:hasRank?rank:null,kills:kp,placement:rp,total:rp+kp};
+}
 function pubCalc(t, md){
   var ms=Array(10).fill(null).map(function(_,i){return (md&&md[i])||{rank:null,kills:null};});
   var tk=0,tp=0,plc=0,played=0;
   ms.forEach(function(m){
-    if(m.rank===null&&m.kills===null) return;
+    var st=pubMatchStats(m);
+    if(!st) return;
     played++;
-    var rp=(m.rank&&m.rank>=1&&m.rank<=25)?RANK_PTS[m.rank-1]:0;
-    var kp=m.kills?parseInt(m.kills)||0:0;
+    var rp=st.placement;
+    var kp=st.kills;
     tp+=rp+kp; tk+=kp; plc+=rp;
   });
   return {name:t.name,logo:t.logo||"",kills:tk,placement:plc,total:tp,played:played,matches:ms};
@@ -2949,18 +2965,22 @@ function pubSessionBelongsToCurrentEvent(sess){
   var saved=pubNorm(scope.eventName||"");
   return !cur || !saved || cur===saved;
 }
+function pubCleanDate(v){
+  var m=String(v||"").match(/\d{4}-\d{2}-\d{2}/);
+  return m?m[0]:"";
+}
 function pubDateInOverallRange(date){
-  date=String(date||"").slice(0,10);
+  date=pubCleanDate(date);
   if(!date) return false;
-  var start=String(eventInfo.overallStartDate||eventInfo.date||"").slice(0,10);
-  var end=String(eventInfo.overallEndDate||"").slice(0,10);
+  var start=pubCleanDate(eventInfo.overallStartDate||eventInfo.date||"");
+  var end=pubCleanDate(eventInfo.overallEndDate||"");
   if(start && date<start) return false;
   if(end && date>end) return false;
   return true;
 }
 function pubOverallRangeLabel(){
-  var start=String(eventInfo.overallStartDate||eventInfo.date||"").slice(0,10);
-  var end=String(eventInfo.overallEndDate||"").slice(0,10);
+  var start=pubCleanDate(eventInfo.overallStartDate||eventInfo.date||"");
+  var end=pubCleanDate(eventInfo.overallEndDate||"");
   if(start&&end) return "From "+start+" to "+end;
   if(start) return "From "+start+" until finish";
   return "All saved nights for this event";
@@ -2968,8 +2988,8 @@ function pubOverallRangeLabel(){
 function updateOverallRangeControls(){
   var start=document.getElementById("pub-overall-start");
   var end=document.getElementById("pub-overall-end");
-  if(start) start.value=String(eventInfo.overallStartDate||eventInfo.date||"").slice(0,10);
-  if(end) end.value=String(eventInfo.overallEndDate||"").slice(0,10);
+  if(start) start.value=pubCleanDate(eventInfo.overallStartDate||eventInfo.date||"");
+  if(end) end.value=pubCleanDate(eventInfo.overallEndDate||"");
 }
 function savePublicOverallRange(){
   if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
@@ -3028,9 +3048,10 @@ function pubLoadSessionScoreboard(sessions){
   });
 }
 function pubAddOverallMatch(total,m){
-  if(!m || (m.rank===null&&m.kills===null)) return false;
-  var rp=(m.rank&&m.rank>=1&&m.rank<=25)?RANK_PTS[m.rank-1]:0;
-  var kp=m.kills?parseInt(m.kills)||0:0;
+  var st=pubMatchStats(m);
+  if(!st) return false;
+  var rp=st.placement;
+  var kp=st.kills;
   total.kills+=kp;
   total.placement+=rp;
   total.total+=kp+rp;
@@ -3047,8 +3068,9 @@ function loadOverallEventRankings(){
     Object.keys(groups).forEach(function(gid){
       var sessions=(groups[gid]&&groups[gid].sessions)||{};
       Object.keys(sessions).forEach(function(date){
-        if(!pubDateInOverallRange(date)) return;
         var sess=sessions[date]||{};
+        var sessionDate=pubCleanDate(sess.date||date);
+        if(!pubDateInOverallRange(sessionDate)) return;
         if(!pubSessionBelongsToCurrentEvent(sess)) return;
         var teamList=sess.teams?(Array.isArray(sess.teams)?sess.teams:Object.values(sess.teams)):[];
         var scores=sess.scores||{};
@@ -3060,7 +3082,7 @@ function loadOverallEventRankings(){
           var md=pubScoreRowsForTeam(scores,t);
           var playedThisNight=false;
           for(var i=0;i<10;i++) if(pubAddOverallMatch(totals[key],(md&&md[i])||null)) playedThisNight=true;
-          if(playedThisNight){ nights[key]=nights[key]||{}; nights[key][gid+"|"+date]=true; }
+          if(playedThisNight){ nights[key]=nights[key]||{}; nights[key][gid+"|"+sessionDate]=true; }
         });
       });
     });
@@ -3170,9 +3192,10 @@ function renderPubScoreboard(pubTeams,pubScores){
     var pc=pos===1?"pub-p1":pos===2?"pub-p2":pos===3?"pub-p3":"pub-pX";
     var rc=pos===1?"rk1":pos===2?"rk2":pos===3?"rk3":"";
     var cells=t.matches.map(function(m){
-      if(!m||(m.rank===null&&m.kills===null)) return'<td><span style="color:#282c34;">—</span></td>';
-      var rs=m.rank!==null?'<span class="pub-mr '+pubRankCls(m.rank)+'">#'+m.rank+'</span>':'<span class="pub-mr rb">—</span>';
-      var ks=m.kills!==null?'<span class="pub-mk '+pubKillCls(m.kills)+'">'+m.kills+'</span>':'<span class="pub-mk kl">—</span>';
+      var st=pubMatchStats(m);
+      if(!st) return'<td><span style="color:#282c34;">—</span></td>';
+      var rs=st.rank!==null?'<span class="pub-mr '+pubRankCls(st.rank)+'">#'+st.rank+'</span>':'<span class="pub-mr rb">—</span>';
+      var ks='<span class="pub-mk '+pubKillCls(st.kills)+'">'+st.kills+'</span>';
       return'<td><div class="pub-mc">'+rs+ks+'</div></td>';
     }).join("");
     var lc=t.logo?'<img class="pub-logo-cell" src="'+t.logo+'" alt="" onerror="this.style.opacity=0.1">':'';
