@@ -651,8 +651,11 @@ function confirmReset(){ if(!isSuperAdmin){ showToast("Super admin required",fal
 function openArchiveModal(){ document.getElementById("archive-date").valueAsDate=new Date(); document.getElementById("archive-name").value=""; document.getElementById("archive-modal").classList.add("show"); }
 function closeArchiveModal(){ document.getElementById("archive-modal").classList.remove("show"); }
 function archiveHasScore(m){ if(!m) return false; const noRank=(m.rank===null||m.rank===undefined||m.rank===""); const kills=(m.kills===null||m.kills===undefined||m.kills==="")?0:(parseInt(m.kills)||0); return !(noRank&&kills===0); }
-function archiveRowsForTeam(scoreMap,t){ const keys=[t&&t.name,t&&t.tag,sanitizeKey((t&&t.name)||""),sanitizeKey((t&&t.tag)||"")].filter(Boolean); for(const k of keys){ if(scoreMap&&scoreMap[k]) return scoreMap[k]; } return []; }
-function archivePayloadFromFlat(name,date,teamList,scoreMap){ const data={}; const list=(teamList||[]).map(t=>({name:t.name||String(t||""),tag:t.tag||"",logo:t.logo||""})).filter(t=>t.name); list.forEach(t=>{ data[t.name]=archiveRowsForTeam(scoreMap,t); }); return {name,date:new Date(date).getTime(),dateText:date,archivedAt:Date.now(),eventId:activeEventId,teams:list,data,scores:data,source:"admin-current"}; }
+function archiveDateValue(date){ const d=date||new Date().toISOString().slice(0,10); return {text:d,ms:new Date(d+"T00:00:00").getTime()||Date.now()}; }
+function archiveTeamObj(t){ if(!t) return null; if(typeof t==="string") return {name:t,tag:"",logo:""}; const name=String(t.name||"").trim(); if(!name) return null; return {name,tag:String(t.tag||""),logo:String(t.logo||"")}; }
+function archiveRowsForTeam(scoreMap,t){ const tm=archiveTeamObj(t); if(!tm) return []; const keys=[tm.name,tm.tag,sanitizeKey(tm.name),tm.tag?sanitizeKey(tm.tag):""].filter(Boolean); for(const k of keys){ if(scoreMap&&scoreMap[k]) return scoreMap[k]; } return []; }
+function archiveCleanRows(rows,gid,sdate){ const clean=[]; (Array.isArray(rows)?rows:Object.values(rows||{})).forEach((m,i)=>{ if(!archiveHasScore(m)) return; clean.push({rank:(m.rank===null||m.rank===undefined||m.rank==="")?null:parseInt(m.rank)||null,kills:parseInt(m.kills)||0,players:playerCount(m.players),group:gid||"",date:sdate||"",match:(m.match?parseInt(m.match)||0:i+1)}); }); return clean; }
+function archivePayloadFromFlat(name,date,teamList,scoreMap){ const dv=archiveDateValue(date); const data={}; const list=(teamList||[]).map(archiveTeamObj).filter(Boolean); list.forEach(t=>{ data[t.name]=archiveCleanRows(archiveRowsForTeam(scoreMap,t)); }); return {name,date:dv.ms,dateText:dv.text,archivedAt:Date.now(),eventId:activeEventId,teams:list,data,scores:data,source:"admin-current"}; }
 function buildArchivePayload(name,date){
   return dbEgRef.once("value").then(snap=>{
     const groups=snap.val()||{};
@@ -675,7 +678,7 @@ function buildArchivePayload(name,date){
             const slot=key+"|"+sdate+"|M"+(i+1);
             if(seen[slot]) continue;
             seen[slot]=true; found=true;
-            data[teamMap[key].name].push({rank:m.rank||null,kills:parseInt(m.kills)||0,players:playerCount(m.players),group:gid,date:sdate,match:i+1});
+            data[teamMap[key].name].push({rank:(m.rank===null||m.rank===undefined||m.rank==="")?null:parseInt(m.rank)||null,kills:parseInt(m.kills)||0,players:playerCount(m.players),group:gid,date:sdate,match:i+1});
           }
         });
       });
@@ -684,10 +687,11 @@ function buildArchivePayload(name,date){
     const list=Object.values(teamMap);
     let matchesPlayed=0;
     Object.values(data).forEach(rows=>{ if(rows.length>matchesPlayed) matchesPlayed=rows.length; });
-    return {name,date:new Date(date).getTime(),dateText:date,archivedAt:Date.now(),eventId:activeEventId,teams:list,data,scores:data,eventGroups:groups,matchesPlayed,source:"admin-event-groups"};
+    const dv=archiveDateValue(date);
+    return {name,date:dv.ms,dateText:dv.text,archivedAt:Date.now(),eventId:activeEventId,teams:list,data,scores:data,matchesPlayed,groupsArchived:Object.keys(groups).length,source:"admin-event-groups"};
   });
 }
-function confirmArchive(){ const name=document.getElementById("archive-name").value.trim(); const date=document.getElementById("archive-date").value; if(!name){ showToast("Enter tournament name",false); return; } buildArchivePayload(name,date).then(payload=>db.ref(eventPath("archive")).child("t_"+Date.now()).set(payload)).then(()=>{ return Promise.all([dbTeamsRef.set([]), dbScoresRef.set({}), dbActiveSessionRef.remove().catch(()=>{})]); }).then(()=>{ closeArchiveModal(); showToast("Archived & reset",true); }).catch(e=>showToast(e.message,false)); }
+function confirmArchive(){ const name=document.getElementById("archive-name").value.trim(); const date=document.getElementById("archive-date").value||new Date().toISOString().slice(0,10); if(!name){ showToast("Enter tournament name",false); return; } buildArchivePayload(name,date).then(payload=>db.ref(eventPath("archive")).child("t_"+Date.now()).set(payload)).then(()=>{ return Promise.all([dbTeamsRef.set([]), dbScoresRef.set({}), dbActiveSessionRef.remove().catch(()=>{})]); }).then(()=>{ closeArchiveModal(); showToast("Archived & reset",true); }).catch(e=>showToast("Archive failed: "+(e&&e.message?e.message:e),false)); }
 
 // ========== GROQ BATCH ==========
 let groqAbort = false;
