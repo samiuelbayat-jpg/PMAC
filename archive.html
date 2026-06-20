@@ -191,6 +191,12 @@ function toArray(val) {
   if (Array.isArray(val)) return val;
   return Object.values(val);
 }
+function safeKey(n){ return String(n||"").replace(/[\.\#\$\/\[\]]/g, "_"); }
+function rowsForTeam(data, team){
+  var name = team && team.name ? team.name : String(team||"");
+  var tag = team && team.tag ? team.tag : "";
+  return data[name] || data[safeKey(name)] || (tag ? (data[tag] || data[safeKey(tag)]) : null) || [];
+}
 
 function processTeams(t) {
   var teams = [];
@@ -205,13 +211,13 @@ function processTeams(t) {
 
   // Case 2: Saved from admin (has teams + data)
   var teamsArr = toArray(t.teams);
-  var data = t.data || {};
+  var data = t.data || t.scores || {};
 
   if (teamsArr.length > 0) {
     teams = teamsArr.map(function(team) {
       var name = team.name || team;
       var logo = team.logo || '';
-      var matches = toArray(data[name]);
+      var matches = toArray(rowsForTeam(data, team));
       var kills = 0, placement = 0, played = 0;
       for (var i = 0; i < matches.length; i++) {
         var m = matches[i];
@@ -224,7 +230,7 @@ function processTeams(t) {
         placement += placementPts(r);
       }
       return { name: name, logo: logo, kills: kills, placement: placement, totalPts: kills + placement, played: played };
-    }).sort(function(a,b){ return b.totalPts - a.totalPts; });
+    }).sort(function(a,b){ return b.totalPts - a.totalPts || b.placement - a.placement || b.kills - a.kills; });
   } else if (Object.keys(data).length > 0) {
     // No teams array but has data — build from data keys
     teams = Object.keys(data).map(function(name) {
@@ -241,7 +247,7 @@ function processTeams(t) {
         placement += placementPts(r);
       }
       return { name: name, logo: '', kills: kills, placement: placement, totalPts: kills + placement, played: played };
-    }).sort(function(a,b){ return b.totalPts - a.totalPts; });
+    }).sort(function(a,b){ return b.totalPts - a.totalPts || b.placement - a.placement || b.kills - a.kills; });
   }
 
   return teams;
@@ -268,8 +274,9 @@ db.ref(eventPath("archive")).on("value", function(snap) {
 
     // Count matches played
     var matchesPlayed = t.matchesPlayed || 0;
-    if (!matchesPlayed && t.data) {
-      Object.values(t.data).forEach(function(ms) {
+    var scoreData = t.data || t.scores || {};
+    if (!matchesPlayed && scoreData) {
+      Object.values(scoreData).forEach(function(ms) {
         var arr = toArray(ms);
         var cnt = arr.filter(function(m){ return m && m.rank !== null && m.rank !== undefined && m.rank !== ''; }).length;
         if (cnt > matchesPlayed) matchesPlayed = cnt;
