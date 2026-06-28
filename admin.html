@@ -643,8 +643,23 @@ function saveKillsNow(team,el){
   clearTimeout(killsSaveTimers[team]);
   killsSaveTimers[team]=setTimeout(()=>autoSave(team),2000);
 }
-function savePlayersNow(team,el){ if(el){ const v=playerCount(el.value); if(String(el.value)!==String(v)) el.value=v; } autoSave(team); }
-function autoSave(team){ const row=scoreRowFromInputs(team); if(!row) return; const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; _scoresRef().set(scores).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); const savedDiv=document.getElementById(`saved_${team}`); if(savedDiv){ savedDiv.classList.add("show"); setTimeout(()=>savedDiv.classList.remove("show"),1500); } renderScoreGrid(); }); }
+function broadcastElimination(team){
+  const item=teams.find(t=>t.name===team)||{};
+  const tag=String(item.tag||compactTeamTag(team)||"").toUpperCase().slice(0,8);
+  overlaySettingsRef.child("eliminationAlert").set({team,tag,match:currentMatch+1,ts:Date.now()}).catch(()=>{});
+}
+function savePlayersNow(team,el){
+  let eliminated=false;
+  if(el){
+    const v=playerCount(el.value);
+    if(String(el.value)!==String(v)) el.value=v;
+    const safe=sanitizeKey(team);
+    const prev=scores[safe]&&scores[safe][currentMatch]?playerCount(scores[safe][currentMatch].players):4;
+    eliminated=prev>0&&v===0;
+  }
+  autoSave(team,{eliminated});
+}
+function autoSave(team,opts){ const row=scoreRowFromInputs(team); if(!row) return Promise.resolve(); const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; return _scoresRef().set(scores).then(()=>{ if(opts&&opts.eliminated) broadcastElimination(team); document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); const savedDiv=document.getElementById(`saved_${team}`); if(savedDiv){ savedDiv.classList.add("show"); setTimeout(()=>savedDiv.classList.remove("show"),1500); } renderScoreGrid(); }); }
 function clearTeamMatch(team){ const safe=sanitizeKey(team); if(scores[safe]) scores[safe][currentMatch]=emptyScoreRow(); else scores[safe]=emptyScoreRows(); _scoresRef().set(scores); renderScoreGrid(); }
 function saveAll(){ teams.forEach(t=>{ const row=scoreRowFromInputs(t.name); if(row){ const safe=sanitizeKey(t.name); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; } }); scores._activeMatch=activeMatchPayload(); return _scoresRef().set(scores).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); showToast("All saved",true); }); }
 function confirmReset(){
