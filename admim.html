@@ -262,6 +262,10 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div class="inp-wrap"><div class="inp-lbl">Alive Indicator</div><select class="text-inp" id="ov-alive-style"><option value="bars">Bold Bars Under Tag</option><option value="pipes">|||| After Tag</option><option value="dots">Round Dots After Tag</option></select></div>
         <div class="inp-wrap"><div class="inp-lbl">Alive Color</div><input class="text-inp" type="color" id="ov-alive-color" value="#00d26a" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Dead Color</div><input class="text-inp" type="color" id="ov-dead-color" value="#252a31" style="min-width:90px;height:42px;padding:4px;"></div>
+        <div class="inp-wrap"><div class="inp-lbl">Elimination Style</div><select class="text-inp" id="ov-elim-style"><option value="compact">Compact Alert</option><option value="slash">Slash Broadcast</option><option value="clean">Clean Bar</option><option value="danger">Danger Red</option></select></div>
+        <div class="inp-wrap"><div class="inp-lbl">Elim Background</div><input class="text-inp" type="color" id="ov-elim-bg" value="#b00000" style="min-width:90px;height:42px;padding:4px;"></div>
+        <div class="inp-wrap"><div class="inp-lbl">Elim Text</div><input class="text-inp" type="color" id="ov-elim-text" value="#ffffff" style="min-width:90px;height:42px;padding:4px;"></div>
+        <div class="inp-wrap"><div class="inp-lbl">Elim Edge</div><input class="text-inp" type="color" id="ov-elim-accent" value="#ff3434" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Streamer Name</div><input class="text-inp" id="ov-streamer-name" placeholder="e.g. ARA MINI LEAGUE LIVE"></div>
         <div class="inp-wrap"><div class="inp-lbl">Streamer Logo</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><input type="file" id="ov-streamer-logo-file" accept="image/*" style="display:none" onchange="ovPreviewLogo(this)"><button class="logo-inp-btn" type="button" onclick="document.getElementById('ov-streamer-logo-file').click()">Upload Logo</button><img id="ov-logo-preview" class="ov-preview-logo"></div></div>
       </div>
@@ -1219,19 +1223,19 @@ function egClearGroup(gid, date){
 // The key bridge: when a session is active, _teamsRef() and _scoresRef() point to session paths
 
 // ========== OVERLAY SETTINGS ==========
-let overlaySettings = { design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"", aliveStyle:"bars", aliveColor:"#00d26a", deadColor:"#252a31" };
+let overlaySettings = { design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"", aliveStyle:"bars", aliveColor:"#00d26a", deadColor:"#252a31", elimStyle:"compact", elimBgColor:"#b00000", elimTextColor:"#ffffff", elimAccentColor:"#ff3434" };
 let overlayLogoDraft = null;
 function loadOverlaySettings(){ if(overlaySettingsRef) overlaySettingsRef.off(); overlaySettingsRef.on("value", snap => { overlaySettings = Object.assign({}, overlaySettings, snap.val() || {}); fillOverlaySettingsForm(); }); }
 function fillOverlaySettingsForm(){
   const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.value=val||""; };
-  set("ov-design", overlaySettings.design || "classic"); set("ov-accent", overlaySettings.accent || "#e8b800"); set("ov-bg", overlaySettings.bg || "#0a0b0d"); set("ov-text", overlaySettings.text || "#eef0f5"); set("ov-alive-style", overlaySettings.aliveStyle || "bars"); set("ov-alive-color", overlaySettings.aliveColor || "#00d26a"); set("ov-dead-color", overlaySettings.deadColor || "#252a31"); set("ov-streamer-name", overlaySettings.streamerName || "");
+  set("ov-design", overlaySettings.design || "classic"); set("ov-accent", overlaySettings.accent || "#e8b800"); set("ov-bg", overlaySettings.bg || "#0a0b0d"); set("ov-text", overlaySettings.text || "#eef0f5"); set("ov-alive-style", overlaySettings.aliveStyle || "bars"); set("ov-alive-color", overlaySettings.aliveColor || "#00d26a"); set("ov-dead-color", overlaySettings.deadColor || "#252a31"); set("ov-elim-style", overlaySettings.elimStyle || "compact"); set("ov-elim-bg", overlaySettings.elimBgColor || "#b00000"); set("ov-elim-text", overlaySettings.elimTextColor || "#ffffff"); set("ov-elim-accent", overlaySettings.elimAccentColor || "#ff3434"); set("ov-streamer-name", overlaySettings.streamerName || "");
   const prev=document.getElementById("ov-logo-preview"); if(prev){ const src=overlayLogoDraft || overlaySettings.streamerLogo || ""; prev.src=src; prev.style.display=src?"inline-block":"none"; }
 }
 function ovPreviewLogo(input){ const file=input.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=e=>{ overlayLogoDraft=e.target.result; fillOverlaySettingsForm(); }; reader.readAsDataURL(file); }
 function clearOverlayLogo(){ overlayLogoDraft=""; overlaySettings.streamerLogo=""; fillOverlaySettingsForm(); }
 function saveOverlaySettings(){
-  const data={ design:document.getElementById("ov-design").value, accent:document.getElementById("ov-accent").value, bg:document.getElementById("ov-bg").value, text:document.getElementById("ov-text").value, aliveStyle:document.getElementById("ov-alive-style").value, aliveColor:document.getElementById("ov-alive-color").value, deadColor:document.getElementById("ov-dead-color").value, streamerName:document.getElementById("ov-streamer-name").value.trim(), streamerLogo:overlayLogoDraft!==null?overlayLogoDraft:(overlaySettings.streamerLogo||""), updatedAt:Date.now() };
-  overlaySettingsRef.set(data).then(()=>{ overlayLogoDraft=null; showToast("Overlay settings saved", true); }).catch(e=>showToast(e.message,false));
+  const data={ design:document.getElementById("ov-design").value, accent:document.getElementById("ov-accent").value, bg:document.getElementById("ov-bg").value, text:document.getElementById("ov-text").value, aliveStyle:document.getElementById("ov-alive-style").value, aliveColor:document.getElementById("ov-alive-color").value, deadColor:document.getElementById("ov-dead-color").value, elimStyle:document.getElementById("ov-elim-style").value, elimBgColor:document.getElementById("ov-elim-bg").value, elimTextColor:document.getElementById("ov-elim-text").value, elimAccentColor:document.getElementById("ov-elim-accent").value, streamerName:document.getElementById("ov-streamer-name").value.trim(), streamerLogo:overlayLogoDraft!==null?overlayLogoDraft:(overlaySettings.streamerLogo||""), updatedAt:Date.now() };
+  overlaySettingsRef.update(data).then(()=>{ overlayLogoDraft=null; showToast("Overlay settings saved", true); }).catch(e=>showToast(e.message,false));
 }
 // ========== FORUM ==========
 
