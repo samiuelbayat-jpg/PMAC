@@ -103,6 +103,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .kills-inp::-webkit-inner-spin-button,.kills-inp::-webkit-outer-spin-button{-webkit-appearance:auto;appearance:auto;opacity:1;}
 .players-inp{border-color:rgba(0,201,122,0.28);color:#00c97a;-moz-appearance:auto;appearance:auto;padding-right:4px;}
 .players-inp::-webkit-inner-spin-button,.players-inp::-webkit-outer-spin-button{-webkit-appearance:auto;appearance:auto;opacity:1;}
+.num-stepper{display:grid;grid-template-columns:1fr 32px;gap:4px;align-items:stretch;}.num-stepper .inp{min-width:0;}.step-arrows{display:grid;grid-template-rows:1fr 1fr;gap:3px;}.step-btn{background:#161a1f;border:1px solid rgba(255,255,255,0.14);color:#00c97a;border-radius:4px;font-size:13px;font-weight:900;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:20px;font-family:Arial,sans-serif;}.step-btn:active{background:#00c97a;color:#020403;border-color:#00c97a;}
 .inp:focus{border-color:#e8b800;}
 .card-pts-preview{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;margin-top:6px;text-align:center;}
 .card-pts-preview span{color:#e8b800;}
@@ -626,7 +627,7 @@ function renderScoreGrid(){
         const previewHtml = (rankVal !== null || killsVal > 0 || playersVal !== 4) ? `Alive: <span>${playersVal}/4</span> · Place: <span>${pp}</span> + Kills: <span>${killsVal}</span> = <span>${total} pts</span>` : '';
         const cardDiv=document.createElement("div"); 
         cardDiv.className="team-card"+(rankVal !== null || killsVal > 0 || playersVal !== 4 ? " has-data":""); 
-        cardDiv.innerHTML=`<div class="card-header"><img class="card-logo" src="${t.logo||''}" onerror="this.style.opacity=0.2"><div class="card-name">${t.name}</div><span class="card-clear" onclick="clearTeamMatch('${t.name.replace(/'/g,"\\'")}')">clear</span></div><div class="card-inputs"><div class="inp-group"><div class="inp-label">Rank</div><select class="inp rank-sel" id="rank_${t.name}_${currentMatch}" onchange="autoSave('${t.name.replace(/'/g,"\\'")}')">${rankOpts}</select></div><div class="inp-group"><div class="inp-label">Kills</div><input class="inp kills-inp" type="number" min="0" step="1" id="kills_${t.name}_${currentMatch}" value="${m.kills??''}" oninput="saveKillsNow('${t.name.replace(/'/g,"\\'")}',this)" onchange="saveKillsNow('${t.name.replace(/'/g,"\\'")}',this)"></div><div class="inp-group"><div class="inp-label">Players</div><input class="inp players-inp" type="number" min="0" max="4" step="1" id="players_${t.name}_${currentMatch}" value="${playersVal}" oninput="savePlayersNow('${t.name.replace(/'/g,"\\'")}',this)" onchange="savePlayersNow('${t.name.replace(/'/g,"\\'")}',this)"></div></div><div class="card-pts-preview" id="prev_${t.name}">${previewHtml}</div><div class="card-saved" id="saved_${t.name}"></div>`; 
+        cardDiv.innerHTML=`<div class="card-header"><img class="card-logo" src="${t.logo||''}" onerror="this.style.opacity=0.2"><div class="card-name">${t.name}</div><span class="card-clear" onclick="clearTeamMatch('${t.name.replace(/'/g,"\\'")}')">clear</span></div><div class="card-inputs"><div class="inp-group"><div class="inp-label">Rank</div><select class="inp rank-sel" id="rank_${t.name}_${currentMatch}" onchange="autoSave('${t.name.replace(/'/g,"\\'")}')">${rankOpts}</select></div><div class="inp-group"><div class="inp-label">Kills</div><input class="inp kills-inp" type="number" min="0" step="1" id="kills_${t.name}_${currentMatch}" value="${m.kills??''}" oninput="saveKillsNow('${t.name.replace(/'/g,"\\'")}',this)" onchange="saveKillsNow('${t.name.replace(/'/g,"\\'")}',this)"></div><div class="inp-group"><div class="inp-label">Players</div><div class="num-stepper"><input class="inp players-inp" type="number" inputmode="numeric" min="0" max="4" step="1" id="players_${t.name}_${currentMatch}" value="${playersVal}" oninput="savePlayersNow('${t.name.replace(/'/g,"\\'")}',this)" onchange="savePlayersNow('${t.name.replace(/'/g,"\\'")}',this)"><div class="step-arrows"><button class="step-btn" type="button" aria-label="Players up" onclick="stepPlayers('${t.name.replace(/'/g,"\\'")}',1)">▲</button><button class="step-btn" type="button" aria-label="Players down" onclick="stepPlayers('${t.name.replace(/'/g,"\\'")}',-1)">▼</button></div></div></div></div><div class="card-pts-preview" id="prev_${t.name}">${previewHtml}</div><div class="card-saved" id="saved_${t.name}"></div>`; 
         grid.appendChild(cardDiv); 
     }); 
 }
@@ -652,6 +653,14 @@ function broadcastElimination(team){
   const item=teams.find(t=>t.name===team)||{};
   const tag=String(item.tag||compactTeamTag(team)||"").toUpperCase().slice(0,8);
   overlaySettingsRef.child("eliminationAlert").set({team,tag,match:currentMatch+1,ts:Date.now()}).catch(()=>{});
+}
+function stepPlayers(team,delta){
+  const el=document.getElementById(`players_${team}_${currentMatch}`);
+  if(!el) return;
+  const current=playerCount(el.value);
+  const next=Math.max(0,Math.min(4,current+(parseInt(delta)||0)));
+  el.value=next;
+  savePlayersNow(team,el);
 }
 function savePlayersNow(team,el){
   let eliminated=false;
