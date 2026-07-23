@@ -22,7 +22,7 @@ html,body{width:1920px;height:1080px;min-width:1920px;min-height:1080px;overflow
 .col-headers{padding:4px 6px;background:rgba(22,26,31,0.95);border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;}
 .col-h{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#8a96a8;text-align:center;}.col-h.L{text-align:left;}.col-h.acc{color:var(--ov-accent);}
 .teams-list{display:flex;flex-direction:column;}
-.team-row{align-items:center;padding:3px 6px;border-bottom:1px solid rgba(255,255,255,0.04);border-left:3px solid transparent;}
+.team-row{align-items:center;padding:3px 6px;border-bottom:1px solid rgba(255,255,255,0.04);border-left:3px solid transparent;}.team-row.rank-slide{position:relative;z-index:3;will-change:transform;transition:transform .62s cubic-bezier(.18,.84,.22,1);}
 .team-row.gold{background:color-mix(in srgb,var(--ov-accent) 16%,transparent);border-left-color:var(--ov-accent);}.team-row.silver{background:rgba(168,184,200,0.06);border-left-color:#a8b8c8;}.team-row.bronze{background:rgba(212,131,90,0.06);border-left-color:#d4835a;}
 .pos{font-weight:900;font-size:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:0.9;min-height:22px;}.pos.g{color:var(--ov-accent);}.pos.s{color:#a8b8c8;}.pos.b{color:#d4835a;}.pos.x{color:#8a96a8;font-size:10px;}.rank-move{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:900;margin-top:2px;letter-spacing:0;}.rank-move.up{color:#00ff88;text-shadow:0 0 5px rgba(0,255,136,.65);}.rank-move.down{color:#ff9d00;text-shadow:0 0 5px rgba(255,157,0,.55);}.rank-move.bigdown{color:#ff3535;text-shadow:0 0 5px rgba(255,53,53,.70);}.rank-move.kill{color:#e8d02b;text-shadow:0 0 5px rgba(232,208,43,.65);}
 .t-logo{width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid var(--ov-accent);background:rgba(255,255,255,0.05);}
@@ -62,6 +62,25 @@ body.design-redlive .team-row:nth-child(even){background:linear-gradient(90deg,#
 body.design-redlive .t-logo{display:block;width:20px;height:20px;border-radius:3px;border:1px solid rgba(255,255,255,0.55);}body.design-redlive .pos{color:#fff!important;font-size:12px;}body.design-redlive .t-name{color:#fff;font-size:13px;letter-spacing:0.03em;}body.design-redlive .t-played{display:none;}
 body.design-redlive .t-kills,body.design-redlive .t-place,body.design-redlive .t-pts{display:block;color:#fff;text-align:center;font-size:13px;}body.design-redlive .t-pts{font-weight:900;}
 body.design-redlive .ticker{border-top:3px solid #a00000;background:linear-gradient(90deg,#070707,#240000);}body.design-redlive .ticker-label{background:#b00000;color:#fff;}
+body.design-pmgo .panel{width:276px;background:#3f423e;border:0;box-shadow:-8px 0 22px rgba(0,0,0,.38);padding-bottom:28px;}
+body.design-pmgo .panel:before{content:"";position:absolute;inset:0;border:2px solid rgba(0,0,0,.28);pointer-events:none;}
+body.design-pmgo .panel:after{display:none;}
+.pmgo-legend{display:none;}body.design-pmgo .pmgo-legend{position:absolute;left:7px;right:7px;bottom:7px;height:18px;background:#f7f7f3;color:#171717;font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:900;letter-spacing:-.02em;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 -1px 0 rgba(0,0,0,.18);}body.design-pmgo .pmgo-legend-item{display:inline-flex;align-items:center;gap:3px;white-space:nowrap;}body.design-pmgo .pmgo-legend-mark{width:7px;height:7px;display:inline-block;background:#171717;}body.design-pmgo .pmgo-legend-mark.alive{background:var(--alive-color);}body.design-pmgo .pmgo-legend-mark.knocked{background:#e31755;}body.design-pmgo .pmgo-legend-mark.eliminated{background:var(--dead-color);}
+body.design-pmgo .panel-top{display:none;}
+body.design-pmgo .col-headers{grid-template-columns:38px minmax(0,1fr) 50px 40px 42px;background:#d00618;border:0;padding:7px 6px 6px;min-height:30px;}
+body.design-pmgo .col-h{color:#fff;font-size:9px;font-weight:900;text-align:center;letter-spacing:.01em;font-family:'Barlow Condensed',sans-serif;}
+body.design-pmgo .col-h{text-align:center;}body.design-pmgo .col-h:nth-child(2){text-align:left;}
+body.design-pmgo .team-row{grid-template-columns:38px minmax(0,1fr) 50px 40px 42px;align-items:center;margin:0;padding:4px 6px;min-height:39px;background:#f3f3ee;border:0;border-bottom:1px solid rgba(0,0,0,.12);clip-path:none;}
+body.design-pmgo .team-row:nth-child(n+6):nth-child(-n+7),body.design-pmgo .team-row:nth-child(n+11):nth-child(-n+13),body.design-pmgo .team-row:nth-child(n+15){background:#777a73;}
+body.design-pmgo .team-row.gold,body.design-pmgo .team-row.silver,body.design-pmgo .team-row.bronze{border-left:0;background:#f3f3ee;}body.design-pmgo .team-row:nth-child(5){background:#f4f0a5;}
+body.design-pmgo .pos{font-size:18px;color:#111!important;text-shadow:none;min-height:24px;line-height:1;font-weight:800;}body.design-pmgo .rank-move{display:none;}
+body.design-pmgo .t-logo{width:25px;height:25px;border-radius:2px;border:0;background:transparent;object-fit:contain;flex:0 0 25px;}
+body.design-pmgo .pmgo-team-cell{display:flex;align-items:center;gap:7px;min-width:0;}body.design-pmgo .t-info{min-width:0;}
+body.design-pmgo .t-line{display:contents;}body.design-pmgo .t-name{font-size:18px;color:#111;letter-spacing:.02em;font-weight:800;line-height:1;text-transform:uppercase;}body.design-pmgo .t-played{display:none;}
+body.design-pmgo .pmgo-alive{display:flex;justify-content:center;align-items:center;}body.design-pmgo .player-strips{width:42px;margin:0;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;align-self:center;}body.design-pmgo .pstrip{height:23px;border-radius:0;background:var(--alive-color);box-shadow:none;}body.design-pmgo .pstrip.dead{background:var(--dead-color);border:0;opacity:1;}
+body.design-pmgo .player-pipes,body.design-pmgo .player-dots{grid-column:2;width:42px;transform:none;justify-content:center;}body.design-pmgo .player-pipes .pmark{font-size:22px;color:var(--alive-color);}body.design-pmgo .player-pipes .pmark.dead{color:var(--dead-color);}body.design-pmgo .player-dots .pmark{width:9px;height:22px;border-radius:0;background:var(--alive-color);}body.design-pmgo .player-dots .pmark.dead{background:var(--dead-color);border:0;}
+body.design-pmgo .t-place{display:none;}body.design-pmgo .t-pts{display:block;color:#111;background:transparent;border-radius:0;font-size:18px;font-weight:800;text-align:center;padding:0;box-shadow:none;}body.design-pmgo .t-kills{display:block;color:#111;font-size:18px;font-weight:800;text-align:center;}
+body.design-pmgo .ticker{right:276px;height:38px;background:#3f423e;border-top:3px solid #d00618;}body.design-pmgo .ticker-label{background:#d00618;color:#fff;letter-spacing:.08em;}body.design-pmgo .ti-name{color:#fff;}body.design-pmgo .ti-val{color:#d7ded5;}body.design-pmgo .ti-pts,body.design-pmgo .ti-pos{color:#fff;}
 </style>
 </head>
 <body class="design-classic">
@@ -87,6 +106,7 @@ body.design-redlive .ticker{border-top:3px solid #a00000;background:linear-gradi
   <div class="teams-list" id="teams-list">
     <div class="no-data">Connecting...</div>
   </div>
+  <div class="pmgo-legend" aria-hidden="true"><span class="pmgo-legend-item"><span class="pmgo-legend-mark alive"></span>ALIVE</span><span class="pmgo-legend-item"><span class="pmgo-legend-mark knocked"></span>KNOCKED</span><span class="pmgo-legend-item"><span class="pmgo-legend-mark eliminated"></span>ELIMINATED</span></div>
 </div>
 <div class="ticker">
   <div class="ticker-label">Live Standings</div>
@@ -109,7 +129,9 @@ const FB_CONFIG = {
 };
 if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
 const db = firebase.database();
-const EVENT_ID = new URLSearchParams(location.search).get("event") || "default";
+const QS = new URLSearchParams(location.search);
+const EVENT_ID = QS.get("event") || "default";
+const FORCE_DESIGN = (QS.get("design") || "").trim().toLowerCase();
 function eventBasePath(){ return EVENT_ID==="default" ? "pmac" : "pmac/events/"+EVENT_ID; }
 function eventPath(child){ return eventBasePath()+"/"+child; }
 localStorage.setItem("pmac_active_event", EVENT_ID);
@@ -141,9 +163,23 @@ function hexToRgba(hex,a){
   const r=parseInt(v.slice(0,2),16)||10,g=parseInt(v.slice(2,4),16)||11,b=parseInt(v.slice(4,6),16)||13;
   return "rgba("+r+","+g+","+b+","+a+")";
 }
+function currentOverlayDesign(){
+  return FORCE_DESIGN || (overlaySettings && overlaySettings.design) || "classic";
+}
+function applyColumnHeaders(){
+  const headers=document.querySelector(".col-headers");
+  if(!headers) return;
+  if(currentOverlayDesign()==="pmgo"){
+    headers.innerHTML='<div class="col-h">RANK</div><div class="col-h L">TEAM</div><div class="col-h">ALIVE</div><div class="col-h">ELIMS</div><div class="col-h acc">TOTAL</div>';
+  }else{
+    headers.innerHTML='<div class="col-h">#</div><div class="col-h"></div><div class="col-h L">Tag</div><div class="col-h">Kills</div><div class="col-h">Place</div><div class="col-h acc">Total</div>';
+  }
+}
 function applyOverlaySettings(){
   const s=overlaySettings||{};
-  document.body.className="design-"+(s.design||"classic");
+  const activeDesign = currentOverlayDesign();
+  document.body.className="design-"+activeDesign;
+  applyColumnHeaders();
   document.documentElement.style.setProperty("--ov-accent",s.accent||"#e8b800");
   document.documentElement.style.setProperty("--ov-bg",hexToRgba(s.bg||"#0a0b0d",0.96));
   document.documentElement.style.setProperty("--ov-text",s.text||"#eef0f5");
@@ -157,9 +193,12 @@ function applyOverlaySettings(){
   const card=document.getElementById("streamer-card"), panelLogo=document.getElementById("panel-logo"), panelTitle=document.getElementById("panel-title-text");
   if(card) card.style.display="none";
   if(s.streamerLogo){ panelLogo.src=s.streamerLogo; panelLogo.style.display="block"; }
-  panelTitle.textContent=(s.design==="redlive"?(s.streamerName||"LIVE STANDING"):(s.streamerName||"Standings"));
+  panelTitle.textContent=(activeDesign==="redlive"?(s.streamerName||"LIVE STANDING"):(activeDesign==="pmgo"?(s.streamerName||"PMGO LIVE POINTS"):(s.streamerName||"Standings")));
 }
-db.ref(eventPath("overlaySettings")).on("value",snap=>{ overlaySettings=Object.assign({},overlaySettings,snap.val()||{}); applyOverlaySettings(); render(); });
+function applySettingsPayload(val){ overlaySettings=Object.assign({},overlaySettings,val||{}); applyOverlaySettings(); render(); }
+const overlaySettingsLiveRef=db.ref(eventPath("overlaySettings"));
+overlaySettingsLiveRef.on("value",snap=>applySettingsPayload(snap.val()||{}));
+setInterval(()=>{ overlaySettingsLiveRef.once("value").then(snap=>{ const val=snap.val(); if(val) applySettingsPayload(val); }); },2000);
 let lastEliminationTs=0, eliminationTimer=null;
 function showEliminationAlert(a){
   if(!a||!a.ts||a.ts===lastEliminationTs) return;
@@ -234,6 +273,7 @@ function teamNameBlock(team){
 }
 function setOverlayMessage(msg){
   overlayMessage = msg || "";
+  applyColumnHeaders();
   const list = document.getElementById("teams-list");
   if(list && currentTeams.length===0) list.innerHTML = '<div class="no-data">'+escapeHtml(overlayMessage)+'</div>';
 }
@@ -309,6 +349,39 @@ function movementFor(team, position){
   }
   return { html:"", rowClass:"" };
 }
+function captureRowTops(list){
+  const tops = {};
+  if(!list) return tops;
+  Array.from(list.querySelectorAll(".team-row[data-team-key]")).forEach(row=>{
+    tops[row.dataset.teamKey] = row.getBoundingClientRect().top;
+  });
+  return tops;
+}
+function animateRankSlides(list, oldTops){
+  if(!list || !oldTops || !Object.keys(oldTops).length) return;
+  const rows = Array.from(list.querySelectorAll(".team-row[data-team-key]"));
+  rows.forEach(row=>{
+    const oldTop = oldTops[row.dataset.teamKey];
+    if(oldTop === undefined) return;
+    const newTop = row.getBoundingClientRect().top;
+    const delta = oldTop - newTop;
+    if(Math.abs(delta) < 2) return;
+    row.classList.add("rank-slide");
+    row.style.transition = "none";
+    row.style.transform = "translateY("+delta+"px)";
+  });
+  requestAnimationFrame(()=>{
+    rows.forEach(row=>{
+      if(!row.classList.contains("rank-slide")) return;
+      row.style.transition = "";
+      row.style.transform = "translateY(0)";
+      window.setTimeout(()=>{
+        row.classList.remove("rank-slide");
+        row.style.transform = "";
+      }, 680);
+    });
+  });
+}
 function sortTeams(teams) {
   return teams.sort((a, b) => {
     // Primary: Total Points (higher is better)
@@ -325,6 +398,8 @@ function sortTeams(teams) {
 }
 
 function render() {
+  const activeDesign = currentOverlayDesign();
+  applyColumnHeaders();
   if (currentTeams.length === 0) {
     const list = document.getElementById("teams-list");
     if(list) list.innerHTML = '<div class="no-data">'+escapeHtml(overlayMessage || ("No teams found for event: "+EVENT_ID))+'</div>';
@@ -350,8 +425,9 @@ function render() {
   
   // Render standings list
   const list = document.getElementById("teams-list");
+  const oldRowTops = captureRowTops(list);
   list.innerHTML = "";
-  const maxShow = 25;
+  const maxShow = activeDesign==="pmgo" ? 16 : 25;
   
   teams.slice(0, maxShow).forEach((team, index) => {
     const position = index + 1;
@@ -361,21 +437,32 @@ function render() {
     const move = { html:"", rowClass:"" };
     const row = document.createElement("div");
     row.className = "team-row " + rankClass + " " + move.rowClass;
+    row.dataset.teamKey = teamKey(team);
     
     // Logo handling
     const logoHtml = team.logo ? 
       '<img class="t-logo" src="' + team.logo + '" alt="" onerror="this.style.display=\'none\'; this.parentElement.innerHTML += \'<div class=\\\'t-logo\\\' style=\\\'background:#2d3748; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--ov-accent);\\\'>?</div>\'; this.remove()">' : 
       '<div class="t-logo" style="background:#2d3748; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--ov-accent);">?</div>';
     
-    row.innerHTML =
-      '<div class="pos ' + posColorClass + '">' + position + move.html + '</div>' +
-      logoHtml +
-      '<div class="t-info">' + teamNameBlock(team) + '</div>' +
-      '<div class="t-kills">' + team.kills + '</div>' +
-      '<div class="t-place">' + team.placePoints + '</div>' +
-      '<div class="t-pts">' + team.total + '</div>';
+    if(activeDesign==="pmgo"){
+      row.innerHTML =
+        '<div class="pos ' + posColorClass + '">' + position + '</div>' +
+        '<div class="pmgo-team-cell">' + logoHtml + '<div class="t-name">' + escapeHtml(teamTag(team)) + '</div></div>' +
+        '<div class="pmgo-alive">' + playerIndicator(team.players) + '</div>' +
+        '<div class="t-kills">' + team.kills + '</div>' +
+        '<div class="t-pts">' + team.total + '</div>';
+    }else{
+      row.innerHTML =
+        '<div class="pos ' + posColorClass + '">' + position + move.html + '</div>' +
+        logoHtml +
+        '<div class="t-info">' + teamNameBlock(team) + '</div>' +
+        '<div class="t-kills">' + team.kills + '</div>' +
+        '<div class="t-place">' + team.placePoints + '</div>' +
+        '<div class="t-pts">' + team.total + '</div>';
+    }
     list.appendChild(row);
   });
+  animateRankSlides(list, oldRowTops);
   
   // Render ticker
   lastStandingSnapshot = buildStandingSnapshot(teams);

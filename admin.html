@@ -256,7 +256,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div class="teams-mgmt">
       <div class="mgmt-title">OBS Overlay Settings</div>
       <div class="ov-grid">
-        <div class="inp-wrap"><div class="inp-lbl">Design</div><select class="text-inp" id="ov-design"><option value="classic">Classic Side Panel</option><option value="neon">Neon Edge</option><option value="minimal">Minimal Clean</option><option value="broadcast">Broadcast Bold</option><option value="pmgc">PMGC Gold</option><option value="pgs">PGS Blue</option><option value="worldcup">World Cup Red</option><option value="tactical">Tactical Green</option><option value="glass">Glass Broadcast</option><option value="compact">Compact Lower</option><option value="split">Split Panel</option><option value="arena">Arena Purple</option><option value="redlive">Red Live Standing</option></select></div>
+        <div class="inp-wrap"><div class="inp-lbl">Design</div><select class="text-inp" id="ov-design" onchange="applyOverlayDesignPreset(this.value)"><option value="classic">Classic Side Panel</option><option value="neon">Neon Edge</option><option value="minimal">Minimal Clean</option><option value="broadcast">Broadcast Bold</option><option value="pmgc">PMGC Gold</option><option value="pgs">PGS Blue</option><option value="worldcup">World Cup Red</option><option value="tactical">Tactical Green</option><option value="glass">Glass Broadcast</option><option value="compact">Compact Lower</option><option value="split">Split Panel</option><option value="arena">Arena Purple</option><option value="redlive">Red Live Standing</option><option value="pmgo">PMGO Live Points</option></select></div>
         <div class="inp-wrap"><div class="inp-lbl">Accent Color</div><input class="text-inp" type="color" id="ov-accent" value="#e8b800" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Panel Color</div><input class="text-inp" type="color" id="ov-bg" value="#0a0b0d" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Text Color</div><input class="text-inp" type="color" id="ov-text" value="#eef0f5" style="min-width:90px;height:42px;padding:4px;"></div>
@@ -1243,9 +1243,22 @@ function fillOverlaySettingsForm(){
 }
 function ovPreviewLogo(input){ const file=input.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=e=>{ overlayLogoDraft=e.target.result; fillOverlaySettingsForm(); }; reader.readAsDataURL(file); }
 function clearOverlayLogo(){ overlayLogoDraft=""; overlaySettings.streamerLogo=""; fillOverlaySettingsForm(); }
+function applyOverlayDesignPreset(design){
+  if(design!=="pmgo") return;
+  const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.value=val; };
+  set("ov-accent","#e00016");
+  set("ov-bg","#f4f4ef");
+  set("ov-text","#101010");
+  set("ov-alive-color","#13c58b");
+  set("ov-dead-color","#2c302d");
+  showToast("PMGO official colors loaded. Click Save Overlay Settings.", true);
+}
 function saveOverlaySettings(){
   const data={ design:document.getElementById("ov-design").value, accent:document.getElementById("ov-accent").value, bg:document.getElementById("ov-bg").value, text:document.getElementById("ov-text").value, aliveStyle:document.getElementById("ov-alive-style").value, aliveColor:document.getElementById("ov-alive-color").value, deadColor:document.getElementById("ov-dead-color").value, elimStyle:document.getElementById("ov-elim-style").value, elimBgColor:document.getElementById("ov-elim-bg").value, elimTextColor:document.getElementById("ov-elim-text").value, elimAccentColor:document.getElementById("ov-elim-accent").value, elimShowLogo:document.getElementById("ov-elim-logo").value, streamerName:document.getElementById("ov-streamer-name").value.trim(), streamerLogo:overlayLogoDraft!==null?overlayLogoDraft:(overlaySettings.streamerLogo||""), updatedAt:Date.now() };
-  overlaySettingsRef.update(data).then(()=>{ overlayLogoDraft=null; showToast("Overlay settings saved", true); }).catch(e=>showToast(e.message,false));
+  const writes=[overlaySettingsRef.update(data)];
+  if(activeEventId!=="default") writes.push(db.ref("pmac/overlaySettings").update(data).catch(()=>null));
+  localStorage.setItem("pmac_overlay_settings_latest", JSON.stringify(data));
+  Promise.all(writes).then(()=>{ overlayLogoDraft=null; showToast("Overlay settings saved and sent to OBS", true); }).catch(e=>showToast("Overlay save failed: "+(e&&e.message?e.message:e),false));
 }
 // ========== FORUM ==========
 
