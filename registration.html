@@ -3069,9 +3069,23 @@ function loadOverallEventRankings(){
   var tbody=document.getElementById("pub-overall-tbody");
   var sub=document.getElementById("pub-overall-sub");
   if(tbody) tbody.innerHTML='<tr><td colspan="8" style="color:#606878;padding:1rem;">Loading overall rankings...</td></tr>';
-  db.ref(eventPath("eventGroups")).once("value").then(function(snap){
-    var groups=snap.val()||{};
+  Promise.all([
+    db.ref(eventPath("eventGroups")).once("value"),
+    db.ref(eventPath("teams")).once("value")
+  ]).then(function(snaps){
+    var groups=snaps[0].val()||{};
+    var mainTeams=snaps[1].val()||[];
+    mainTeams=Array.isArray(mainTeams)?mainTeams:Object.values(mainTeams);
     var totals={}, nights={};
+    function ensureTeam(t){
+      if(!t||!t.name) return null;
+      var key=pubTeamKey(t);
+      if(!totals[key]) totals[key]={name:t.name,tag:t.tag||"",logo:t.logo||"",kills:0,placement:0,total:0,matches:0,nights:0,matchSlots:{}};
+      if(t.logo&&!totals[key].logo) totals[key].logo=t.logo;
+      if(t.tag&&!totals[key].tag) totals[key].tag=t.tag;
+      return key;
+    }
+    mainTeams.forEach(ensureTeam);
     Object.keys(groups).sort().forEach(function(gid){
       var sessions=(groups[gid]&&groups[gid].sessions)||{};
       Object.keys(sessions).sort().forEach(function(date){
@@ -3082,10 +3096,8 @@ function loadOverallEventRankings(){
         var teamList=sess.teams?(Array.isArray(sess.teams)?sess.teams:Object.values(sess.teams)):[];
         var scores=sess.scores||{};
         teamList.forEach(function(t){
-          if(!t||!t.name) return;
-          var key=pubTeamKey(t);
-          if(!totals[key]) totals[key]={name:t.name,tag:t.tag||"",logo:t.logo||"",kills:0,placement:0,total:0,matches:0,nights:0,matchSlots:{}};
-          if(t.logo&&!totals[key].logo) totals[key].logo=t.logo;
+          var key=ensureTeam(t);
+          if(!key) return;
           var md=pubScoreRowsForTeam(scores,t);
           var playedThisNight=false;
           for(var i=0;i<10;i++) if(pubAddOverallMatch(totals[key],(md&&md[i])||null,sessionDate+"|M"+(i+1))) playedThisNight=true;
@@ -3093,10 +3105,10 @@ function loadOverallEventRankings(){
         });
       });
     });
-    var list=Object.keys(totals).map(function(k){ totals[k].nights=Object.keys(nights[k]||{}).length; delete totals[k].matchSlots; return totals[k]; }).filter(function(t){return t.matches>0;});
-    list.sort(function(a,b){return b.total-a.total||b.placement-a.placement||b.kills-a.kills;});
+    var list=Object.keys(totals).map(function(k){ totals[k].nights=Object.keys(nights[k]||{}).length; delete totals[k].matchSlots; return totals[k]; });
+    list.sort(function(a,b){return b.total-a.total||b.placement-a.placement||b.kills-a.kills||String(a.name).localeCompare(String(b.name));});
     renderOverallEventRankings(list);
-    if(sub) sub.textContent=list.length ? (list.length+" teams · "+pubOverallRangeLabel()) : ("No saved night points yet · "+pubOverallRangeLabel());
+    if(sub) sub.textContent=list.length ? (list.length+" teams · "+pubOverallRangeLabel()) : ("No teams found · "+pubOverallRangeLabel());
   }).catch(function(e){
     if(tbody) tbody.innerHTML='<tr><td colspan="8" style="color:#ff4444;padding:1rem;">Overall rankings failed to load.</td></tr>';
   });

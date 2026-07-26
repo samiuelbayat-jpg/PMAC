@@ -427,7 +427,7 @@ function render() {
   const list = document.getElementById("teams-list");
   const oldRowTops = captureRowTops(list);
   list.innerHTML = "";
-  const maxShow = 25;
+  const maxShow = 20;
   
   teams.slice(0, maxShow).forEach((team, index) => {
     const position = index + 1;
