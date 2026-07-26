@@ -3071,10 +3071,14 @@ function loadOverallEventRankings(){
   if(tbody) tbody.innerHTML='<tr><td colspan="8" style="color:#606878;padding:1rem;">Loading overall rankings...</td></tr>';
   Promise.all([
     db.ref(eventPath("eventGroups")).once("value"),
-    db.ref(eventPath("teams")).once("value")
+    db.ref(eventPath("teams")).once("value"),
+    db.ref(eventPath("activeSession")).once("value"),
+    db.ref(eventPath("matches")).once("value")
   ]).then(function(snaps){
     var groups=snaps[0].val()||{};
     var mainTeams=snaps[1].val()||[];
+    var active=snaps[2].val()||null;
+    var mainScores=snaps[3].val()||{};
     mainTeams=Array.isArray(mainTeams)?mainTeams:Object.values(mainTeams);
     var totals={}, nights={};
     function ensureTeam(t){
@@ -3085,6 +3089,16 @@ function loadOverallEventRankings(){
       if(t.tag&&!totals[key].tag) totals[key].tag=t.tag;
       return key;
     }
+    function addScoreSet(teamList,scores,slotPrefix,nightDate){
+      (teamList||[]).forEach(function(t){
+        var key=ensureTeam(t);
+        if(!key) return;
+        var md=pubScoreRowsForTeam(scores,t);
+        var played=false;
+        for(var i=0;i<10;i++) if(pubAddOverallMatch(totals[key],(md&&md[i])||null,slotPrefix+"|M"+(i+1))) played=true;
+        if(played&&nightDate){ nights[key]=nights[key]||{}; nights[key][nightDate]=true; }
+      });
+    }
     mainTeams.forEach(ensureTeam);
     Object.keys(groups).sort().forEach(function(gid){
       var sessions=(groups[gid]&&groups[gid].sessions)||{};
@@ -3094,21 +3108,29 @@ function loadOverallEventRankings(){
         if(!pubDateInOverallRange(sessionDate)) return;
         if(!pubSessionBelongsToCurrentEvent(sess)) return;
         var teamList=sess.teams?(Array.isArray(sess.teams)?sess.teams:Object.values(sess.teams)):[];
-        var scores=sess.scores||{};
-        teamList.forEach(function(t){
-          var key=ensureTeam(t);
-          if(!key) return;
-          var md=pubScoreRowsForTeam(scores,t);
-          var playedThisNight=false;
-          for(var i=0;i<10;i++) if(pubAddOverallMatch(totals[key],(md&&md[i])||null,sessionDate+"|M"+(i+1))) playedThisNight=true;
-          if(playedThisNight){ nights[key]=nights[key]||{}; nights[key][sessionDate]=true; }
-        });
+        addScoreSet(teamList,sess.scores||{},sessionDate,sessionDate);
       });
     });
-    var list=Object.keys(totals).map(function(k){ totals[k].nights=Object.keys(nights[k]||{}).length; delete totals[k].matchSlots; return totals[k]; });
-    list.sort(function(a,b){return b.total-a.total||b.placement-a.placement||b.kills-a.kills||String(a.name).localeCompare(String(b.name));});
-    renderOverallEventRankings(list);
-    if(sub) sub.textContent=list.length ? (list.length+" teams · "+pubOverallRangeLabel()) : ("No teams found · "+pubOverallRangeLabel());
+    var activeSessions=pubActiveSessions(active);
+    var liveJobs=[];
+    if(activeSessions.length){
+      activeSessions.forEach(function(a){
+        var liveBase=eventPath("eventGroups")+"/"+a.group+"/sessions/"+a.date;
+        liveJobs.push(Promise.all([db.ref(liveBase+"/teams").once("value"),db.ref(liveBase+"/scores").once("value")]).then(function(ls){
+          var tv=ls[0].val()||[], sv=ls[1].val()||{};
+          var teamList=Array.isArray(tv)?tv:Object.values(tv);
+          addScoreSet(teamList,sv,pubCleanDate(a.date)||("LIVE_"+a.group+"_"+a.date),pubCleanDate(a.date)||"LIVE");
+        }));
+      });
+    }else if(mainTeams.length){
+      addScoreSet(mainTeams,mainScores,"LIVE_MAIN",pubCleanDate(eventInfo.date||"")||"LIVE");
+    }
+    return Promise.all(liveJobs).then(function(){
+      var list=Object.keys(totals).map(function(k){ totals[k].nights=Object.keys(nights[k]||{}).length; delete totals[k].matchSlots; return totals[k]; });
+      list.sort(function(a,b){return b.total-a.total||b.placement-a.placement||b.kills-a.kills||String(a.name).localeCompare(String(b.name));});
+      renderOverallEventRankings(list);
+      if(sub) sub.textContent=list.length ? (list.length+" teams · "+pubOverallRangeLabel()+" · live included") : ("No teams found · "+pubOverallRangeLabel());
+    });
   }).catch(function(e){
     if(tbody) tbody.innerHTML='<tr><td colspan="8" style="color:#ff4444;padding:1rem;">Overall rankings failed to load.</td></tr>';
   });
