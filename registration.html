@@ -1435,6 +1435,7 @@ var regs = {};
 var regsLoaded = false;
 var filterMode = "all";
 var regLogoFile = null;
+function isPngLogoFile(file,dataUrl){ return !!((file&&String(file.name||"").toLowerCase().endsWith(".png")) || (file&&String(file.type||"").toLowerCase().includes("png")) || String(dataUrl||"").toLowerCase().startsWith("data:image/png")); }
 var editEvStatus = "open";
 var PAYPAL_PAYMENT_EMAIL = "ztygf020@gmail.com";
 var RULEBOOK_VERSION = "PMAC_Tournament_Rulebook_v1.0";
@@ -2204,13 +2205,7 @@ document.getElementById("reg-btn").onclick = function() {
   if(regLogoFile){
     var reader=new FileReader();
     reader.onload=function(e){
-      var img=new Image();
-      img.onload=function(){
-        var c=document.createElement("canvas");c.width=80;c.height=80;
-        c.getContext("2d").drawImage(img,0,0,80,80);
-        doSave(c.toDataURL("image/jpeg",0.7));
-      };
-      img.src=e.target.result;
+      if(isPngLogoFile(regLogoFile,e.target.result)){ doSave(e.target.result); return; } var img=new Image(); img.onload=function(){ var c=document.createElement("canvas");c.width=80;c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); doSave(c.toDataURL("image/jpeg",0.7)); }; img.src=e.target.result;
     };
     reader.readAsDataURL(regLogoFile);
   }else{doSave(document.getElementById("reg-logo-prev").dataset.savedLogo || findSavedRegistrationLogo(name) || "");}
@@ -2914,11 +2909,7 @@ document.getElementById("lb-add-btn").onclick = function(){
   if(lbLogoFile){
     var reader=new FileReader();
     reader.onload=function(e){
-      var img=new Image(); img.onload=function(){
-        var c=document.createElement("canvas");c.width=80;c.height=80;
-        c.getContext("2d").drawImage(img,0,0,80,80);
-        doSave(c.toDataURL("image/jpeg",0.7));
-      }; img.src=e.target.result;
+      if(isPngLogoFile(lbLogoFile,e.target.result)){ doSave(e.target.result); return; } var img=new Image(); img.onload=function(){ var c=document.createElement("canvas");c.width=80;c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); doSave(c.toDataURL("image/jpeg",0.7)); }; img.src=e.target.result;
     }; reader.readAsDataURL(lbLogoFile);
   } else { doSave(""); }
 };
@@ -3465,7 +3456,7 @@ document.getElementById("s-add-btn").onclick = function(){
   }
   if(sPhotoFile){
     var reader=new FileReader();
-    reader.onload=function(e){var img=new Image();img.onload=function(){var c=document.createElement("canvas");c.width=80;c.height=80;c.getContext("2d").drawImage(img,0,0,80,80);doSave(c.toDataURL("image/jpeg",0.8));};img.src=e.target.result;};
+    reader.onload=function(e){if(isPngLogoFile(sPhotoFile,e.target.result)){ doSave(e.target.result); return; } var img=new Image();img.onload=function(){var c=document.createElement("canvas");c.width=80;c.height=80;c.getContext("2d").drawImage(img,0,0,80,80);doSave(c.toDataURL("image/jpeg",0.8));};img.src=e.target.result;};
     reader.readAsDataURL(sPhotoFile);
   } else { doSave(""); }
 };
@@ -3753,13 +3744,7 @@ document.getElementById("scrim-reg-btn").onclick = function() {
   if(scrimLogoFile){
     var reader=new FileReader();
     reader.onload=function(e){
-      var img=new Image();
-      img.onload=function(){
-        var c=document.createElement("canvas");c.width=80;c.height=80;
-        c.getContext("2d").drawImage(img,0,0,80,80);
-        doSave(c.toDataURL("image/jpeg",0.7));
-      };
-      img.src=e.target.result;
+      if(isPngLogoFile(scrimLogoFile,e.target.result)){ doSave(e.target.result); return; } var img=new Image(); img.onload=function(){ var c=document.createElement("canvas");c.width=80;c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); doSave(c.toDataURL("image/jpeg",0.7)); }; img.src=e.target.result;
     };
     reader.readAsDataURL(scrimLogoFile);
   }else{doSave(document.getElementById("scrim-reg-logo-prev").dataset.savedLogo || findSavedRegistrationLogo(name) || "");}
