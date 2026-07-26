@@ -516,10 +516,7 @@ function updateManageSavedLogo(){
   if(fileEl && fileEl.files && fileEl.files.length) return;
   const logo=findSavedLogo(nameEl ? nameEl.value : "");
   if(btn) btn.style.display = logo ? "inline-block" : "none";
-  if(prev){
-    if(logo){ prev.src=logo; prev.style.display="block"; prev.dataset.savedLogo=logo; }
-    else { prev.src=""; prev.style.display="none"; prev.dataset.savedLogo=""; }
-  }
+  if(prev && !prev.dataset.savedLogo){ prev.src=""; prev.style.display="none"; }
 }
 function useSavedTeamLogo(){
   const nameEl=document.getElementById("new-team-name");
@@ -533,7 +530,7 @@ function useSavedTeamLogo(){
 }
 function isPngLogoFile(file,dataUrl){ return !!((file&&String(file.name||"").toLowerCase().endsWith(".png")) || (file&&String(file.type||"").toLowerCase().includes("png")) || String(dataUrl||"").toLowerCase().startsWith("data:image/png")); }
 function compactTeamTag(name){ const words=String(name||"").trim().toUpperCase().split(/\s+/).filter(Boolean); if(words.length>1) return words.map(w=>w[0]).join("").slice(0,5); return String(name||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5); }
-function addTeam(){ const name=document.getElementById("new-team-name").value.trim().toUpperCase(); const tag=(document.getElementById("new-team-tag")?.value||"").trim().toUpperCase() || compactTeamTag(name); if(!name) return showToast("Enter team name",false); if(teams.find(t=>t.name===name)) return showToast("Team exists",false); const file=document.getElementById("new-team-logo").files[0]; const savedLogo=document.getElementById("logo-preview")?.dataset?.savedLogo || findSavedLogo(name) || ""; if(file){ document.getElementById("uploading-badge").style.display="inline"; const reader=new FileReader(); reader.onload=e=>{ if(isPngLogoFile(file,e.target.result)){ pushTeamToDb(name,e.target.result,tag); return; } const img=new Image(); img.onload=()=>{ const c=document.createElement("canvas"); c.width=80; c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); const b64=c.toDataURL("image/jpeg",0.7); pushTeamToDb(name,b64,tag); }; img.src=e.target.result; }; reader.readAsDataURL(file); } else pushTeamToDb(name,savedLogo,tag); }
+function addTeam(){ const name=document.getElementById("new-team-name").value.trim().toUpperCase(); const tag=(document.getElementById("new-team-tag")?.value||"").trim().toUpperCase() || compactTeamTag(name); if(!name) return showToast("Enter team name",false); if(teams.find(t=>t.name===name)) return showToast("Team exists",false); const file=document.getElementById("new-team-logo").files[0]; const savedLogo=document.getElementById("logo-preview")?.dataset?.savedLogo || ""; if(file){ document.getElementById("uploading-badge").style.display="inline"; const reader=new FileReader(); reader.onload=e=>{ if(isPngLogoFile(file,e.target.result)){ pushTeamToDb(name,e.target.result,tag); return; } const img=new Image(); img.onload=()=>{ const c=document.createElement("canvas"); c.width=80; c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); const b64=c.toDataURL("image/jpeg",0.7); pushTeamToDb(name,b64,tag); }; img.src=e.target.result; }; reader.readAsDataURL(file); } else pushTeamToDb(name,savedLogo,tag); }
 function pushTeamToDb(name,logo,tag){ if(logo) rememberTeamLogo(name,logo); const newTeam = { name, tag:(tag||compactTeamTag(name)), logo, playerUIDs: [] }; const newTeams = [...teams, newTeam]; _teamsRef().set(newTeams).then(()=>{ const safe=sanitizeKey(name); if(!scores[safe]){ scores[safe]=emptyScoreRows(); _scoresRef().set(scores); } showToast("Team added",true); document.getElementById("new-team-name").value=""; document.getElementById("new-team-tag").value=""; document.getElementById("new-team-logo").value=""; document.getElementById("logo-preview").style.display="none"; document.getElementById("logo-preview").dataset.savedLogo=""; const btn=document.getElementById("use-saved-team-logo-btn"); if(btn) btn.style.display="none"; document.getElementById("uploading-badge").style.display="none"; refreshManageTeamSuggestions(); }).catch(e=>showToast(e.message,false)); }
 function removeTeam(name){ if(!confirm(`Remove team "${name}"? This will also delete all their scores.`)) return; const newTeams=teams.filter(t=>t.name!==name); _teamsRef().set(newTeams).then(()=>{ delete scores[sanitizeKey(name)]; return _scoresRef().set(scores); }).then(()=>{ showToast(`Team "${name}" removed.`, true); }).catch(e=>showToast(e.message, false)); }
 function updateTeamTag(name,value){ const idx=teams.findIndex(t=>t.name===name); if(idx<0) return; teams[idx].tag=String(value||"").trim().toUpperCase().slice(0,8)||compactTeamTag(name); _teamsRef().set(teams).then(()=>showToast("Team tag saved",true)).catch(e=>showToast(e.message,false)); }
@@ -559,6 +556,26 @@ function removePlayerUidAt(teamName, uidIndex) {
         showToast("UID removed", true);
     } 
 }
+function updateTeamLogoFile(teamName, input){
+  const file=input && input.files ? input.files[0] : null;
+  if(!file) return;
+  const idx=teams.findIndex(t=>t.name===teamName);
+  if(idx<0){ showToast("Team not found", false); return; }
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const saveLogo=(logo)=>{
+      teams[idx].logo=logo;
+      rememberTeamLogo(teamName, logo);
+      _teamsRef().set(teams).then(()=>{ showToast("Logo replaced", true); renderTeamsMgmt(); }).catch(err=>showToast(err.message,false));
+    };
+    if(isPngLogoFile(file,e.target.result)){ saveLogo(e.target.result); return; }
+    const img=new Image();
+    img.onload=()=>{ const c=document.createElement("canvas"); c.width=80; c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); saveLogo(c.toDataURL("image/jpeg",0.7)); };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function updatePlayerUid(teamName, uidIndex, value) { 
     const idx = teams.findIndex(t => t.name === teamName); 
     if (idx !== -1) {
@@ -590,7 +607,11 @@ function renderTeamsMgmt(){
                     <img class="team-mgmt-logo" src="${t.logo||''}" onerror="this.style.opacity=0.2">
                     <div class="team-mgmt-name">${t.name}</div>
                     <input class="eg-inp eg-inp-tag" value="${escapeHtml(t.tag||compactTeamTag(t.name))}" maxlength="8" title="Team tag shown in OBS overlay" onchange="updateTeamTag('${t.name.replace(/'/g,"\\'")}',this.value)">
-                    <span class="team-mgmt-del" onclick="removeTeam('${t.name.replace(/'/g,"\\'")}')">🗑️ Remove Team</span>
+                    <input type="file" id="replace-logo-${sanitizeKey(t.name)}" accept="image/png,image/*" style="display:none" onchange="updateTeamLogoFile('${t.name.replace(/'/g,"\'")}',this)">
+
+                    <button class="btn" style="font-size:10px;padding:2px 8px;" onclick="document.getElementById('replace-logo-${sanitizeKey(t.name)}').click()">Replace Logo</button>
+
+                    <span class="team-mgmt-del" onclick="removeTeam('${t.name.replace(/'/g,"\'")}')">🗑️ Remove Team</span>
                 </div>
                 <div class="players-section">
                     <div class="player-actions">${addBtn}</div>
