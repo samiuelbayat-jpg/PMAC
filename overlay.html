@@ -427,7 +427,7 @@ function render() {
   const list = document.getElementById("teams-list");
   const oldRowTops = captureRowTops(list);
   list.innerHTML = "";
-  const maxShow = activeDesign==="pmgo" ? 16 : 25;
+  const maxShow = 25;
   
   teams.slice(0, maxShow).forEach((team, index) => {
     const position = index + 1;
