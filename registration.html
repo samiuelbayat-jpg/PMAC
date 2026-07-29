@@ -355,6 +355,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .pub-kv,.pub-pv{display:inline-flex;align-items:center;justify-content:center;min-width:42px;min-height:28px;padding:4px 9px;border-radius:6px;background:rgba(0,0,0,0.62);border:1px solid rgba(255,255,255,0.12);box-shadow:0 6px 14px rgba(0,0,0,0.24);font-family:'Share Tech Mono',monospace;}
 .pub-kv{font-weight:900;font-size:13px;color:#f5c842;}
 .pub-pv{font-weight:900;font-size:15px;color:#071015;background:linear-gradient(180deg,#ffe06a,#d9a900);border-color:rgba(255,224,106,0.55);box-shadow:0 0 18px rgba(245,200,66,0.22),0 6px 14px rgba(0,0,0,0.24);}
+.pub-score-body{overflow-x:auto;}
 .pub-overall{margin-top:1.25rem;background:#0f1115;border:1px solid rgba(245,200,66,0.18);border-radius:10px;overflow:hidden;}
 .pub-overall-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:rgba(245,200,66,0.06);border-bottom:1px solid rgba(255,255,255,0.08);flex-wrap:wrap;}
 .pub-overall-title{font-weight:900;font-size:18px;color:#f5c842;text-transform:uppercase;letter-spacing:.06em;}
@@ -365,6 +366,32 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .pub-overall-range input{height:30px;background:#171b21;border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;padding:0 8px;font-size:12px;}
 .pub-overall-body{overflow-x:auto;padding:0 10px 10px;}
 @media(max-width:640px){
+  .pub-hero{display:grid;grid-template-columns:34px 46px minmax(0,1fr);gap:8px;padding:12px;margin-bottom:10px;align-items:center;}
+  .pub-hero-crown{font-size:24px;}
+  .pub-hero-logo,.pub-hero-logo-ph{width:46px;height:46px;border-width:2px;font-size:14px;}
+  .pub-hero-info{min-width:0;}
+  .pub-hero-rank{font-size:8px;letter-spacing:.12em;}
+  .pub-hero-name{font-size:17px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pub-hero-stats{grid-column:1 / -1;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+  .pub-hdiv{display:none;}
+  .pub-hstat{min-width:0;padding:7px 5px;border-radius:6px;}
+  .pub-hstat-lbl{font-size:7px;letter-spacing:.06em;}
+  .pub-hstat-val{font-size:23px;}
+  .pub-score-body{overflow-x:hidden;padding-bottom:8px;}
+  .pub-score-table{min-width:0;width:100%;table-layout:fixed;font-size:10px;}
+  .pub-score-table th:nth-child(2),.pub-score-table td:nth-child(2),
+  .pub-score-table th:nth-child(n+4):nth-child(-n+13),.pub-score-table td:nth-child(n+4):nth-child(-n+13){display:none;}
+  .pub-score-table th:nth-child(1),.pub-score-table td:nth-child(1){width:32px;}
+  .pub-score-table th:nth-child(14),.pub-score-table td:nth-child(14){width:36px;}
+  .pub-score-table th:nth-child(15),.pub-score-table td:nth-child(15){width:42px;}
+  .pub-score-table th:nth-child(16),.pub-score-table td:nth-child(16){width:46px;}
+  .pub-score-table th{font-size:7px;letter-spacing:.02em;padding:7px 1px;}
+  .pub-score-table td{padding:7px 1px;}
+  .pub-score-table .pub-tname{display:block;max-width:100%;font-size:11px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pub-score-table .pub-tmeta{display:block;max-width:100%;font-size:7px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pub-score-table .pub-pos{width:24px;height:24px;font-size:11px;}
+  .pub-score-table .pub-kv,.pub-score-table .pub-pv{min-width:0;width:30px;min-height:24px;padding:3px 2px;border-radius:5px;font-size:10px;}
+  .pub-score-table .pub-pv{width:34px;font-size:11px;}
   .pub-overall{margin-left:-6px;margin-right:-6px;border-radius:8px;}
   .pub-overall-head{align-items:flex-start;padding:10px;gap:8px;}
   .pub-overall-title{font-size:14px;letter-spacing:.04em;}
@@ -1062,8 +1089,8 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     <button class="ctrl-btn" id="pub-btn-name" onclick="pubSortBy('name')">Name</button>
   </div>
   <div id="pub-hero-wrap"></div>
-  <div style="overflow-x:auto;">
-    <table class="pub-table">
+  <div class="pub-score-body">
+    <table class="pub-table pub-score-table">
       <thead>
         <tr>
           <th>#</th><th>Logo</th><th class="left">Team</th>
