@@ -364,6 +364,39 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .pub-overall-range label{font-family:'Share Tech Mono',monospace;font-size:8px;color:#8c95a3;letter-spacing:.08em;text-transform:uppercase;}
 .pub-overall-range input{height:30px;background:#171b21;border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;padding:0 8px;font-size:12px;}
 .pub-overall-body{overflow-x:auto;padding:0 10px 10px;}
+@media(max-width:640px){
+  .pub-overall{margin-left:-6px;margin-right:-6px;border-radius:8px;}
+  .pub-overall-head{align-items:flex-start;padding:10px;gap:8px;}
+  .pub-overall-title{font-size:14px;letter-spacing:.04em;}
+  .pub-overall-sub{font-size:8px;line-height:1.35;}
+  .pub-overall-range{width:100%;gap:6px;}
+  .pub-overall-range .range-field{flex:1 1 118px;}
+  .pub-overall-range input{width:100%;height:28px;font-size:11px;}
+  .pub-overall-range .ctrl-btn{height:28px;padding:0 10px;font-size:10px;}
+  .pub-overall-body{overflow-x:visible;padding:0 0 8px;}
+  .pub-overall-table{min-width:0;width:100%;table-layout:fixed;font-size:10px;}
+  .pub-overall-table th:nth-child(2),.pub-overall-table td:nth-child(2),
+  .pub-overall-table th:nth-child(4),.pub-overall-table td:nth-child(4){display:none;}
+  .pub-overall-table th:nth-child(1),.pub-overall-table td:nth-child(1){width:38px;}
+  .pub-overall-table th:nth-child(5),.pub-overall-table td:nth-child(5){width:42px;}
+  .pub-overall-table th:nth-child(6),.pub-overall-table td:nth-child(6){width:38px;}
+  .pub-overall-table th:nth-child(7),.pub-overall-table td:nth-child(7){width:46px;}
+  .pub-overall-table th:nth-child(8),.pub-overall-table td:nth-child(8){width:44px;}
+  .pub-overall-table th{font-size:7px;letter-spacing:.04em;padding:7px 2px;}
+  .pub-overall-table td{padding:7px 2px;}
+  .pub-overall-table .pub-tname{display:block;max-width:100%;font-size:11px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pub-overall-table .pub-tmeta{display:block;max-width:100%;font-size:7px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pub-overall-table .pub-pos{width:24px;height:24px;font-size:11px;}
+  .pub-overall-table .pub-rank-wrap{min-width:30px;gap:2px;}
+  .pub-overall-table .pub-qual-arrow{font-size:9px;}
+  .pub-overall-table .pub-kv,.pub-overall-table .pub-pv{min-width:0;width:32px;min-height:24px;padding:3px 2px;border-radius:5px;font-size:11px;}
+  .pub-overall-table .pub-pv{font-size:12px;}
+}
+@media(max-width:390px){
+  .pub-overall-table th:nth-child(5),.pub-overall-table td:nth-child(5){display:none;}
+  .pub-overall-table th:nth-child(7),.pub-overall-table td:nth-child(7){width:44px;}
+  .pub-overall-table th:nth-child(8),.pub-overall-table td:nth-child(8){width:42px;}
+}
 #sec-scores.overall-only .pub-current-view{display:none;}
 #sec-scores.overall-only .pub-overall{margin-top:0;}
 #sec-scores.current-only .pub-overall{display:none;}
@@ -1054,7 +1087,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       </div>
     </div>
     <div class="pub-overall-body">
-      <table class="pub-table">
+      <table class="pub-table pub-overall-table">
         <thead>
           <tr><th>#</th><th>Logo</th><th class="left">Team</th><th>Nights</th><th>Matches</th><th>Kills</th><th>Place Pts</th><th>Total</th></tr>
         </thead>
