@@ -649,10 +649,11 @@ function drawCleanPSDCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright
     ctx.textAlign="left";ctx.fillText("TEAM NAME",x+138,y);
     ctx.textAlign="center";ctx.fillText("PP",x+w-250,y);ctx.fillText("KP",x+w-160,y);ctx.fillText("TP",x+w-70,y);
   }
-  headers(120,180,780);headers(1020,180,780);
+  var tableW=780, tableGap=40, leftX=Math.round((W-(tableW*2+tableGap))/2), rightX=leftX+tableW+tableGap;
+  headers(leftX,180,tableW);headers(rightX,180,tableW);
   for(var i=0;i<count;i++){
-    var left=i<10,x=left?120:1020,y=220+(i%10)*74;
-    row(x,y,780,st[i],i+1,logos[i]);
+    var left=i<10,x=left?leftX:rightX,y=220+(i%10)*74;
+    row(x,y,tableW,st[i],i+1,logos[i]);
   }
 }
 function loadImage(url){
