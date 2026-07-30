@@ -418,7 +418,11 @@ function drawRoundRect(ctx,x,y,w,h,r){
 
 function drawCircleImage(ctx,img,x,y,r){
   ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.clip();
-  ctx.drawImage(img,x-r,y-r,r*2,r*2);ctx.restore();
+  var iw=img.naturalWidth||img.width||1, ih=img.naturalHeight||img.height||1;
+  var box=r*2*0.82;
+  var scale=Math.min(box/iw,box/ih);
+  var dw=iw*scale, dh=ih*scale;
+  ctx.drawImage(img,x-dw/2,y-dh/2,dw,dh);ctx.restore();
 }
 function drawCoverImage(ctx,img,x,y,w,h){
   var scale=Math.max(w/img.naturalWidth,h/img.naturalHeight);
