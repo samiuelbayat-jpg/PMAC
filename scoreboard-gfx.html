@@ -649,7 +649,7 @@ function drawCleanPSDCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright
     ctx.textAlign="left";ctx.fillText("TEAM NAME",x+138,y);
     ctx.textAlign="center";ctx.fillText("PP",x+w-250,y);ctx.fillText("KP",x+w-160,y);ctx.fillText("TP",x+w-70,y);
   }
-  var tableW=780, tableGap=40, leftX=Math.round((W-(tableW*2+tableGap))/2), rightX=leftX+tableW+tableGap;
+  var tableW=780, tableGap=0, leftX=Math.round((W-(tableW*2+tableGap))/2), rightX=leftX+tableW+tableGap;
   headers(leftX,180,tableW);headers(rightX,180,tableW);
   for(var i=0;i<count;i++){
     var left=i<10,x=left?leftX:rightX,y=220+(i%10)*74;
@@ -767,7 +767,7 @@ function drawCanvas(st,logos,title,sub,bg,ac,today,maxTeams){
     ctx.fillStyle="#ffffff";ctx.fillText("TOTAL",startX+width-75,colHeaderY+24);
     ctx.fillStyle="#ffd700";ctx.fillText("🏆",startX+width-20,colHeaderY+24);
   }
-  drawColHeaders(20,920);drawColHeaders(980,W-1000);
+  drawColHeaders(40,920);drawColHeaders(960,920);
 
   // Divider line
   var dg=ctx.createLinearGradient(0,130,0,H-50);
@@ -779,7 +779,7 @@ function drawCanvas(st,logos,title,sub,bg,ac,today,maxTeams){
     var t=st[i];var pos=i+1;
     var isLeft=i<half;
     var rowIdx=isLeft?i:i-half;
-    var startX=isLeft?20:980;
+    var startX=isLeft?40:960;
     var colW=isLeft?920:W-1000;
     var rowY=166+rowIdx*rowH;
 
