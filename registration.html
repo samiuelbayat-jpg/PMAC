@@ -3190,14 +3190,14 @@ function pubCleanDate(v){
 function pubDateInOverallRange(date){
   date=pubCleanDate(date);
   if(!date) return false;
-  var start=pubCleanDate(eventInfo.overallStartDate||eventInfo.date||"");
+  var start=pubCleanDate(eventInfo.overallStartDate||"");
   var end=pubCleanDate(eventInfo.overallEndDate||"");
   if(start && date<start) return false;
   if(end && date>end) return false;
   return true;
 }
 function pubOverallRangeLabel(){
-  var start=pubCleanDate(eventInfo.overallStartDate||eventInfo.date||"");
+  var start=pubCleanDate(eventInfo.overallStartDate||"");
   var end=pubCleanDate(eventInfo.overallEndDate||"");
   var max=parseInt(eventInfo.overallMaxMatches,10)||0;
   var cap=max?(" · Max "+max+" matches"):"";
@@ -3209,7 +3209,7 @@ function updateOverallRangeControls(){
   var start=document.getElementById("pub-overall-start");
   var end=document.getElementById("pub-overall-end");
   var max=document.getElementById("pub-overall-max");
-  if(start) start.value=pubCleanDate(eventInfo.overallStartDate||eventInfo.date||"");
+  if(start) start.value=pubCleanDate(eventInfo.overallStartDate||"");
   if(end) end.value=pubCleanDate(eventInfo.overallEndDate||"");
   if(max) max.value=eventInfo.overallMaxMatches||"";
 }
@@ -3271,7 +3271,6 @@ function saveManageScoreAsSession(){
     updates[base+"/exportedFrom"]="manage-score";
     updates[base+"/exportedAt"]=Date.now();
     updates[base+"/eventScope"]=currentEventScope();
-    updates[eventPath("activeSession")]={group:"MANAGE",date:sessionKey,sessionName:label||"Manage Score",updatedAt:Date.now()};
     return db.ref().update(updates).then(function(){return teamList.length;});
   }).then(function(count){
     if(count===null) return;

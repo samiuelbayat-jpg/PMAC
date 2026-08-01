@@ -240,7 +240,7 @@ function cleanDate(v){
 }
 function inOverallRange(date){
   date=cleanDate(date);
-  var start=cleanDate(eventInfo.overallStartDate||eventInfo.date||"");
+  var start=cleanDate(eventInfo.overallStartDate||"");
   var end=cleanDate(eventInfo.overallEndDate||"");
   if(start&&date&&date<start) return false;
   if(end&&date&&date>end) return false;
