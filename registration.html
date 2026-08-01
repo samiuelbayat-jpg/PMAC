@@ -514,6 +514,17 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .roadmap-preview{height:72px;border-radius:5px;background:#161a1f;background-size:cover;background-position:center;margin-top:6px;border:1px solid rgba(255,255,255,.1);}
 .roadmap-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:1rem;border-top:1px solid rgba(255,255,255,.08);padding-top:1rem;}
 .roadmap-status{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;}
+.overlay-color-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:1rem;}
+.overlay-color-field{display:grid;grid-template-columns:1fr 54px;gap:10px;align-items:center;background:#10141a;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px;}
+.overlay-color-field label{font-family:'Share Tech Mono',monospace;color:#8a96a8;font-size:9px;letter-spacing:.1em;text-transform:uppercase;}
+.overlay-color-field input[type=color]{width:54px;height:34px;border:0;background:transparent;cursor:pointer;}
+.overlay-color-preview{margin-top:1rem;background:#0b0d11;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:12px;}
+.overlay-color-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;text-transform:uppercase;color:var(--mp-title,#fff);line-height:1;}
+.overlay-color-row{display:grid;grid-template-columns:64px 1fr repeat(6,52px) 74px;gap:0;margin-top:10px;color:var(--mp-text,#080808);font-family:'Barlow Condensed',sans-serif;font-weight:900;text-align:center;}
+.overlay-color-row span{background:#fff;border-right:1px solid #c8c8c8;padding:8px 6px;}
+.overlay-color-row span:nth-child(1),.overlay-color-row span:nth-child(2){background:linear-gradient(90deg,var(--mp-team-a,#fff099),var(--mp-team,#ffd83d));}
+.overlay-color-row span:last-child{background:linear-gradient(180deg,var(--mp-total1,#fff3a8),var(--mp-total2,#ffd33f),var(--mp-total3,#e39b00));border-left:3px solid #111;}
+.overlay-link-box{width:100%;min-height:70px;background:#111823;color:#dbe7ff;border:1px solid rgba(255,255,255,.14);border-radius:6px;padding:8px;font-family:'Share Tech Mono',monospace;font-size:10px;resize:vertical;}
 
 </style>
 </head>
@@ -578,6 +589,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <button class="tab" id="tab-idpass" onclick="showTab('idpass')" style="display:none;"><span>🔑</span><span>ID Pass</span></button>
   <button class="tab" id="tab-rulelog" onclick="showTab('rulelog')" style="display:none;"><span>✓</span><span>Rules Agreed</span></button>
   <button class="tab" id="tab-roadmap" onclick="showTab('roadmap')" style="display:none;"><span>🗺</span><span>Roadmap OBS</span></button>
+  <button class="tab" id="tab-overlaycolors" onclick="showTab('overlaycolors')" style="display:none;"><span>🎨</span><span>Overlay Colors</span></button>
 </div>
 
 <div class="section" id="sec-rulesagree">
@@ -723,6 +735,50 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <button class="btn" onclick="resetRoadmapDefaults()" style="padding:8px 16px;font-size:12px;">Load Defaults</button>
       <button class="btn btn-gold" onclick="saveRoadmapAdmin()" style="padding:8px 20px;font-size:12px;">Save Roadmap</button>
       <span class="roadmap-status" id="roadmap-status"></span>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="sec-overlaycolors">
+  <div class="roadmap-admin">
+    <div class="roadmap-head">
+      <div>
+        <div class="roadmap-title">Match Points Overlay Colors</div>
+        <div class="roadmap-sub">Admin-only colors for team-match-points-overlay.html. Saved colors are separated by event ID and update OBS automatically.</div>
+      </div>
+      <button class="btn" onclick="loadMatchPointsTheme()" style="padding:6px 16px;font-size:12px;">Refresh</button>
+    </div>
+    <div class="roadmap-grid">
+      <div class="roadmap-card">
+        <h4>OBS Link</h4>
+        <div class="roadmap-field"><label>Matches To Show</label><input id="mp-theme-matches" type="number" min="1" max="12" value="6" oninput="updateMatchPointsThemeLink()"></div>
+        <div class="roadmap-field"><label>Max Teams</label><input id="mp-theme-limit" type="number" min="1" max="64" value="64" oninput="updateMatchPointsThemeLink()"></div>
+        <div class="roadmap-field"><label>Overlay Title</label><input id="mp-theme-title-text" value="MATCH BY MATCH POINTS" oninput="updateMatchPointsThemeLink()"></div>
+        <div class="roadmap-field"><label>OBS URL</label><textarea class="overlay-link-box" id="mp-theme-link" readonly onclick="this.select()"></textarea></div>
+      </div>
+      <div class="roadmap-card">
+        <h4>Preview</h4>
+        <div class="overlay-color-preview" id="mp-theme-preview">
+          <div class="overlay-color-title">Match By Match Points</div>
+          <div class="overlay-color-row"><span>#1</span><span>TEAM</span><span>8</span><span>12</span><span>6</span><span>10</span><span>4</span><span>9</span><span>49</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay-color-grid">
+      <div class="overlay-color-field"><label>Title Text</label><input type="color" data-mp-theme="titleColor" id="mp-theme-title" value="#ffffff"></div>
+      <div class="overlay-color-field"><label>Team Yellow</label><input type="color" data-mp-theme="team" id="mp-theme-team" value="#ffd83d"></div>
+      <div class="overlay-color-field"><label>Accent Red</label><input type="color" data-mp-theme="accent" id="mp-theme-accent" value="#e00018"></div>
+      <div class="overlay-color-field"><label>Row Text</label><input type="color" data-mp-theme="text" id="mp-theme-text" value="#080808"></div>
+      <div class="overlay-color-field"><label>Total Light</label><input type="color" data-mp-theme="total1" id="mp-theme-total1" value="#fff3a8"></div>
+      <div class="overlay-color-field"><label>Total Main</label><input type="color" data-mp-theme="total2" id="mp-theme-total2" value="#ffd33f"></div>
+      <div class="overlay-color-field"><label>Total Dark</label><input type="color" data-mp-theme="total3" id="mp-theme-total3" value="#e39b00"></div>
+    </div>
+    <div class="roadmap-actions">
+      <button class="btn btn-gold" onclick="saveMatchPointsTheme()" style="padding:8px 20px;font-size:12px;">Save Colors</button>
+      <button class="btn" onclick="resetMatchPointsTheme()" style="padding:8px 16px;font-size:12px;">Load Defaults</button>
+      <button class="btn" onclick="copyMatchPointsThemeLink()" style="padding:8px 16px;font-size:12px;">Copy OBS Link</button>
+      <button class="btn" onclick="openMatchPointsThemeOverlay()" style="padding:8px 16px;font-size:12px;">Open Overlay</button>
+      <span class="roadmap-status" id="mp-theme-status"></span>
     </div>
   </div>
 </div>
@@ -1373,6 +1429,98 @@ function clearCommunityBackground(){
   }).catch(function(e){ setCommunityBgStatus(e.message||"Clear failed",false); });
 }
 watchCommunityBackground();
+var MATCH_POINTS_THEME_DEFAULTS={titleColor:"#ffffff",team:"#ffd83d",accent:"#e00018",text:"#080808",total1:"#fff3a8",total2:"#ffd33f",total3:"#e39b00"};
+function matchPointsThemePath(){ return eventPath("matchPointsOverlay/theme"); }
+function setMatchPointsThemeStatus(msg, ok){ var el=document.getElementById("mp-theme-status"); if(el){ el.textContent=msg||""; el.style.color=ok===false?"#ff5555":"#8a96a8"; } }
+function mpThemeInput(key){ return document.querySelector('[data-mp-theme="'+key+'"]'); }
+function lightenMatchPointsHex(hex,mix){
+  hex=String(hex||"#ffd83d").replace("#","");
+  var n=parseInt(hex.length===3?hex.replace(/(.)/g,"$1$1"):hex,16);
+  if(!Number.isFinite(n)) n=0xffd83d;
+  var r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  r=Math.round(r+(255-r)*mix); g=Math.round(g+(255-g)*mix); b=Math.round(b+(255-b)*mix);
+  return "#"+[r,g,b].map(function(v){return v.toString(16).padStart(2,"0");}).join("");
+}
+function collectMatchPointsTheme(){
+  var theme={};
+  Object.keys(MATCH_POINTS_THEME_DEFAULTS).forEach(function(k){
+    var el=mpThemeInput(k);
+    theme[k]=(el&&el.value)||MATCH_POINTS_THEME_DEFAULTS[k];
+  });
+  return theme;
+}
+function fillMatchPointsThemeForm(theme){
+  theme=Object.assign({},MATCH_POINTS_THEME_DEFAULTS,theme||{});
+  Object.keys(MATCH_POINTS_THEME_DEFAULTS).forEach(function(k){
+    var el=mpThemeInput(k);
+    if(el) el.value=theme[k]||MATCH_POINTS_THEME_DEFAULTS[k];
+  });
+  updateMatchPointsThemePreview(theme);
+  updateMatchPointsThemeLink();
+}
+function updateMatchPointsThemePreview(theme){
+  theme=Object.assign({},MATCH_POINTS_THEME_DEFAULTS,theme||collectMatchPointsTheme());
+  var prev=document.getElementById("mp-theme-preview");
+  if(!prev) return;
+  prev.style.setProperty("--mp-title",theme.titleColor);
+  prev.style.setProperty("--mp-team",theme.team);
+  prev.style.setProperty("--mp-team-a",lightenMatchPointsHex(theme.team,.45));
+  prev.style.setProperty("--mp-text",theme.text);
+  prev.style.setProperty("--mp-total1",theme.total1);
+  prev.style.setProperty("--mp-total2",theme.total2);
+  prev.style.setProperty("--mp-total3",theme.total3);
+}
+function matchPointsOverlayUrl(withThemeParams){
+  var url=new URL("team-match-points-overlay.html", window.location.href);
+  url.searchParams.set("event",EVENT_ID);
+  url.searchParams.set("matches",Math.max(1,Math.min(12,parseInt((document.getElementById("mp-theme-matches")||{}).value||"6",10)||6)));
+  url.searchParams.set("limit",Math.max(1,Math.min(64,parseInt((document.getElementById("mp-theme-limit")||{}).value||"64",10)||64)));
+  url.searchParams.set("title",((document.getElementById("mp-theme-title-text")||{}).value||"MATCH BY MATCH POINTS").trim()||"MATCH BY MATCH POINTS");
+  if(withThemeParams){
+    var theme=collectMatchPointsTheme();
+    Object.keys(MATCH_POINTS_THEME_DEFAULTS).forEach(function(k){ url.searchParams.set(k,theme[k]||MATCH_POINTS_THEME_DEFAULTS[k]); });
+  }
+  return url.href;
+}
+function updateMatchPointsThemeLink(){
+  updateMatchPointsThemePreview();
+  var box=document.getElementById("mp-theme-link");
+  if(box) box.value=matchPointsOverlayUrl(false);
+}
+function loadMatchPointsTheme(){
+  if(!isAdmin) return;
+  setMatchPointsThemeStatus("Loading...");
+  db.ref(matchPointsThemePath()).once("value").then(function(s){
+    fillMatchPointsThemeForm(s.val()||MATCH_POINTS_THEME_DEFAULTS);
+    setMatchPointsThemeStatus("Loaded for event: "+EVENT_ID,true);
+  }).catch(function(e){ setMatchPointsThemeStatus(e.message||"Load failed",false); });
+}
+function saveMatchPointsTheme(){
+  if(!isAdmin || !auth.currentUser){ toast("Admin login required",false); return; }
+  var theme=collectMatchPointsTheme();
+  theme.updatedAt=firebase.database.ServerValue.TIMESTAMP;
+  theme.updatedBy=auth.currentUser.uid;
+  setMatchPointsThemeStatus("Saving...");
+  db.ref(matchPointsThemePath()).set(theme).then(function(){
+    setMatchPointsThemeStatus("Saved. OBS overlay will update automatically.",true);
+    toast("Overlay colors saved",true);
+  }).catch(function(e){ setMatchPointsThemeStatus(e.message||"Save failed",false); toast("Color save failed",false); });
+}
+function resetMatchPointsTheme(){ fillMatchPointsThemeForm(MATCH_POINTS_THEME_DEFAULTS); setMatchPointsThemeStatus("Defaults loaded. Press Save Colors to publish."); }
+function copyMatchPointsThemeLink(){
+  updateMatchPointsThemeLink();
+  var box=document.getElementById("mp-theme-link");
+  if(!box) return;
+  box.select();
+  try{ navigator.clipboard.writeText(box.value); }catch(e){ document.execCommand("copy"); }
+  setMatchPointsThemeStatus("OBS link copied.",true);
+}
+function openMatchPointsThemeOverlay(){ window.open(matchPointsOverlayUrl(false),"_blank"); }
+function setupMatchPointsThemeControls(){
+  document.querySelectorAll("[data-mp-theme]").forEach(function(el){ el.addEventListener("input",updateMatchPointsThemeLink); });
+  updateMatchPointsThemeLink();
+}
+setupMatchPointsThemeControls();
 function logoKey(name){ return String(name||"").trim().toUpperCase(); }
 function refreshSavedTeamLogoList(){
   var dl=document.getElementById("saved-team-logo-list");
@@ -2040,10 +2188,12 @@ function applyAdminUI() {
   if(ruleTab) ruleTab.style.display = isAdmin ? "" : "none";
   var roadmapTab=document.getElementById("tab-roadmap");
   if(roadmapTab) roadmapTab.style.display = isAdmin ? "" : "none";
+  var overlayColorsTab=document.getElementById("tab-overlaycolors");
+  if(overlayColorsTab) overlayColorsTab.style.display = isAdmin ? "" : "none";
   var overallRange=document.getElementById("pub-overall-range");
   if(overallRange) overallRange.style.display = isAdmin ? "flex" : "none";
   updateIdPassTabVisibility();
-  if(!isAdmin && ((document.getElementById("sec-rulelog") && document.getElementById("sec-rulelog").classList.contains("show")) || (document.getElementById("sec-roadmap") && document.getElementById("sec-roadmap").classList.contains("show")))) showTab("reg");
+  if(!isAdmin && ((document.getElementById("sec-rulelog") && document.getElementById("sec-rulelog").classList.contains("show")) || (document.getElementById("sec-roadmap") && document.getElementById("sec-roadmap").classList.contains("show")) || (document.getElementById("sec-overlaycolors") && document.getElementById("sec-overlaycolors").classList.contains("show")))) showTab("reg");
   renderRulesAgreedLog();
   renderCommunityForum();
 }
@@ -2736,9 +2886,9 @@ function checkStatus(){
 
 // TABS
 function showTab(tab){
-  if((tab==="rulelog"||tab==="roadmap")&&!isAdmin){toast("Admin login required",false);return;}
+  if((tab==="rulelog"||tab==="roadmap"||tab==="overlaycolors")&&!isAdmin){toast("Admin login required",false);return;}
   if(tab==="idpass"&&!getRememberedIdPassAccess()){toast("ID Pass is not unlocked yet",false);return;}
-  ["reg","scrim","gfx","lobby","scores","overall","archive","streamers","rulesagree","idpass","rulelog","roadmap"].forEach(function(t){
+  ["reg","scrim","gfx","lobby","scores","overall","archive","streamers","rulesagree","idpass","rulelog","roadmap","overlaycolors"].forEach(function(t){
     var tb=document.getElementById("tab-"+t); var sc=document.getElementById("sec-"+t);
     if(tb) tb.className="tab"+(t===tab?" active":"");
     if(sc) sc.className="section"+(t===tab?" show":"")+(t==="scores"&&tab==="scores"?" current-only":"");
@@ -2755,6 +2905,7 @@ function showTab(tab){
   if(tab==="idpass") showPublicIdPass();
   if(tab==="rulelog") renderRulesAgreedLog();
   if(tab==="roadmap") loadRoadmapAdmin();
+  if(tab==="overlaycolors") loadMatchPointsTheme();
 }
 document.getElementById("agree-save-btn").onclick=saveExistingRulesAgreement;
 document.getElementById("idpass-get-btn").onclick=showPublicIdPass;

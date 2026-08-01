@@ -8,39 +8,60 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
+    :root{--title-color:#ffffff;--sub-bg:#ffd33f;--sub-accent:#e00018;--sub-text:#111111;--col-bg:#f7f7f7;--team-a:#fff099;--team-b:#ffd83d;--row-bg:#ffffff;--row-text:#080808;--line:#111111;--cell-line:#d0d0d0;--total-a:#fff3a8;--total-b:#ffd33f;--total-c:#e39b00}
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{width:100%;height:100%;overflow:hidden;background:transparent}
     body{position:relative;font-family:"Barlow Condensed",Arial,sans-serif;color:#fff}
     .stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:left top;background:transparent;overflow:hidden}
     .panel{position:absolute;left:120px;right:120px;top:112px;padding:0;background:transparent;filter:drop-shadow(0 24px 45px rgba(0,0,0,.45))}
     .head{position:relative;z-index:1}
-    .titlebar{height:82px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 0 12px 0;color:#fff;text-shadow:0 4px 12px rgba(0,0,0,.55)}
+    .titlebar{height:82px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 0 12px 0;color:var(--title-color);text-shadow:0 4px 12px rgba(0,0,0,.55)}
     .title{font-size:60px;line-height:.9;font-weight:900;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
-    .sub{font-family:"Share Tech Mono",monospace;font-size:18px;color:#111;background:#ffd33f;text-transform:uppercase;padding:5px 12px;border-left:7px solid #e00018;font-weight:900;text-shadow:none}
-    .colhead{height:40px;display:grid;grid-template-columns:82px 1fr repeat(var(--matches),96px) 112px;align-items:center;background:#f7f7f7;color:#070707;border-top:4px solid #111;border-bottom:3px solid #111}
+    .sub{font-family:"Share Tech Mono",monospace;font-size:18px;color:var(--sub-text);background:var(--sub-bg);text-transform:uppercase;padding:5px 12px;border-left:7px solid var(--sub-accent);font-weight:900;text-shadow:none}
+    .colhead{height:40px;display:grid;grid-template-columns:82px 1fr repeat(var(--matches),96px) 112px;align-items:center;background:var(--col-bg);color:#070707;border-top:4px solid var(--line);border-bottom:3px solid var(--line)}
     .hcell{height:100%;display:flex;align-items:center;justify-content:center;border-right:2px solid #d2d2d2;font-size:19px;font-weight:900;text-align:center;text-transform:uppercase;color:#070707}
-    .hcell.rankh,.hcell.teamh{background:#ffe15a}
+    .hcell.rankh,.hcell.teamh{background:var(--sub-bg)}
     .rows{position:relative;z-index:1}
-    .row{position:relative;z-index:0;height:var(--row-h,56px);display:grid;grid-template-columns:82px 1fr repeat(var(--matches),96px) 112px;align-items:center;margin-bottom:var(--row-gap,8px);background:#fff;color:#080808;border-bottom:3px solid #111}
+    .row{position:relative;z-index:0;height:var(--row-h,56px);display:grid;grid-template-columns:82px 1fr repeat(var(--matches),96px) 112px;align-items:center;margin-bottom:var(--row-gap,8px);background:var(--row-bg);color:var(--row-text);border-bottom:3px solid var(--line)}
     .row>*{position:relative;z-index:1}
-    .row:before{content:"";position:absolute;left:0;top:0;bottom:0;width:calc(82px + ((100% - 82px - (var(--matches) * 96px) - 112px) * .58));background:linear-gradient(90deg,#fff099,#ffd83d);z-index:0}
+    .row:before{content:"";position:absolute;left:0;top:0;bottom:0;width:calc(82px + ((100% - 82px - (var(--matches) * 96px) - 112px) * .58));background:linear-gradient(90deg,var(--team-a),var(--team-b));z-index:0}
     .row:after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:rgba(255,255,255,.75)}
     .row.animate-in{animation:rowSlideIn 1.05s cubic-bezier(.18,.86,.2,1) both;animation-delay:calc(var(--i,0) * 160ms)}
     @keyframes rowSlideIn{0%{opacity:0;transform:translateX(-360px);filter:blur(3px)}65%{opacity:1;filter:blur(0)}100%{opacity:1;transform:translateX(0);filter:blur(0)}}
-    .row:nth-child(1):before{background:linear-gradient(90deg,#fff3a6,#ffcf37)}
-    .rank{font-size:var(--rank-size,27px);font-weight:900;text-align:center;color:#050505}
+    .row:nth-child(1):before{background:linear-gradient(90deg,var(--total-a),var(--sub-bg))}
+    .rank{font-size:var(--rank-size,27px);font-weight:900;text-align:center;color:var(--row-text)}
     .team{min-width:0;display:flex;align-items:center;gap:12px}
     .logo{width:var(--logo-w,54px);height:var(--logo-h,40px);display:flex;align-items:center;justify-content:center;overflow:visible;flex:0 0 auto;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))}
     .logo img{width:100%;height:100%;object-fit:contain;display:block;transform:scale(var(--logo-scale,1))}
-    .logo span{font-size:15px;font-weight:900;color:#111}
-    .name{font-size:var(--name-size,27px);font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#111}
-    .points{height:100%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.96);border-left:2px solid #d0d0d0;font-family:"Share Tech Mono",monospace;font-size:var(--point-size,23px);font-weight:900;color:#111}
-    .total{height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fff3a8 0%,#ffd33f 42%,#e39b00 100%);color:#080808;border-left:4px solid #111;border-right:3px solid #111;font-size:var(--total-size,27px);font-weight:900;text-shadow:0 1px 0 rgba(255,255,255,.45);box-shadow:inset 0 3px 0 rgba(255,255,255,.45),inset 0 -3px 0 rgba(0,0,0,.20)}
+    .logo span{font-size:15px;font-weight:900;color:var(--row-text)}
+    .name{font-size:var(--name-size,27px);font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--row-text)}
+    .points{height:100%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.96);border-left:2px solid var(--cell-line);font-family:"Share Tech Mono",monospace;font-size:var(--point-size,23px);font-weight:900;color:var(--row-text)}
+    .total{height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--total-a) 0%,var(--total-b) 42%,var(--total-c) 100%);color:var(--row-text);border-left:4px solid var(--line);border-right:3px solid var(--line);font-size:var(--total-size,27px);font-weight:900;text-shadow:0 1px 0 rgba(255,255,255,.45);box-shadow:inset 0 3px 0 rgba(255,255,255,.45),inset 0 -3px 0 rgba(0,0,0,.20)}
     .empty{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:42px;font-weight:900;text-transform:uppercase;color:rgba(255,255,255,.8);background:rgba(0,0,0,.28)}
     .status{position:absolute;right:24px;bottom:20px;font-family:"Share Tech Mono",monospace;font-size:12px;color:rgba(255,255,255,.55)}
+    .theme-controls{position:fixed;right:18px;top:18px;z-index:50;display:none;width:300px;background:rgba(8,10,14,.94);border:1px solid rgba(255,255,255,.18);padding:14px;color:#fff;font-family:Arial,sans-serif;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+    .theme-controls.show{display:block}
+    .theme-controls h2{font-size:16px;margin-bottom:10px;text-transform:uppercase}
+    .theme-row{display:grid;grid-template-columns:1fr 48px;gap:10px;align-items:center;margin:8px 0;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+    .theme-row input{width:48px;height:30px;border:0;background:transparent;cursor:pointer}
+    .theme-controls button{width:100%;margin-top:8px;border:0;background:#ffd33f;color:#111;padding:9px 10px;font-weight:900;cursor:pointer;text-transform:uppercase}
+    .theme-controls textarea{width:100%;height:70px;margin-top:8px;background:#111823;color:#dbe7ff;border:1px solid rgba(255,255,255,.15);font-size:11px;padding:7px;resize:none}
   </style>
 </head>
 <body>
+<div class="theme-controls" id="theme-controls">
+  <h2>Overlay Colors</h2>
+  <label class="theme-row">Title<input type="color" data-theme="titleColor" value="#ffffff"></label>
+  <label class="theme-row">Team Yellow<input type="color" data-theme="team" value="#ffd83d"></label>
+  <label class="theme-row">Accent Red<input type="color" data-theme="accent" value="#e00018"></label>
+  <label class="theme-row">Row Text<input type="color" data-theme="text" value="#080808"></label>
+  <label class="theme-row">Total Light<input type="color" data-theme="total1" value="#fff3a8"></label>
+  <label class="theme-row">Total Main<input type="color" data-theme="total2" value="#ffd33f"></label>
+  <label class="theme-row">Total Dark<input type="color" data-theme="total3" value="#e39b00"></label>
+  <button onclick="resetTheme()">Reset Colors</button>
+  <button onclick="copyThemeLink()">Copy OBS Link</button>
+  <textarea id="theme-link" readonly></textarea>
+</div>
 <div class="stage" id="stage">
   <div class="panel" id="panel">
     <div class="head" id="head"></div>
@@ -67,9 +88,72 @@ var MATCHES=Math.max(1,Math.min(12,parseInt(qs.get("matches")||"6",10)||6));
 var LIMIT=Math.max(1,Math.min(64,parseInt(qs.get("limit")||"64",10)||64));
 var TITLE=qs.get("title")||"MATCH BY MATCH POINTS";
 var MODE=qs.get("mode")||"event";
-var teams=[],scores={},teamsRef=null,scoresRef=null,activeRef=null;
+var teams=[],scoreTeams=[],regTeams=[],scores={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null;
+var THEME_KEY="pmac_match_points_theme_"+EVENT_ID;
+var THEME_DEFAULTS={titleColor:"#ffffff",team:"#ffd83d",accent:"#e00018",text:"#080808",total1:"#fff3a8",total2:"#ffd33f",total3:"#e39b00"};
+var THEME_VARS={titleColor:"--title-color",team:"--team-b",accent:"--sub-accent",text:"--row-text",total1:"--total-a",total2:"--total-b",total3:"--total-c"};
+var HAS_THEME_PARAMS=Object.keys(THEME_DEFAULTS).some(function(k){return !!qs.get(k);});
 
 document.documentElement.style.setProperty("--matches",MATCHES);
+
+function readTheme(){
+  var saved={};
+  try{saved=JSON.parse(localStorage.getItem(THEME_KEY)||"{}");}catch(e){saved={};}
+  Object.keys(THEME_DEFAULTS).forEach(function(k){if(qs.get(k))saved[k]=qs.get(k);});
+  return Object.assign({},THEME_DEFAULTS,saved);
+}
+function applyTheme(theme,save){
+  Object.keys(THEME_VARS).forEach(function(k){
+    var val=theme[k]||THEME_DEFAULTS[k];
+    document.documentElement.style.setProperty(THEME_VARS[k],val);
+    var inp=document.querySelector('[data-theme="'+k+'"]');
+    if(inp)inp.value=val;
+  });
+  document.documentElement.style.setProperty("--team-a",lightenHex(theme.team||THEME_DEFAULTS.team,.45));
+  document.documentElement.style.setProperty("--sub-bg",theme.team||THEME_DEFAULTS.team);
+  if(save)localStorage.setItem(THEME_KEY,JSON.stringify(theme));
+  updateThemeLink(theme);
+}
+function lightenHex(hex,mix){
+  hex=String(hex||"#ffd83d").replace("#","");
+  var n=parseInt(hex.length===3?hex.replace(/(.)/g,"$1$1"):hex,16);
+  var r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  r=Math.round(r+(255-r)*mix);g=Math.round(g+(255-g)*mix);b=Math.round(b+(255-b)*mix);
+  return "#"+[r,g,b].map(function(v){return v.toString(16).padStart(2,"0");}).join("");
+}
+function themeUrl(theme){
+  var u=new URL(location.href);
+  u.searchParams.delete("controls");
+  u.searchParams.set("event",EVENT_ID);
+  u.searchParams.set("matches",MATCHES);
+  u.searchParams.set("limit",LIMIT);
+  Object.keys(THEME_DEFAULTS).forEach(function(k){u.searchParams.set(k,theme[k]||THEME_DEFAULTS[k]);});
+  return u.toString();
+}
+function updateThemeLink(theme){
+  var box=document.getElementById("theme-link");
+  if(box)box.value=themeUrl(theme||readTheme());
+}
+function resetTheme(){applyTheme(Object.assign({},THEME_DEFAULTS),true);}
+function copyThemeLink(){
+  var box=document.getElementById("theme-link");
+  if(!box)return;
+  box.select();
+  try{navigator.clipboard.writeText(box.value);}catch(e){document.execCommand("copy");}
+}
+function setupThemeControls(){
+  var controls=document.getElementById("theme-controls");
+  var theme=readTheme();
+  applyTheme(theme,false);
+  if(qs.get("controls")==="1")controls.classList.add("show");
+  document.querySelectorAll("[data-theme]").forEach(function(inp){
+    inp.addEventListener("input",function(){
+      theme=readTheme();
+      document.querySelectorAll("[data-theme]").forEach(function(i){theme[i.dataset.theme]=i.value;});
+      applyTheme(theme,true);
+    });
+  });
+}
 
 function fitStage(){
   var scale=Math.min(window.innerWidth/1920,window.innerHeight/1080);
@@ -77,9 +161,19 @@ function fitStage(){
 }
 window.addEventListener("resize",fitStage);
 fitStage();
+setupThemeControls();
 
 function eventBasePath(){return EVENT_ID==="default"?"pmac":"pmac/events/"+EVENT_ID;}
 function eventPath(child){return eventBasePath()+"/"+child;}
+function watchTheme(){
+  if(HAS_THEME_PARAMS) return;
+  if(themeRef) themeRef.off();
+  themeRef=db.ref(eventPath("matchPointsOverlay/theme"));
+  themeRef.on("value",function(s){
+    var theme=Object.assign({},THEME_DEFAULTS,s.val()||{});
+    applyTheme(theme,true);
+  });
+}
 function sanitizeKey(n){return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_");}
 function norm(n){return String(n||"").trim().toUpperCase();}
 function initials(n){return String(n||"?").trim().split(/\s+/).slice(0,2).map(function(s){return s[0]||"";}).join("").toUpperCase()||"?";}
@@ -105,12 +199,25 @@ function teamTotal(team){
   return sum;
 }
 function setStatus(t){document.getElementById("status").textContent=t||"";}
-function attachDataRefs(base){
+function toList(v){
+  return Array.isArray(v)?v:Object.keys(v||{}).map(function(k){var o=v[k]||{};if(!o.id)o.id=k;return o;});
+}
+function useableRegistrationTeams(v){
+  return toList(v).filter(function(t){return t&&t.name&&(t.status==="approved"||t.approved===true||t.idPassConfirmed===true||!t.status);});
+}
+function refreshTeams(){
+  teams=scoreTeams.length?scoreTeams:regTeams;
+  render();
+}
+function attachDataRefs(base,fallbackBase){
   if(teamsRef)teamsRef.off();
+  if(regsRef)regsRef.off();
   if(scoresRef)scoresRef.off();
   teamsRef=db.ref(base+"/teams");
+  regsRef=db.ref((fallbackBase||base)+"/registrations");
   scoresRef=db.ref(base+(base.indexOf("/eventGroups/")>-1?"/scores":"/matches"));
-  teamsRef.on("value",function(s){var v=s.val()||[];teams=Array.isArray(v)?v:Object.values(v);render();},function(e){setStatus(e.message);});
+  teamsRef.on("value",function(s){scoreTeams=toList(s.val()||[]);refreshTeams();},function(e){setStatus(e.message);});
+  regsRef.on("value",function(s){regTeams=useableRegistrationTeams(s.val()||{});refreshTeams();},function(){regTeams=[];refreshTeams();});
   scoresRef.on("value",function(s){scores=s.val()||{};render();},function(e){setStatus(e.message);});
 }
 function watchActive(){
@@ -118,9 +225,9 @@ function watchActive(){
   activeRef=db.ref(eventPath("activeSession"));
   activeRef.on("value",function(s){
     var a=s.val();
-    if(a&&a.group&&a.date)attachDataRefs(eventPath("eventGroups/"+a.group+"/sessions/"+a.date));
-    else attachDataRefs(eventBasePath());
-  },function(){attachDataRefs(eventBasePath());});
+    if(a&&a.group&&a.date)attachDataRefs(eventPath("eventGroups/"+a.group+"/sessions/"+a.date),eventBasePath());
+    else attachDataRefs(eventBasePath(),eventBasePath());
+  },function(){attachDataRefs(eventBasePath(),eventBasePath());});
 }
 function renderHead(){
   var head=document.getElementById("head"),html="";
@@ -193,6 +300,7 @@ function render(){
   setStatus("event: "+EVENT_ID+" | teams: "+teams.length);
 }
 
+watchTheme();
 watchActive();
 </script>
 </body>
