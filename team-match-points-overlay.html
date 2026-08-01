@@ -21,7 +21,8 @@
     .colhead{height:40px;display:grid;grid-template-columns:82px 1fr repeat(var(--matches),96px) 112px;align-items:center;background:var(--col-bg);color:#070707;border-top:4px solid var(--line);border-bottom:3px solid var(--line)}
     .hcell{height:100%;display:flex;align-items:center;justify-content:center;border-right:2px solid #d2d2d2;font-size:19px;font-weight:900;text-align:center;text-transform:uppercase;color:#070707}
     .hcell.rankh,.hcell.teamh{background:var(--sub-bg)}
-    .rows{position:relative;z-index:1}
+    .rows{position:relative;z-index:1;visibility:hidden}
+    .rows.ready{visibility:visible}
     .row{position:relative;z-index:0;height:var(--row-h,56px);display:grid;grid-template-columns:82px 1fr repeat(var(--matches),96px) 112px;align-items:center;margin-bottom:var(--row-gap,8px);background:var(--row-bg);color:var(--row-text);border-bottom:3px solid var(--line);opacity:0;transform:translateX(-360px);filter:blur(3px)}
     .row>*{position:relative;z-index:1}
     .row:before{content:"";position:absolute;left:0;top:0;bottom:0;width:calc(82px + ((100% - 82px - (var(--matches) * 96px) - 112px) * .58));background:linear-gradient(90deg,var(--team-a),var(--team-b));z-index:0}
@@ -291,12 +292,18 @@ function render(){
   list=list.slice(0,LIMIT);
   fitRows(list.length);
   var rows=document.getElementById("rows");
+  rows.classList.remove("ready");
+  rows.innerHTML="";
   document.getElementById("empty").style.display=list.length?"none":"flex";
   rows.innerHTML=list.map(function(t,idx){
     var sr=scoreRowsForTeam(t),cells="";
     for(var i=0;i<MATCHES;i++)cells+='<div class="points">'+rowPoints(sr[i]||{})+'</div>';
-    return '<div class="row animate-in" style="--i:'+idx+'"><div class="rank">'+(idx+1)+'</div><div class="team"><div class="logo">'+renderLogo(t)+'</div><div class="name">'+String(t.name||"").toUpperCase()+'</div></div>'+cells+'<div class="total">'+t.total+'</div></div>';
+    return '<div class="row" style="--i:'+idx+'"><div class="rank">'+(idx+1)+'</div><div class="team"><div class="logo">'+renderLogo(t)+'</div><div class="name">'+String(t.name||"").toUpperCase()+'</div></div>'+cells+'<div class="total">'+t.total+'</div></div>';
   }).join("");
+  requestAnimationFrame(function(){
+    rows.classList.add("ready");
+    rows.querySelectorAll(".row").forEach(function(row){row.classList.add("animate-in");});
+  });
   setStatus("event: "+EVENT_ID+" | teams: "+teams.length);
 }
 
