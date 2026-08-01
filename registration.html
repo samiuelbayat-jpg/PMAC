@@ -3368,7 +3368,7 @@ function loadOverallEventRankings(){
     var active=snaps[2].val()||null;
     var mainScores=snaps[3].val()||{};
     mainTeams=Array.isArray(mainTeams)?mainTeams:Object.values(mainTeams);
-    var totals={}, nights={};
+    var totals={}, nights={}, savedSessionKeys={};
     function ensureTeam(t){
       if(!t||!t.name) return null;
       var key=pubTeamKey(t);
@@ -3395,19 +3395,21 @@ function loadOverallEventRankings(){
         var sessionDate=pubCleanDate(sess.date||date);
         if(!pubDateInOverallRange(sessionDate)) return;
         if(!pubSessionBelongsToCurrentEvent(sess)) return;
+        savedSessionKeys[gid+"|"+date]=true;
         var teamList=sess.teams?(Array.isArray(sess.teams)?sess.teams:Object.values(sess.teams)):[];
-        addScoreSet(teamList,sess.scores||{},sessionDate,sessionDate);
+        addScoreSet(teamList,sess.scores||{},gid+"|"+date,sessionDate);
       });
     });
     var activeSessions=pubActiveSessions(active);
     var liveJobs=[];
     if(activeSessions.length){
       activeSessions.forEach(function(a){
+        if(savedSessionKeys[a.group+"|"+a.date]) return;
         var liveBase=eventPath("eventGroups")+"/"+a.group+"/sessions/"+a.date;
         liveJobs.push(Promise.all([db.ref(liveBase+"/teams").once("value"),db.ref(liveBase+"/scores").once("value")]).then(function(ls){
           var tv=ls[0].val()||[], sv=ls[1].val()||{};
           var teamList=Array.isArray(tv)?tv:Object.values(tv);
-          addScoreSet(teamList,sv,pubCleanDate(a.date)||("LIVE_"+a.group+"_"+a.date),pubCleanDate(a.date)||"LIVE");
+          addScoreSet(teamList,sv,"LIVE|"+a.group+"|"+a.date,pubCleanDate(a.date)||"LIVE");
         }));
       });
     }else if(mainTeams.length){
