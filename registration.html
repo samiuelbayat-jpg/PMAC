@@ -1148,6 +1148,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     <div class="range-field"><label>Night date</label><input type="date" id="manage-session-date"></div>
     <div class="range-field"><label>Session name</label><input id="manage-session-name" placeholder="A VS B"></div>
     <button class="ctrl-btn" onclick="saveManageScoreAsSession()">Save Current Manage Score As Night Session</button>
+    <button class="ctrl-btn" onclick="returnToMainManageScore()">Return To Main Manage Score</button>
     <span class="roadmap-status" id="manage-session-status"></span>
   </div>
   <div id="pub-hero-wrap"></div>
@@ -3280,6 +3281,19 @@ function saveManageScoreAsSession(){
   }).catch(function(e){
     manageSessionStatus(e.message||"Save failed",false);
     toast("Session save failed",false);
+  });
+}
+function returnToMainManageScore(){
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
+  manageSessionStatus("Returning to main Manage Score...");
+  db.ref(eventPath("activeSession")).remove().then(function(){
+    pubLoadMainScoreboard();
+    loadOverallEventRankings();
+    manageSessionStatus("Main Manage Score is active again.",true);
+    toast("Returned to main Manage Score",true);
+  }).catch(function(e){
+    manageSessionStatus(e.message||"Could not return to main Manage Score",false);
+    toast("Could not return to main Manage Score",false);
   });
 }
 function pubRankCls(r){if(!r&&r!==0)return"rb";return r<=3?"r1":r<=6?"r2":"rb";}
