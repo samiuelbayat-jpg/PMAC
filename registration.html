@@ -1144,6 +1144,12 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
     <button class="ctrl-btn" id="pub-btn-kills" onclick="pubSortBy('kills')">Kills</button>
     <button class="ctrl-btn" id="pub-btn-name" onclick="pubSortBy('name')">Name</button>
   </div>
+  <div id="manage-session-tools" style="display:none;gap:8px;align-items:flex-end;margin-bottom:1rem;flex-wrap:wrap;background:#0f1115;border:1px solid rgba(245,200,66,0.18);border-radius:9px;padding:10px;">
+    <div class="range-field"><label>Night date</label><input type="date" id="manage-session-date"></div>
+    <div class="range-field"><label>Session name</label><input id="manage-session-name" placeholder="A VS B"></div>
+    <button class="ctrl-btn" onclick="saveManageScoreAsSession()">Save Current Manage Score As Night Session</button>
+    <span class="roadmap-status" id="manage-session-status"></span>
+  </div>
   <div id="pub-hero-wrap"></div>
   <div class="pub-score-body">
     <table class="pub-table pub-score-table">
@@ -1473,6 +1479,7 @@ function updateMatchPointsThemePreview(theme){
 function matchPointsOverlayUrl(withThemeParams){
   var url=new URL("team-match-points-overlay.html", window.location.href);
   url.searchParams.set("event",EVENT_ID);
+  url.searchParams.set("mode","overall");
   url.searchParams.set("matches",Math.max(1,Math.min(12,parseInt((document.getElementById("mp-theme-matches")||{}).value||"6",10)||6)));
   url.searchParams.set("limit",Math.max(1,Math.min(64,parseInt((document.getElementById("mp-theme-limit")||{}).value||"64",10)||64)));
   url.searchParams.set("title",((document.getElementById("mp-theme-title-text")||{}).value||"MATCH BY MATCH POINTS").trim()||"MATCH BY MATCH POINTS");
@@ -2192,6 +2199,8 @@ function applyAdminUI() {
   if(overlayColorsTab) overlayColorsTab.style.display = isAdmin ? "" : "none";
   var overallRange=document.getElementById("pub-overall-range");
   if(overallRange) overallRange.style.display = isAdmin ? "flex" : "none";
+  var manageSessionTools=document.getElementById("manage-session-tools");
+  if(manageSessionTools) manageSessionTools.style.display = isAdmin ? "flex" : "none";
   updateIdPassTabVisibility();
   if(!isAdmin && ((document.getElementById("sec-rulelog") && document.getElementById("sec-rulelog").classList.contains("show")) || (document.getElementById("sec-roadmap") && document.getElementById("sec-roadmap").classList.contains("show")) || (document.getElementById("sec-overlaycolors") && document.getElementById("sec-overlaycolors").classList.contains("show")))) showTab("reg");
   renderRulesAgreedLog();
@@ -3222,6 +3231,58 @@ function savePublicOverallRange(){
     toast("Date save failed: "+(e&&e.message?e.message:"permission denied"),false);
   });
 }
+function manageSessionStatus(msg, ok){
+  var el=document.getElementById("manage-session-status");
+  if(el){el.textContent=msg||"";el.style.color=ok===false?"#ff5555":"#8a96a8";}
+}
+function manageSessionSlug(v){
+  return String(v||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40);
+}
+function saveManageScoreAsSession(){
+  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
+  var dateEl=document.getElementById("manage-session-date");
+  var nameEl=document.getElementById("manage-session-name");
+  var date=(dateEl&&dateEl.value)||todayStr();
+  var label=(nameEl&&nameEl.value||"").trim();
+  var slug=manageSessionSlug(label);
+  var sessionKey=date+(slug?("-"+slug):"");
+  manageSessionStatus("Reading current Manage Score...");
+  Promise.all([
+    db.ref(eventPath("teams")).once("value"),
+    db.ref(eventPath("matches")).once("value"),
+    db.ref(eventPath("eventGroups/MANAGE/sessions/"+sessionKey)).once("value")
+  ]).then(function(snaps){
+    var tv=snaps[0].val()||[], sv=snaps[1].val()||{};
+    var teamList=Array.isArray(tv)?tv:Object.values(tv);
+    if(!teamList.length) throw new Error("No teams found in Manage Score");
+    if(snaps[2].exists()&&!confirm("Session "+sessionKey+" already exists. Replace it with current Manage Score?")) return null;
+    var cleanScores={};
+    teamList.forEach(function(t){
+      if(!t||!t.name) return;
+      var key=sanitizeKey(t.name);
+      cleanScores[key]=sv[key]||sv[sanitizeKey(t.tag||"")]||sv[t.name]||emptyScoreRows();
+    });
+    var base=eventPath("eventGroups/MANAGE/sessions/"+sessionKey);
+    var updates={};
+    updates[base+"/teams"]=teamList;
+    updates[base+"/scores"]=cleanScores;
+    updates[base+"/date"]=date;
+    updates[base+"/sessionName"]=label||"Manage Score";
+    updates[base+"/exportedFrom"]="manage-score";
+    updates[base+"/exportedAt"]=Date.now();
+    updates[base+"/eventScope"]=currentEventScope();
+    updates[eventPath("activeSession")]={group:"MANAGE",date:sessionKey,sessionName:label||"Manage Score",updatedAt:Date.now()};
+    return db.ref().update(updates).then(function(){return teamList.length;});
+  }).then(function(count){
+    if(count===null) return;
+    manageSessionStatus("Saved "+count+" teams to session "+sessionKey,true);
+    toast("Manage Score saved as night session",true);
+    loadOverallEventRankings();
+  }).catch(function(e){
+    manageSessionStatus(e.message||"Save failed",false);
+    toast("Session save failed",false);
+  });
+}
 function pubRankCls(r){if(!r&&r!==0)return"rb";return r<=3?"r1":r<=6?"r2":"rb";}
 function pubKillCls(k){var n=parseInt(k)||0;return n>=10?"kh":n>=5?"km":"kl";}
 function pubActiveSessions(active){
@@ -3401,6 +3462,8 @@ function showOverallRankings(){
 
 function loadScoreboard(){
   scoresLoaded=true;
+  var manageDate=document.getElementById("manage-session-date");
+  if(manageDate&&!manageDate.value) manageDate.value=todayStr();
   loadOverallEventRankings();
   db.ref(eventPath("activeSession")).once("value").then(function(s){
     var sessions=pubActiveSessions(s.val());

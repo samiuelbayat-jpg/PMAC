@@ -88,8 +88,9 @@ var EVENT_ID=qs.get("event")||localStorage.getItem("pmac_active_event")||"defaul
 var MATCHES=Math.max(1,Math.min(12,parseInt(qs.get("matches")||"6",10)||6));
 var LIMIT=Math.max(1,Math.min(64,parseInt(qs.get("limit")||"64",10)||64));
 var TITLE=qs.get("title")||"MATCH BY MATCH POINTS";
-var MODE=qs.get("mode")||"event";
-var teams=[],scoreTeams=[],regTeams=[],scores={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null;
+var MODE=qs.get("mode")||qs.get("scope")||"event";
+var OVERALL_MODE=/^(overall|all|history)$/i.test(MODE);
+var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null;
 var THEME_KEY="pmac_match_points_theme_"+EVENT_ID;
 var THEME_DEFAULTS={titleColor:"#ffffff",team:"#ffd83d",accent:"#e00018",text:"#080808",total1:"#fff3a8",total2:"#ffd33f",total3:"#e39b00"};
 var THEME_VARS={titleColor:"--title-color",team:"--team-b",accent:"--sub-accent",text:"--row-text",total1:"--total-a",total2:"--total-b",total3:"--total-c"};
@@ -191,10 +192,13 @@ function rowPoints(row){
   return (parseInt(row.kills,10)||0)+placePoints(row.rank);
 }
 function scoreRowsForTeam(team){
+  if(team&&team.matchRows) return team.matchRows;
   var key=sanitizeKey(team.name);
-  return scores[key]||scores[norm(team.name)]||scores[team.name]||[];
+  var tagKey=team&&team.tag?sanitizeKey(team.tag):"";
+  return scores[key]||scores[norm(team.name)]||scores[team.name]||(tagKey&&scores[tagKey])||[];
 }
 function teamTotal(team){
+  if(team&&Number.isFinite(Number(team.totalOverall))) return Number(team.totalOverall)||0;
   var rows=scoreRowsForTeam(team),sum=0;
   for(var i=0;i<MATCHES;i++)sum+=rowPoints(rows[i]||{});
   return sum;
@@ -229,6 +233,90 @@ function watchActive(){
     if(a&&a.group&&a.date)attachDataRefs(eventPath("eventGroups/"+a.group+"/sessions/"+a.date),eventBasePath());
     else attachDataRefs(eventBasePath(),eventBasePath());
   },function(){attachDataRefs(eventBasePath(),eventBasePath());});
+}
+function cleanDate(v){
+  var m=String(v||"").match(/\d{4}-\d{2}-\d{2}/);
+  return m?m[0]:"";
+}
+function inOverallRange(date){
+  date=cleanDate(date);
+  var start=cleanDate(eventInfo.overallStartDate||eventInfo.date||"");
+  var end=cleanDate(eventInfo.overallEndDate||"");
+  if(start&&date&&date<start) return false;
+  if(end&&date&&date>end) return false;
+  return true;
+}
+function teamKey(t){
+  var tag=norm(t&&t.tag);
+  return tag ? "TAG:"+tag : "NAME:"+norm(t&&t.name);
+}
+function matchStats(row){
+  if(!row) return null;
+  var rank=parseInt(row.rank,10), kills=parseInt(row.kills,10);
+  var hasRank=Number.isFinite(rank)&&rank>=1&&rank<=25;
+  var hasKills=Number.isFinite(kills)&&kills>0;
+  if(!hasRank&&!hasKills&&row.total===undefined&&row.points===undefined&&row.pts===undefined) return null;
+  return {rank:hasRank?rank:null,kills:Number.isFinite(kills)?Math.max(0,kills):0,total:rowPoints(row)};
+}
+function addOverallScores(totals,teamList,scoreSet,slotPrefix){
+  toList(teamList).forEach(function(t){
+    if(!t||!t.name) return;
+    var k=teamKey(t);
+    if(!totals[k]) totals[k]={name:t.name,tag:t.tag||"",logo:t.logo||"",matchRows:[],totalOverall:0,playedOverall:0,matchSlots:{}};
+    if(t.logo&&!totals[k].logo) totals[k].logo=t.logo;
+    if(t.tag&&!totals[k].tag) totals[k].tag=t.tag;
+    var md=scoreRowsFromSet(scoreSet,t);
+    for(var i=0;i<50;i++){
+      var st=matchStats(md&&md[i]);
+      if(!st) continue;
+      var slot=slotPrefix+"|M"+(i+1);
+      if(totals[k].matchSlots[slot]) continue;
+      totals[k].matchSlots[slot]=true;
+      totals[k].totalOverall+=st.total;
+      totals[k].playedOverall++;
+      if(totals[k].matchRows.length<MATCHES) totals[k].matchRows.push({total:st.total,rank:st.rank,kills:st.kills});
+    }
+  });
+}
+function scoreRowsFromSet(scoreSet,t){
+  var keys=[t&&t.name,t&&t.tag,norm(t&&t.name),norm(t&&t.tag)].map(sanitizeKey).filter(Boolean);
+  for(var i=0;i<keys.length;i++) if(scoreSet&&scoreSet[keys[i]]) return scoreSet[keys[i]];
+  return [];
+}
+function detachOverallRefs(){
+  [eventInfoRef,eventGroupsRef,mainTeamsRef,mainScoresRef].forEach(function(r){if(r)r.off();});
+}
+function renderOverallFromSnapshots(){
+  var groups=window.__overallGroups||{}, mainTeams=window.__overallMainTeams||[], mainScores=window.__overallMainScores||{};
+  var totals={};
+  mainTeams=toList(mainTeams);
+  mainTeams.forEach(function(t){ if(t&&t.name&&!totals[teamKey(t)]) totals[teamKey(t)]={name:t.name,tag:t.tag||"",logo:t.logo||"",matchRows:[],totalOverall:0,playedOverall:0,matchSlots:{}}; });
+  Object.keys(groups).sort().forEach(function(gid){
+    var sessions=(groups[gid]&&groups[gid].sessions)||{};
+    Object.keys(sessions).sort().forEach(function(date){
+      var sess=sessions[date]||{};
+      var d=cleanDate(sess.date||date);
+      if(!inOverallRange(d)) return;
+      addOverallScores(totals,sess.teams||[],sess.scores||{},d||date);
+    });
+  });
+  if(!Object.keys(totals).some(function(k){return totals[k].playedOverall>0;})){
+    addOverallScores(totals,mainTeams,mainScores,"MAIN");
+  }
+  teams=Object.keys(totals).map(function(k){delete totals[k].matchSlots; return totals[k];});
+  scores={};
+  render();
+}
+function watchOverall(){
+  detachOverallRefs();
+  eventInfoRef=db.ref(eventPath("event"));
+  eventGroupsRef=db.ref(eventPath("eventGroups"));
+  mainTeamsRef=db.ref(eventPath("teams"));
+  mainScoresRef=db.ref(eventPath("matches"));
+  eventInfoRef.on("value",function(s){eventInfo=s.val()||{};renderOverallFromSnapshots();});
+  eventGroupsRef.on("value",function(s){window.__overallGroups=s.val()||{};renderOverallFromSnapshots();});
+  mainTeamsRef.on("value",function(s){window.__overallMainTeams=s.val()||[];renderOverallFromSnapshots();});
+  mainScoresRef.on("value",function(s){window.__overallMainScores=s.val()||{};renderOverallFromSnapshots();});
 }
 function renderHead(){
   var head=document.getElementById("head"),html="";
@@ -304,11 +392,11 @@ function render(){
     rows.classList.add("ready");
     rows.querySelectorAll(".row").forEach(function(row){row.classList.add("animate-in");});
   });
-  setStatus("event: "+EVENT_ID+" | teams: "+teams.length);
+  setStatus((OVERALL_MODE?"overall: ":"event: ")+EVENT_ID+" | teams: "+teams.length);
 }
 
 watchTheme();
-watchActive();
+if(OVERALL_MODE) watchOverall(); else watchActive();
 </script>
 </body>
 </html>
