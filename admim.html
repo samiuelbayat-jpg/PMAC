@@ -238,7 +238,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
   <div id="section-teams"><div class="teams-mgmt"><div class="mgmt-title">Add Team</div><div class="add-team-row"><div class="inp-wrap"><div class="inp-lbl">Team Name</div><input class="text-inp" id="new-team-name" placeholder="e.g. BLACK ZONE" list="team-logo-suggest" oninput="updateManageSavedLogo()" onchange="updateManageSavedLogo()"><datalist id="team-logo-suggest"></datalist></div><div class="inp-wrap"><div class="inp-lbl">Team Tag</div><input class="text-inp" id="new-team-tag" placeholder="BZ" maxlength="8" style="min-width:90px;width:100px;"></div><div class="team-logo-field"><div class="inp-lbl">Team Logo</div><div class="team-logo-controls"><input type="file" id="new-team-logo" accept="image/*" style="display:none" onchange="previewLogo(this)"><button class="logo-inp-btn" onclick="document.getElementById('new-team-logo').click()">📷 Choose Logo</button><button class="logo-inp-btn" id="use-saved-team-logo-btn" style="display:none" onclick="useSavedTeamLogo()">Use Saved Logo</button><img id="logo-preview" class="logo-preview"><span id="logo-name" style="font-size:9px;"></span></div></div><button class="btn btn-primary" onclick="addTeam()">+ Add Team</button><span id="uploading-badge" class="uploading-badge">Uploading...</span></div><div class="csv-row"><div><div class="inp-lbl">Import CSV</div><div class="csv-note">One team name per line</div></div><input type="file" id="csv-file" accept=".csv,.txt" style="display:none" onchange="importCSV(this)"><button class="btn" onclick="document.getElementById('csv-file').click()">📄 Import CSV</button><button class="btn" onclick="fixAllLogos()" id="fix-logos-btn" style="background:linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.1));border-color:rgba(0,255,136,0.4);color:#00ff88;">🔧 Fix All Logos</button><button class="btn btn-primary" onclick="if(!isSuperAdmin){showToast('Super Admin required',false);return;}importFromRegistration()">📥 Import from Registration</button><button class="btn btn-danger" onclick="removeAllTeams()">Remove All Teams</button></div></div><div class="mgmt-title">Current Teams (<span id="team-count">0</span>)</div><div class="teams-list-mgmt" id="teams-list-mgmt"><div class="no-teams">No teams yet.</div></div></div>
 
-  <div id="section-scores" style="display:none;"><div class="pts-info"><span class="pts-lbl">Points system</span><span class="pts-pill hi">#1=10</span><span class="pts-pill hi">#2=6</span><span class="pts-pill hi">#3=5</span><span class="pts-pill hi">#4=4</span><span class="pts-pill hi">#5=3</span><span class="pts-pill hi">#6=2</span><span class="pts-pill hi">#7=1</span><span class="pts-pill hi">#8=1</span><span class="pts-pill">#9+=0</span><span class="pts-pill">+1/kill</span></div><div class="match-tabs" id="match-tabs-scores"></div>
+  <div id="section-scores" style="display:none;"><div class="pts-info"><span class="pts-lbl">Points system</span><span class="pts-pill hi">#1=10</span><span class="pts-pill hi">#2=6</span><span class="pts-pill hi">#3=5</span><span class="pts-pill hi">#4=4</span><span class="pts-pill hi">#5=3</span><span class="pts-pill hi">#6=2</span><span class="pts-pill hi">#7=1</span><span class="pts-pill hi">#8=1</span><span class="pts-pill">#9+=0</span><span class="pts-pill">+1/kill</span><button class="btn" style="padding:5px 10px;font-size:10px;background:rgba(0,201,122,.12);border-color:rgba(0,201,122,.35);color:#00c97a;" onclick="restoreLatestManageNight()">Restore Latest Saved Night</button></div><div class="match-tabs" id="match-tabs-scores"></div>
     <div class="team-grid" id="team-grid"><div class="no-teams">Go to "Manage Teams" tab first.</div></div>
   </div>
 
@@ -969,9 +969,57 @@ function saveScoresToActiveSessions(nextScores, sessions){
       const owner = window._teamSessionMap && window._teamSessionMap[safe];
       if(owner && owner.group===s.group && owner.date===s.date) chunk[safe] = nextScores[safe];
     });
-    return db.ref(`${eventPath("eventGroups")}/${s.group}/sessions/${s.date}/scores`).set(chunk);
+    return Object.keys(chunk).length
+      ? db.ref(`${eventPath("eventGroups")}/${s.group}/sessions/${s.date}/scores`).update(chunk)
+      : Promise.resolve();
   });
   return Promise.all(updates);
+}
+function restoreLatestManageNight(){
+  if(!isSuperAdmin && !confirm("Restore the latest saved night backup? This can overwrite the current active score rows.")) return;
+  const managePath = eventPath("eventGroups/MANAGE/sessions");
+  db.ref(managePath).once("value").then(snap=>{
+    const all=snap.val()||{};
+    const sessions=Object.keys(all).map(k=>Object.assign({__key:k},all[k]||{})).filter(s=>s.teams);
+    sessions.sort((a,b)=>(parseInt(b.exportedAt)||0)-(parseInt(a.exportedAt)||0)||String(b.__key).localeCompare(String(a.__key)));
+    const backup=sessions[0];
+    if(!backup){ showToast("No saved MANAGE night backup found",false); return null; }
+    const backupTeams=Array.isArray(backup.teams)?backup.teams:Object.values(backup.teams||{});
+    const backupScores=backup.scores||{};
+    if(!backupTeams.length){ showToast("Latest backup has no teams",false); return null; }
+    if(!confirm(`Restore backup "${backup.__key}" with ${backupTeams.length} teams?`)) return null;
+    const activeList=egSessionsFromActive(egActiveSession);
+    const sourceList=(backup.sourceSessions&&backup.sourceSessions.length)?backup.sourceSessions:activeList;
+    if(sourceList.length){
+      const writes=sourceList.map(s=>{
+        const base=`${eventPath("eventGroups")}/${s.group}/sessions/${s.date}`;
+        const groupTeams=backupTeams.filter(t=>{
+          if(t.__egGroup) return t.__egGroup===s.group;
+          return true;
+        });
+        const teamList=groupTeams.length?groupTeams:backupTeams;
+        const scoreMap={};
+        teamList.forEach(t=>{
+          const key=sanitizeKey(t.name);
+          scoreMap[key]=backupScores[key]||backupScores[sanitizeKey(t.tag||"")]||backupScores[t.name]||emptyScoreRows();
+        });
+        return db.ref(base).update({teams:teamList,scores:scoreMap,restoredFromManage:backup.__key,restoredAt:Date.now()});
+      });
+      return Promise.all(writes).then(()=>backup);
+    }
+    const scoresCopy={};
+    backupTeams.forEach(t=>{
+      const key=sanitizeKey(t.name);
+      scoresCopy[key]=backupScores[key]||backupScores[sanitizeKey(t.tag||"")]||backupScores[t.name]||emptyScoreRows();
+    });
+    return Promise.all([dbTeamsRef.set(backupTeams),dbScoresRef.set(scoresCopy)]).then(()=>backup);
+  }).then(backup=>{
+    if(!backup) return;
+    showToast("Restored latest saved night: "+backup.__key,true);
+    loadEventGroups();
+    const activeList=egSessionsFromActive(egActiveSession);
+    if(activeList.length) applyActiveSessions(activeList,false); else loadFirebaseData();
+  }).catch(e=>showToast("Restore failed: "+(e&&e.message?e.message:e),false));
 }
 function updateActiveBanner(){
   const banner = document.getElementById("eg-active-banner");
