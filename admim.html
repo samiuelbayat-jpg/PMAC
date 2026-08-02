@@ -976,18 +976,52 @@ function saveScoresToActiveSessions(nextScores, sessions){
   return Promise.all(updates);
 }
 function restoreLatestManageNight(){
-  if(!isSuperAdmin && !confirm("Restore the latest saved night backup? This can overwrite the current active score rows.")) return;
-  const managePath = eventPath("eventGroups/MANAGE/sessions");
-  db.ref(managePath).once("value").then(snap=>{
-    const all=snap.val()||{};
-    const sessions=Object.keys(all).map(k=>Object.assign({__key:k},all[k]||{})).filter(s=>s.teams);
-    sessions.sort((a,b)=>(parseInt(b.exportedAt)||0)-(parseInt(a.exportedAt)||0)||String(b.__key).localeCompare(String(a.__key)));
-    const backup=sessions[0];
-    if(!backup){ showToast("No saved MANAGE night backup found",false); return null; }
+  if(!isSuperAdmin && !confirm("Restore the latest scored backup? This can overwrite the current active score rows.")) return;
+  function rowsHaveScore(rows){
+    return (Array.isArray(rows)?rows:Object.values(rows||{})).some(m=>{
+      if(!m) return false;
+      const rank=parseInt(m.rank,10), kills=parseInt(m.kills,10);
+      return (Number.isFinite(rank)&&rank>0)||(Number.isFinite(kills)&&kills>0);
+    });
+  }
+  function sessionHasScores(sess){
+    const teamsList=Array.isArray(sess.teams)?sess.teams:Object.values(sess.teams||{});
+    const scoreMap=sess.scores||{};
+    return teamsList.some(t=>{
+      const key=sanitizeKey(t.name);
+      return rowsHaveScore(scoreMap[key]||scoreMap[sanitizeKey(t.tag||"")]||scoreMap[t.name]);
+    });
+  }
+  function backupTime(b){
+    return parseInt(b.exportedAt||b.restoredAt||b.archivedAt,10)||Date.parse(b.date||b.__key)||0;
+  }
+  Promise.all([
+    db.ref(eventPath("eventGroups")).once("value"),
+    db.ref(eventPath("archive")).once("value").catch(()=>({val:()=>({})}))
+  ]).then(snaps=>{
+    const groups=snaps[0].val()||{}, archive=snaps[1].val()||{}, backups=[];
+    Object.keys(groups).forEach(gid=>{
+      const sessions=(groups[gid]&&groups[gid].sessions)||{};
+      Object.keys(sessions).forEach(sid=>{
+        const sess=Object.assign({__key:gid+"/"+sid,__gid:gid,__sid:sid},sessions[sid]||{});
+        if(sess.teams && sessionHasScores(sess)) backups.push(sess);
+      });
+    });
+    Object.keys(archive||{}).forEach(k=>{
+      const a=archive[k]||{};
+      const teamList=Array.isArray(a.teams)?a.teams:Object.values(a.teams||{});
+      const scores={};
+      Object.keys(a.data||a.scores||{}).forEach(name=>{ scores[sanitizeKey(name)]=(a.data||a.scores)[name]; });
+      const sess={__key:"archive/"+k,teams:teamList,scores:scores,date:a.dateText||a.date||"",archivedAt:a.archivedAt};
+      if(teamList.length && sessionHasScores(sess)) backups.push(sess);
+    });
+    backups.sort((a,b)=>backupTime(b)-backupTime(a)||String(b.__key).localeCompare(String(a.__key)));
+    const backup=backups[0];
+    if(!backup){ showToast("No scored backup found in saved sessions or archive",false); return null; }
     const backupTeams=Array.isArray(backup.teams)?backup.teams:Object.values(backup.teams||{});
     const backupScores=backup.scores||{};
     if(!backupTeams.length){ showToast("Latest backup has no teams",false); return null; }
-    if(!confirm(`Restore backup "${backup.__key}" with ${backupTeams.length} teams?`)) return null;
+    if(!confirm(`Restore scored backup "${backup.__key}" with ${backupTeams.length} teams?`)) return null;
     const activeList=egSessionsFromActive(egActiveSession);
     const sourceList=(backup.sourceSessions&&backup.sourceSessions.length)?backup.sourceSessions:activeList;
     if(sourceList.length){
@@ -1003,7 +1037,7 @@ function restoreLatestManageNight(){
           const key=sanitizeKey(t.name);
           scoreMap[key]=backupScores[key]||backupScores[sanitizeKey(t.tag||"")]||backupScores[t.name]||emptyScoreRows();
         });
-        return db.ref(base).update({teams:teamList,scores:scoreMap,restoredFromManage:backup.__key,restoredAt:Date.now()});
+        return db.ref(base).update({teams:teamList,scores:scoreMap,restoredFromBackup:backup.__key,restoredAt:Date.now()});
       });
       return Promise.all(writes).then(()=>backup);
     }
@@ -1015,7 +1049,7 @@ function restoreLatestManageNight(){
     return Promise.all([dbTeamsRef.set(backupTeams),dbScoresRef.set(scoresCopy)]).then(()=>backup);
   }).then(backup=>{
     if(!backup) return;
-    showToast("Restored latest saved night: "+backup.__key,true);
+    showToast("Restored scored backup: "+backup.__key,true);
     loadEventGroups();
     const activeList=egSessionsFromActive(egActiveSession);
     if(activeList.length) applyActiveSessions(activeList,false); else loadFirebaseData();
