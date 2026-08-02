@@ -3405,7 +3405,7 @@ function loadOverallEventRankings(){
     var active=snaps[2].val()||null;
     var mainScores=snaps[3].val()||{};
     mainTeams=Array.isArray(mainTeams)?mainTeams:Object.values(mainTeams);
-    var totals={}, nights={}, savedSessionKeys={};
+    var totals={}, nights={}, savedSessionKeys={}, hasSavedScores=false;
     function ensureTeam(t){
       if(!t||!t.name) return null;
       var key=pubTeamKey(t);
@@ -3415,6 +3415,7 @@ function loadOverallEventRankings(){
       return key;
     }
     function addScoreSet(teamList,scores,slotPrefix,nightDate){
+      var anyPlayed=false;
       (teamList||[]).forEach(function(t){
         var key=ensureTeam(t);
         if(!key) return;
@@ -3422,7 +3423,17 @@ function loadOverallEventRankings(){
         var played=false;
         for(var i=0;i<10;i++) if(pubAddOverallMatch(totals[key],(md&&md[i])||null,slotPrefix+"|M"+(i+1))) played=true;
         if(played&&nightDate){ nights[key]=nights[key]||{}; nights[key][nightDate]=true; }
+        if(played) anyPlayed=true;
       });
+      return anyPlayed;
+    }
+    function savedAliasesForSession(gid,date,sess){
+      var aliases={};
+      aliases[gid+"|"+date]=true;
+      (sess.sourceSessions||[]).forEach(function(s){
+        if(s&&s.group&&s.date) aliases[s.group+"|"+s.date]=true;
+      });
+      return Object.keys(aliases);
     }
     mainTeams.forEach(ensureTeam);
     Object.keys(groups).sort().forEach(function(gid){
@@ -3432,9 +3443,11 @@ function loadOverallEventRankings(){
         var sessionDate=pubCleanDate(sess.date||date);
         if(!pubDateInOverallRange(sessionDate)) return;
         if(!pubSessionBelongsToCurrentEvent(sess)) return;
-        savedSessionKeys[gid+"|"+date]=true;
+        var aliases=savedAliasesForSession(gid,date,sess);
+        if(aliases.some(function(k){return savedSessionKeys[k];})) return;
+        aliases.forEach(function(k){savedSessionKeys[k]=true;});
         var teamList=sess.teams?(Array.isArray(sess.teams)?sess.teams:Object.values(sess.teams)):[];
-        addScoreSet(teamList,sess.scores||{},gid+"|"+date,sessionDate);
+        if(addScoreSet(teamList,sess.scores||{},aliases[0],sessionDate)) hasSavedScores=true;
       });
     });
     var activeSessions=pubActiveSessions(active);
@@ -3449,7 +3462,7 @@ function loadOverallEventRankings(){
           addScoreSet(teamList,sv,"LIVE|"+a.group+"|"+a.date,pubCleanDate(a.date)||"LIVE");
         }));
       });
-    }else if(mainTeams.length){
+    }else if(mainTeams.length&&!hasSavedScores){
       addScoreSet(mainTeams,mainScores,"LIVE_MAIN",pubCleanDate(eventInfo.date||"")||"LIVE");
     }
     return Promise.all(liveJobs).then(function(){
