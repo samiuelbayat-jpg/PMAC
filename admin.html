@@ -297,6 +297,7 @@ if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
 const db = firebase.database(), storage = firebase.storage(), auth = firebase.auth();
  
 let isSuperAdmin = false, currentMatch = 0, teams = [], scores = {};
+let scoreGridRenderTimer = null;
 let currentAdminUid = "";
 let teamLogoLibrary = {};
 let killsSaveTimers = {};
@@ -422,8 +423,8 @@ function loadFirebaseData(){
   stopActiveRefs();
   dbTeamsRef.off();
   dbScoresRef.off();
-  dbTeamsRef.on("value",(s)=>{ teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : []; teams = teams.map(t => { if (!t.playerUIDs) t.playerUIDs = []; return t; }); seedTeamLogoLibrary(teams); renderTeamsMgmt(); renderScoreGrid(); document.getElementById("fb-status").className="fb-badge fb-ok"; document.getElementById("fb-status").textContent="● Single Day Mode"; });
-  dbScoresRef.on("value",(s)=>{ scores = s.val() || {}; renderScoreGrid(); });
+  dbTeamsRef.on("value",(s)=>{ teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : []; teams = teams.map(t => { if (!t.playerUIDs) t.playerUIDs = []; return t; }); seedTeamLogoLibrary(teams); renderTeamsMgmt(); queueScoreGridRender(); document.getElementById("fb-status").className="fb-badge fb-ok"; document.getElementById("fb-status").textContent="● Single Day Mode"; });
+  dbScoresRef.on("value",(s)=>{ scores = s.val() || {}; queueScoreGridRender(); });
 }
 function egSessionsFromActive(active){
   if(!active) return [];
@@ -590,7 +591,7 @@ function renderTeamsMgmt(){
     const container = document.getElementById("teams-list-mgmt"); 
     document.getElementById("team-count").innerText = teams.length; 
     if (!teams.length) { container.innerHTML = '<div class="no-teams">No teams yet.</div>'; return; } 
-    container.innerHTML = ""; 
+    const html = [];
     teams.forEach(t => { 
         const uids = t.playerUIDs || []; 
         const uidInputs = uids.map((uid, idx) => `
@@ -601,7 +602,7 @@ function renderTeamsMgmt(){
             </div>
         `).join(''); 
         const addBtn = uids.length < 4 ? `<button class="btn" style="font-size:10px;padding:2px 8px;" onclick="addPlayerUidSlot('${t.name.replace(/'/g,"\\'")}')">+ Add UID</button>` : ''; 
-        container.innerHTML += `
+        html.push(`
             <div class="team-mgmt-card">
                 <div class="team-mgmt-header">
                     <img class="team-mgmt-logo" src="${t.logo||''}" onerror="this.style.opacity=0.2">
@@ -618,14 +619,44 @@ function renderTeamsMgmt(){
                     ${uidInputs || '<div class="no-players">No UIDs added yet. Click "+ Add UID" to create one.</div>'}
                 </div>
             </div>
-        `; 
+        `); 
     }); 
+    container.innerHTML = html.join("");
 }
 function fixAllLogos(){ const toFix=teams.filter(t=>t.logo && !t.logo.startsWith("data:")); if(!toFix.length){ showToast("All logos already fixed",true); return; } showToast(`Fixing ${toFix.length} logos...`,true); toFix.forEach(t=>{ const img=new Image(); img.crossOrigin="anonymous"; img.onload=()=>{ try{ const c=document.createElement("canvas"); c.width=80; c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); const b64=c.toDataURL("image/png"); const idx=teams.findIndex(x=>x.name===t.name); if(idx>-1) teams[idx].logo=b64; (_teamsRef()).set(teams); }catch(e){} }; img.src="https://images.weserv.nl/?url="+encodeURIComponent(t.logo); }); setTimeout(()=>showToast("Logos fixed (background)",true),2000); }
 function importCSV(input){ const file=input.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=e=>{ const names=e.target.result.split(/[,\n\r]+/).map(n=>n.trim().toUpperCase()).filter(n=>n); let newTeams=[...teams]; let added=0; names.forEach(name=>{ if(!newTeams.find(t=>t.name===name)){ newTeams.push({name,tag:compactTeamTag(name),logo:"",playerUIDs:[]}); added++; const safe=sanitizeKey(name); if(!scores[safe]) scores[safe]=emptyScoreRows(); } }); _teamsRef().set(newTeams).then(()=>_scoresRef().set(scores)).then(()=>showToast(`${added} teams imported`,true)); }; reader.readAsText(file); }
 function importFromRegistration(){ db.ref(eventPath("registrations")).once("value").then(snap=>{ const regs=snap.val(); if(!regs) return showToast("No registrations",false); let list=Object.values(regs); const approved=list.filter(r=>r.status==="approved"); if(approved.length) list=approved; let newTeams=[...teams]; let counter=0; list.forEach(reg=>{ const name=reg.name?reg.name.toUpperCase():""; if(name && !newTeams.find(t=>t.name===name)){ newTeams.push({name,tag:(reg.tag||compactTeamTag(name)),logo:reg.logo||"",playerUIDs:[]}); counter++; const safe=sanitizeKey(name); if(!scores[safe]) scores[safe]=emptyScoreRows(); } }); if(counter) _teamsRef().set(newTeams).then(()=>_scoresRef().set(scores)).then(()=>showToast(`${counter} imported`,true)); else showToast("No new teams",false); }); }
 function activeMatchPayload(){ return {index:currentMatch,number:currentMatch+1,updatedAt:Date.now()}; }
 function publishActiveMatch(){ scores._activeMatch=activeMatchPayload(); return _scoresRef().set(scores).catch(()=>{}); }
+function queueScoreGridRender(){
+  clearTimeout(scoreGridRenderTimer);
+  scoreGridRenderTimer=setTimeout(()=>renderScoreGrid(),120);
+}
+function scorePathForSafe(safe){
+  const owner = window._teamSessionMap && window._teamSessionMap[safe];
+  if(owner && owner.group && owner.date) return `${eventPath("eventGroups")}/${owner.group}/sessions/${owner.date}/scores`;
+  return eventPath("matches");
+}
+function saveOneTeamScore(safe){
+  scores._activeMatch=activeMatchPayload();
+  const base=scorePathForSafe(safe);
+  const updates={};
+  updates[`${base}/${safe}`]=scores[safe]||emptyScoreRows();
+  updates[`${base}/_activeMatch`]=scores._activeMatch;
+  return db.ref().update(updates);
+}
+function updateScoreCardPreview(team,row){
+  const card=document.getElementById(`prev_${team}`);
+  if(!card) return;
+  const rankVal = (row.rank !== null && row.rank !== undefined && row.rank !== '') ? parseInt(row.rank) : null;
+  const killsVal = (row.kills !== null && row.kills !== undefined && row.kills !== '') ? parseInt(row.kills) : 0;
+  const playersVal = playerCount(row.players);
+  const pp = rankVal ? placementPts(rankVal) : 0;
+  const total = pp + killsVal;
+  card.innerHTML = (rankVal !== null || killsVal > 0 || playersVal !== 4) ? `Alive: <span>${playersVal}/4</span> · Place: <span>${pp}</span> + Kills: <span>${killsVal}</span> = <span>${total} pts</span>` : "";
+  const wrap=card.closest(".team-card");
+  if(wrap) wrap.classList.toggle("has-data", rankVal !== null || killsVal > 0 || playersVal !== 4);
+}
 function switchMatch(idx){ saveAll().then(()=>{ currentMatch=Math.max(0,Math.min(9,parseInt(idx)||0)); publishActiveMatch(); renderScoreGrid(); }); }
 function getUsedRanks(excludeTeam){ let used={}; teams.forEach(t=>{ if(t.name===excludeTeam) return; const m=scores[sanitizeKey(t.name)]?.[currentMatch]; if(m?.rank) used[m.rank]=t.name; }); return used; }
 function renderScoreGrid(){ 
@@ -695,8 +726,8 @@ function savePlayersNow(team,el){
   }
   autoSave(team,{eliminated});
 }
-function autoSave(team,opts){ const row=scoreRowFromInputs(team); if(!row) return Promise.resolve(); const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; return _scoresRef().set(scores).then(()=>{ if(opts&&opts.eliminated) broadcastElimination(team); document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); const savedDiv=document.getElementById(`saved_${team}`); if(savedDiv){ savedDiv.classList.add("show"); setTimeout(()=>savedDiv.classList.remove("show"),1500); } renderScoreGrid(); }); }
-function clearTeamMatch(team){ const safe=sanitizeKey(team); if(scores[safe]) scores[safe][currentMatch]=emptyScoreRow(); else scores[safe]=emptyScoreRows(); _scoresRef().set(scores); renderScoreGrid(); }
+function autoSave(team,opts){ const row=scoreRowFromInputs(team); if(!row) return Promise.resolve(); const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; updateScoreCardPreview(team,row); return saveOneTeamScore(safe).then(()=>{ if(opts&&opts.eliminated) broadcastElimination(team); document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); const savedDiv=document.getElementById(`saved_${team}`); if(savedDiv){ savedDiv.classList.add("show"); setTimeout(()=>savedDiv.classList.remove("show"),1200); } }); }
+function clearTeamMatch(team){ const safe=sanitizeKey(team); if(scores[safe]) scores[safe][currentMatch]=emptyScoreRow(); else scores[safe]=emptyScoreRows(); saveOneTeamScore(safe); renderScoreGrid(); }
 function saveAll(){ teams.forEach(t=>{ const row=scoreRowFromInputs(t.name); if(row){ const safe=sanitizeKey(t.name); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; } }); scores._activeMatch=activeMatchPayload(); return _scoresRef().set(scores).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); showToast("All saved",true); }); }
 function confirmReset(){
   if(!isSuperAdmin){ showToast("Super admin required",false); return; }
@@ -943,7 +974,7 @@ function combineActiveBuckets(teamBuckets, scoreBuckets, sessions){
   });
   teams = combinedTeams;
   scores = combinedScores;
-  renderTeamsMgmt(); renderScoreGrid();
+  renderTeamsMgmt(); queueScoreGridRender();
   document.getElementById("fb-status").className="fb-badge fb-ok";
   document.getElementById("fb-status").textContent = sessions.length>1 ? `● ${sessions.length} Groups Active` : `● Group ${sessions[0].group} · ${sessions[0].date}`;
 }
