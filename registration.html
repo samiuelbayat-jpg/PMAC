@@ -3239,6 +3239,42 @@ function manageSessionStatus(msg, ok){
 function manageSessionSlug(v){
   return String(v||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40);
 }
+function readCurrentManageScoreForSession(){
+  return db.ref(eventPath("activeSession")).once("value").then(function(activeSnap){
+    var sessions=pubActiveSessions(activeSnap.val());
+    if(!sessions.length){
+      return Promise.all([
+        db.ref(eventPath("teams")).once("value"),
+        db.ref(eventPath("matches")).once("value")
+      ]).then(function(snaps){
+        var tv=snaps[0].val()||[], sv=snaps[1].val()||{};
+        return {teams:Array.isArray(tv)?tv:Object.values(tv),scores:sv,source:"main"};
+      });
+    }
+    var jobs=sessions.map(function(s){
+      var base=eventPath("eventGroups")+"/"+s.group+"/sessions/"+s.date;
+      return Promise.all([
+        db.ref(base+"/teams").once("value"),
+        db.ref(base+"/scores").once("value")
+      ]).then(function(snaps){
+        var tv=snaps[0].val()||[], sv=snaps[1].val()||{};
+        return {teams:Array.isArray(tv)?tv:Object.values(tv),scores:sv,group:s.group,date:s.date};
+      });
+    });
+    return Promise.all(jobs).then(function(parts){
+      var teamMap={}, scoreMap={};
+      parts.forEach(function(part){
+        (part.teams||[]).forEach(function(t){
+          if(!t||!t.name) return;
+          var key=sanitizeKey(t.name);
+          if(!teamMap[key]) teamMap[key]=t;
+          scoreMap[key]=part.scores[key]||part.scores[sanitizeKey(t.tag||"")]||part.scores[t.name]||emptyScoreRows();
+        });
+      });
+      return {teams:Object.values(teamMap),scores:scoreMap,source:"active-session",sessions:sessions};
+    });
+  });
+}
 function saveManageScoreAsSession(){
   if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var dateEl=document.getElementById("manage-session-date");
@@ -3249,14 +3285,13 @@ function saveManageScoreAsSession(){
   var sessionKey=date+(slug?("-"+slug):"");
   manageSessionStatus("Reading current Manage Score...");
   Promise.all([
-    db.ref(eventPath("teams")).once("value"),
-    db.ref(eventPath("matches")).once("value"),
+    readCurrentManageScoreForSession(),
     db.ref(eventPath("eventGroups/MANAGE/sessions/"+sessionKey)).once("value")
   ]).then(function(snaps){
-    var tv=snaps[0].val()||[], sv=snaps[1].val()||{};
-    var teamList=Array.isArray(tv)?tv:Object.values(tv);
+    var current=snaps[0]||{}, sv=current.scores||{};
+    var teamList=(current.teams||[]).filter(function(t){return t&&t.name;});
     if(!teamList.length) throw new Error("No teams found in Manage Score");
-    if(snaps[2].exists()&&!confirm("Session "+sessionKey+" already exists. Replace it with current Manage Score?")) return null;
+    if(snaps[1].exists()&&!confirm("Session "+sessionKey+" already exists. Replace it with current Manage Score?")) return null;
     var cleanScores={};
     teamList.forEach(function(t){
       if(!t||!t.name) return;
@@ -3272,6 +3307,8 @@ function saveManageScoreAsSession(){
     updates[base+"/exportedFrom"]="manage-score";
     updates[base+"/exportedAt"]=Date.now();
     updates[base+"/eventScope"]=currentEventScope();
+    updates[base+"/sourceMode"]=current.source||"main";
+    if(current.sessions) updates[base+"/sourceSessions"]=current.sessions;
     return db.ref().update(updates).then(function(){return teamList.length;});
   }).then(function(count){
     if(count===null) return;
