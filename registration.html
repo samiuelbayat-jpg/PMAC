@@ -1480,7 +1480,7 @@ function updateMatchPointsThemePreview(theme){
 function matchPointsOverlayUrl(withThemeParams){
   var url=new URL("team-match-points-overlay.html", window.location.href);
   url.searchParams.set("event",EVENT_ID);
-  url.searchParams.set("mode","overall");
+  url.searchParams.set("mode","event");
   url.searchParams.set("matches",Math.max(1,Math.min(12,parseInt((document.getElementById("mp-theme-matches")||{}).value||"6",10)||6)));
   url.searchParams.set("limit",Math.max(1,Math.min(64,parseInt((document.getElementById("mp-theme-limit")||{}).value||"64",10)||64)));
   url.searchParams.set("title",((document.getElementById("mp-theme-title-text")||{}).value||"MATCH BY MATCH POINTS").trim()||"MATCH BY MATCH POINTS");

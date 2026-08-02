@@ -88,7 +88,7 @@ var EVENT_ID=qs.get("event")||localStorage.getItem("pmac_active_event")||"defaul
 var MATCHES=Math.max(1,Math.min(12,parseInt(qs.get("matches")||"6",10)||6));
 var LIMIT=Math.max(1,Math.min(64,parseInt(qs.get("limit")||"64",10)||64));
 var TITLE=qs.get("title")||"MATCH BY MATCH POINTS";
-var MODE=qs.get("mode")||qs.get("scope")||"overall";
+var MODE=qs.get("mode")||qs.get("scope")||"event";
 var OVERALL_MODE=/^(overall|all|history)$/i.test(MODE);
 var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null;
 var THEME_KEY="pmac_match_points_theme_"+EVENT_ID;
@@ -225,13 +225,45 @@ function attachDataRefs(base,fallbackBase){
   regsRef.on("value",function(s){regTeams=useableRegistrationTeams(s.val()||{});refreshTeams();},function(){regTeams=[];refreshTeams();});
   scoresRef.on("value",function(s){scores=s.val()||{};render();},function(e){setStatus(e.message);});
 }
+function activeSessionList(active){
+  if(!active) return [];
+  if(Array.isArray(active.sessions)) return active.sessions.filter(function(s){return s&&s.group&&s.date;});
+  if(active.group&&active.date) return [{group:active.group,date:active.date}];
+  return [];
+}
+function attachActiveSessionList(list){
+  if(teamsRef)teamsRef.off();
+  if(regsRef)regsRef.off();
+  if(scoresRef)scoresRef.off();
+  if(!list.length){ attachDataRefs(eventBasePath(),eventBasePath()); return; }
+  Promise.all(list.map(function(a){
+    var base=eventPath("eventGroups/"+a.group+"/sessions/"+a.date);
+    return Promise.all([db.ref(base+"/teams").once("value"),db.ref(base+"/scores").once("value")]).then(function(snaps){
+      return {teams:toList(snaps[0].val()||[]),scores:snaps[1].val()||{},group:a.group,date:a.date};
+    });
+  })).then(function(parts){
+    var teamMap={}, scoreMap={};
+    parts.forEach(function(part){
+      (part.teams||[]).forEach(function(t){
+        if(!t||!t.name) return;
+        var key=teamKey(t);
+        if(!teamMap[key]) teamMap[key]=t;
+        scoreMap[sanitizeKey(t.name)]=part.scores[sanitizeKey(t.name)]||part.scores[sanitizeKey(t.tag||"")]||part.scores[t.name]||[];
+      });
+    });
+    scoreTeams=Object.keys(teamMap).map(function(k){return teamMap[k];});
+    regTeams=[];
+    scores=scoreMap;
+    refreshTeams();
+  }).catch(function(e){setStatus(e&&e.message?e.message:"active session load failed");});
+}
 function watchActive(){
   if(activeRef)activeRef.off();
   activeRef=db.ref(eventPath("activeSession"));
   activeRef.on("value",function(s){
-    var a=s.val();
-    if(a&&a.group&&a.date)attachDataRefs(eventPath("eventGroups/"+a.group+"/sessions/"+a.date),eventBasePath());
-    else attachDataRefs(eventBasePath(),eventBasePath());
+    var list=activeSessionList(s.val());
+    if(list.length===1) attachDataRefs(eventPath("eventGroups/"+list[0].group+"/sessions/"+list[0].date),eventBasePath());
+    else attachActiveSessionList(list);
   },function(){attachDataRefs(eventBasePath(),eventBasePath());});
 }
 function cleanDate(v){
