@@ -611,10 +611,27 @@ function fixAllLogos(){
   const toFix=teams.filter(t=>t.logo && String(t.logo).startsWith("data:"));
   if(!toFix.length){ showToast("No database-base64 logos found to migrate",true); return; }
   showToast(`Migrating ${toFix.length} logos to Firebase Storage...`,true);
-  Promise.all(toFix.map(t=>uploadLogoDataUrlToStorage(t.logo,t.name,"team").then(url=>{
-    const idx=teams.findIndex(x=>x.name===t.name);
-    if(idx>-1){ teams[idx].logo=url; rememberTeamLogo(t.name,url); }
-  }))).then(()=>_teamsRef().set(teams)).then(()=>showToast("Base64 logos migrated to Storage",true)).catch(e=>showToast("Logo migration failed: "+(e.message||e),false));
+  const btn=document.getElementById("fix-logos-btn");
+  if(btn) btn.disabled=true;
+  let done=0, failed=0;
+  const step=()=> {
+    const t=toFix.shift();
+    if(!t){
+      if(btn) btn.disabled=false;
+      return _teamsRef().set(teams).then(()=>showToast(`Logo migration finished: ${done} done${failed?`, ${failed} failed`:""}`,failed===0)).catch(e=>showToast("Logo migration save failed: "+(e.message||e),false));
+    }
+    showToast(`Migrating logos ${done+1}/${done+failed+toFix.length+1}: ${t.name}`,true);
+    uploadLogoDataUrlToStorage(t.logo,t.name,"team").then(url=>{
+      const idx=teams.findIndex(x=>x.name===t.name);
+      if(idx>-1){ teams[idx].logo=url; rememberTeamLogo(t.name,url); }
+      done++;
+      return _teamsRef().set(teams).catch(()=>{});
+    }).catch(e=>{
+      failed++;
+      console.warn("Logo migration failed",t.name,e);
+    }).then(()=>setTimeout(step,450));
+  };
+  step();
 }
 function importCSV(input){ const file=input.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=e=>{ const names=e.target.result.split(/[,\n\r]+/).map(n=>n.trim().toUpperCase()).filter(n=>n); let newTeams=[...teams]; let added=0; names.forEach(name=>{ if(!newTeams.find(t=>t.name===name)){ newTeams.push({name,tag:compactTeamTag(name),logo:"",playerUIDs:[]}); added++; const safe=sanitizeKey(name); if(!scores[safe]) scores[safe]=emptyScoreRows(); } }); _teamsRef().set(newTeams).then(()=>_scoresRef().set(scores)).then(()=>showToast(`${added} teams imported`,true)); }; reader.readAsText(file); }
 function importFromRegistration(){ db.ref(eventPath("registrations")).once("value").then(snap=>{ const regs=snap.val(); if(!regs) return showToast("No registrations",false); let list=Object.values(regs); const approved=list.filter(r=>r.status==="approved"); if(approved.length) list=approved; let newTeams=[...teams]; let counter=0; list.forEach(reg=>{ const name=reg.name?reg.name.toUpperCase():""; if(name && !newTeams.find(t=>t.name===name)){ newTeams.push({name,tag:(reg.tag||compactTeamTag(name)),logo:reg.logo||"",playerUIDs:[]}); counter++; const safe=sanitizeKey(name); if(!scores[safe]) scores[safe]=emptyScoreRows(); } }); if(counter) _teamsRef().set(newTeams).then(()=>_scoresRef().set(scores)).then(()=>showToast(`${counter} imported`,true)); else showToast("No new teams",false); }); }
