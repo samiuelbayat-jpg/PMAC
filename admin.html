@@ -301,6 +301,7 @@ let scoreGridRenderTimer = null;
 let currentAdminUid = "";
 let teamLogoLibrary = {};
 let killsSaveTimers = {};
+let playersSaveTimers = {};
 const TEAM_LOGO_LIBRARY_KEY = "pmac_team_logo_library_v1";
 let groqApiKey = localStorage.getItem("groq_api_key") || "";
 let activeEventId = new URLSearchParams(location.search).get("event") || localStorage.getItem("pmac_active_event") || "default";
@@ -733,11 +734,10 @@ function savePlayersNow(team,el){
       if(!scores[safe]) scores[safe]=emptyScoreRows();
       scores[safe][currentMatch]=row;
       updateScoreCardPreview(team,row);
-      const savedDiv=document.getElementById(`saved_${scoreDomKey(team)}`);
-      if(savedDiv){ savedDiv.textContent="SAVING"; savedDiv.classList.add("show"); }
     }
   }
-  autoSave(team,{eliminated});
+  clearTimeout(playersSaveTimers[team]);
+  playersSaveTimers[team]=setTimeout(()=>autoSave(team,{eliminated}),2000);
 }
 function autoSave(team,opts){ const row=scoreRowFromInputs(team); if(!row) return Promise.resolve(); const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; updateScoreCardPreview(team,row); return saveOneTeamScore(safe).then(()=>{ if(opts&&opts.eliminated) broadcastElimination(team); document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); const savedDiv=document.getElementById(`saved_${scoreDomKey(team)}`); if(savedDiv){ savedDiv.classList.add("show"); setTimeout(()=>savedDiv.classList.remove("show"),1200); } }); }
 function clearTeamMatch(team){ const safe=sanitizeKey(team); if(scores[safe]) scores[safe][currentMatch]=emptyScoreRow(); else scores[safe]=emptyScoreRows(); saveOneTeamScore(safe); renderScoreGrid(); }
