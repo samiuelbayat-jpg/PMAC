@@ -2153,11 +2153,14 @@ db.ref(eventPath("event")).on("value", function(s) {
   updateOverallRangeControls();
   if(document.getElementById("sec-scores") && document.getElementById("sec-scores").classList.contains("show")) loadOverallEventRankings();
 });
-db.ref(eventPath("eventGroups")).on("value", function(s) {
-  communityEventGroups = s.val() || {};
-  renderGroupExportOptions();
-  renderScrimGroupExportOptions();
-});
+function refreshCommunityEventGroupsOnce(){
+  return db.ref(eventPath("eventGroups")).once("value").then(function(s) {
+    communityEventGroups = s.val() || {};
+    renderGroupExportOptions();
+    renderScrimGroupExportOptions();
+  }).catch(function(){});
+}
+refreshCommunityEventGroupsOnce();
 db.ref(eventPath("idpass")).on("value", function(s) {
   idPassInfo = s.val() || {event:{},scrim:{}};
   renderIdPassAdmin();
@@ -2628,14 +2631,14 @@ function toggleGroupExportBox(){
   var box=document.getElementById("group-export-box");
   if(!box) return;
   box.style.display = box.style.display==="flex" ? "none" : "flex";
-  renderGroupExportOptions();
+  refreshCommunityEventGroupsOnce();
 }
 function toggleScrimGroupExportBox(){
   if(!isAdmin){toast("Admin login required",false);return;}
   var box=document.getElementById("scrim-group-export-box");
   if(!box) return;
   box.style.display = box.style.display==="flex" ? "none" : "flex";
-  renderScrimGroupExportOptions();
+  refreshCommunityEventGroupsOnce();
 }
 function approvedRegistrationTeams(){
   return Object.keys(regs).filter(function(k){return regs[k] && regs[k].status==="approved";}).map(function(k){

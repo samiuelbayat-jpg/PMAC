@@ -198,7 +198,6 @@ function applyOverlaySettings(){
 function applySettingsPayload(val){ overlaySettings=Object.assign({},overlaySettings,val||{}); applyOverlaySettings(); render(); }
 const overlaySettingsLiveRef=db.ref(eventPath("overlaySettings"));
 overlaySettingsLiveRef.on("value",snap=>applySettingsPayload(snap.val()||{}));
-setInterval(()=>{ overlaySettingsLiveRef.once("value").then(snap=>{ const val=snap.val(); if(val) applySettingsPayload(val); }); },2000);
 let lastEliminationTs=0, eliminationTimer=null;
 function showEliminationAlert(a){
   if(!a||!a.ts||a.ts===lastEliminationTs) return;
