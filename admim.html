@@ -699,12 +699,21 @@ function stepPlayers(team,delta){
 }
 function savePlayersNow(team,el){
   let eliminated=false;
+  let row=null;
   if(el){
     const v=playerCount(el.value);
     if(String(el.value)!==String(v)) el.value=v;
     const safe=sanitizeKey(team);
     const prev=scores[safe]&&scores[safe][currentMatch]?playerCount(scores[safe][currentMatch].players):4;
     eliminated=prev>0&&v===0;
+    row=scoreRowFromInputs(team);
+    if(row){
+      if(!scores[safe]) scores[safe]=emptyScoreRows();
+      scores[safe][currentMatch]=row;
+      updateScoreCardPreview(team,row);
+      const savedDiv=document.getElementById(`saved_${scoreDomKey(team)}`);
+      if(savedDiv){ savedDiv.textContent="SAVING"; savedDiv.classList.add("show"); }
+    }
   }
   autoSave(team,{eliminated});
 }
