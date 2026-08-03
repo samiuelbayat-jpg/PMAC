@@ -1089,7 +1089,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
         <button class="arr-btn" id="gfx-prev" onclick="gfxNav(-1)">←</button>
         <span class="gfx-cnt" id="gfx-cnt">0 / 0</span>
         <button class="arr-btn" id="gfx-next" onclick="gfxNav(1)">→</button>
-        <a class="gfx-dl" id="gfx-dl" href="" download target="_blank" style="display:none;">⬇ Download</a>
+        <a class="gfx-dl" id="gfx-dl" href="" target="_blank" style="display:none;">⬇ Download</a>
       </div>
     </div>
   </div>
@@ -1626,13 +1626,15 @@ function saveTeamLogoToLibrary(team){
   if(!isAdmin || !auth.currentUser || !team || !team.name || !team.logo) return Promise.resolve();
   var key = sanitizeKey(logoKey(team.name));
   if(!key) return Promise.resolve();
-  return db.ref(eventPath("teamLogos/"+key)).update({
-    name: logoKey(team.name),
-    logo: team.logo,
-    source: "pmaf-community",
-    event: EVENT_ID,
-    savedAt: Date.now(),
-    savedBy: auth.currentUser.uid
+  return ensureLogoStorageUrl(team.logo, team.name, "team-library").then(function(logoUrl){
+    return db.ref(eventPath("teamLogos/"+key)).update({
+      name: logoKey(team.name),
+      logo: logoUrl,
+      source: "pmaf-community",
+      event: EVENT_ID,
+      savedAt: Date.now(),
+      savedBy: auth.currentUser.uid
+    });
   }).catch(function(e){ console.warn("Team logo library save failed", e); });
 }
 function seedApprovedRegistrationLogos(list){
@@ -2192,6 +2194,8 @@ function applyAdminUI() {
   }
   var gfxUpload=document.getElementById("gfx-admin-upload");
   if(gfxUpload) gfxUpload.style.display = isAdmin ? "block" : "none";
+  var gfxDownload=document.getElementById("gfx-dl");
+  if(gfxDownload && !isAdmin){ gfxDownload.removeAttribute("href"); gfxDownload.removeAttribute("download"); gfxDownload.style.display="none"; }
   var ruleTab=document.getElementById("tab-rulelog");
   if(ruleTab) ruleTab.style.display = isAdmin ? "" : "none";
   var roadmapTab=document.getElementById("tab-roadmap");
@@ -2326,7 +2330,7 @@ document.getElementById("edit-ev-btn").onclick = function() {
   if (w.style.display==="block") { w.style.display="none"; return; }
   document.getElementById("ei-name").value = eventInfo.name||"";
   document.getElementById("ei-date").value = eventInfo.date||"";
-  document.getElementById("ei-overall-start").value = eventInfo.overallStartDate||eventInfo.date||"";
+  document.getElementById("ei-overall-start").value = eventInfo.overallStartDate||"";
   document.getElementById("ei-overall-end").value = eventInfo.overallEndDate||"";
   document.getElementById("ei-max").value = eventInfo.maxTeams||24;
   document.getElementById("ei-prize").value = eventInfo.prize||"";
@@ -2426,11 +2430,7 @@ document.getElementById("reg-btn").onclick = function() {
     });
   }
   if(regLogoFile){
-    var reader=new FileReader();
-    reader.onload=function(e){
-      if(isPngLogoFile(regLogoFile,e.target.result)){ doSave(e.target.result); return; } var img=new Image(); img.onload=function(){ var c=document.createElement("canvas");c.width=80;c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); doSave(c.toDataURL("image/jpeg",0.7)); }; img.src=e.target.result;
-    };
-    reader.readAsDataURL(regLogoFile);
+    uploadLogoFileWithFallback(regLogoFile,name,"event-registration").then(doSave).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Logo error: "+(e.message||e);msg.style.color="#ff4444";});
   }else{doSave(document.getElementById("reg-logo-prev").dataset.savedLogo || findSavedRegistrationLogo(name) || "");}
 };
 
@@ -2532,10 +2532,12 @@ function logoFileName(team){
   return ((team.name||"team")+" logo").replace(/[\\/:*?"<>|]+/g,"_").replace(/\s+/g,"_")+".png";
 }
 function triggerLogoDownload(url,fileName){
+  if(!isAdmin){toast("Admin login required",false);return;}
   var a=document.createElement("a");
   a.href=url;a.download=fileName;document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 function downloadTeamLogo(team){
+  if(!isAdmin){toast("Admin login required",false);return;}
   if(!team||!team.logo){toast("No logo found",false);return;}
   var fileName=logoFileName(team);
   if(team.logo.indexOf("data:")===0){triggerLogoDownload(team.logo,fileName);toast("Logo download started",true);return;}
@@ -2654,7 +2656,7 @@ function shuffledCopy(list){
 }
 function emptyScoreRows(){ return Array(10).fill(null).map(function(){return {rank:null,kills:null};}); }
 function currentEventScope(){
-  return {eventId:EVENT_ID,eventName:eventInfo.name||"PMAF Event",eventDate:eventInfo.date||"",overallStartDate:eventInfo.overallStartDate||eventInfo.date||"",overallEndDate:eventInfo.overallEndDate||""};
+  return {eventId:EVENT_ID,eventName:eventInfo.name||"PMAF Event",eventDate:eventInfo.date||"",overallStartDate:eventInfo.overallStartDate||"",overallEndDate:eventInfo.overallEndDate||""};
 }
 function removeRegistrationByAdmin(key, path){
   if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return Promise.reject(new Error("Admin login required"));}
@@ -2945,7 +2947,7 @@ function loadGFX(){
 function renderGFX(){
   var area=document.getElementById("gfx-img-area");var cnt=document.getElementById("gfx-cnt");var lbl=document.getElementById("gfx-label-t");var dt=document.getElementById("gfx-date-t");var thumbs=document.getElementById("gfx-thumbs");var prev=document.getElementById("gfx-prev");var next=document.getElementById("gfx-next");var dl=document.getElementById("gfx-dl");
   if(!gfxList.length){area.innerHTML='<div class="empty">No GFX images yet.</div>';cnt.textContent="0/0";lbl.textContent="";dt.textContent="";thumbs.innerHTML="";prev.disabled=true;next.disabled=true;dl.style.display="none";return;}
-  var item=gfxList[gfxIdx];area.innerHTML='<img src="'+item.url+'" alt="'+(item.label||"GFX")+'">';cnt.textContent=(gfxIdx+1)+" / "+gfxList.length;lbl.textContent=item.label||"Scoreboard";dt.textContent=item.uploadedAt?new Date(item.uploadedAt).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):"";prev.disabled=gfxIdx===0;next.disabled=gfxIdx===gfxList.length-1;dl.href=item.url;dl.style.display="inline-block";
+  var item=gfxList[gfxIdx];area.innerHTML='<img src="'+item.url+'" alt="'+(item.label||"GFX")+'">';cnt.textContent=(gfxIdx+1)+" / "+gfxList.length;lbl.textContent=item.label||"Scoreboard";dt.textContent=item.uploadedAt?new Date(item.uploadedAt).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):"";prev.disabled=gfxIdx===0;next.disabled=gfxIdx===gfxList.length-1;if(isAdmin){dl.href=item.url;dl.setAttribute("download","");dl.style.display="inline-block";}else{dl.removeAttribute("href");dl.removeAttribute("download");dl.style.display="none";}
   thumbs.innerHTML="";gfxList.forEach(function(g,i){var div=document.createElement("div");div.className="gfx-thumb"+(i===gfxIdx?" on":"");div.innerHTML='<img src="'+g.url+'" alt="'+(g.label||"")+'"><div class="gfx-thumb-l">'+(g.label||"Image "+(i+1))+"</div>";div.onclick=(function(idx){return function(){gfxIdx=idx;renderGFX();};})(i);thumbs.appendChild(div);});
 }
 function gfxNav(dir){gfxIdx=Math.max(0,Math.min(gfxList.length-1,gfxIdx+dir));renderGFX();}
@@ -3131,10 +3133,7 @@ document.getElementById("lb-add-btn").onclick = function(){
     }).catch(function(e){btn.textContent="Add Team";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});
   }
   if(lbLogoFile){
-    var reader=new FileReader();
-    reader.onload=function(e){
-      if(isPngLogoFile(lbLogoFile,e.target.result)){ doSave(e.target.result); return; } var img=new Image(); img.onload=function(){ var c=document.createElement("canvas");c.width=80;c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); doSave(c.toDataURL("image/jpeg",0.7)); }; img.src=e.target.result;
-    }; reader.readAsDataURL(lbLogoFile);
+    uploadLogoFileWithFallback(lbLogoFile,name,"lobby").then(doSave).catch(function(e){btn.textContent="Add Team";btn.disabled=false;msg.textContent="Logo error: "+(e.message||e);msg.style.color="#ff4444";});
   } else { doSave(""); }
 };
 
@@ -3179,7 +3178,7 @@ function pubScoreRowsForTeam(scores,t){
 function pubSessionBelongsToCurrentEvent(sess){
   var scope=sess&&sess.eventScope;
   if(!scope) return true;
-  if(scope.eventId && scope.eventId!==EVENT_ID) return false;
+  if(scope.eventId) return scope.eventId===EVENT_ID;
   var cur=pubNorm(eventInfo.name||"");
   var saved=pubNorm(scope.eventName||"");
   return !cur || !saved || cur===saved;
@@ -3406,6 +3405,7 @@ function loadOverallEventRankings(){
     var mainScores=snaps[3].val()||{};
     mainTeams=Array.isArray(mainTeams)?mainTeams:Object.values(mainTeams);
     var totals={}, nights={}, savedSessionKeys={}, hasSavedScores=false;
+    var overallStats={sessions:0,dateSkipped:0,eventSkipped:0,scoredSessions:0,teamsSeen:0};
     function ensureTeam(t){
       if(!t||!t.name) return null;
       var key=pubTeamKey(t);
@@ -3439,15 +3439,17 @@ function loadOverallEventRankings(){
     Object.keys(groups).sort().forEach(function(gid){
       var sessions=(groups[gid]&&groups[gid].sessions)||{};
       Object.keys(sessions).sort().forEach(function(date){
+        overallStats.sessions++;
         var sess=sessions[date]||{};
         var sessionDate=pubCleanDate(sess.date||date);
-        if(!pubDateInOverallRange(sessionDate)) return;
-        if(!pubSessionBelongsToCurrentEvent(sess)) return;
+        if(!pubDateInOverallRange(sessionDate)){overallStats.dateSkipped++;return;}
+        if(!pubSessionBelongsToCurrentEvent(sess)){overallStats.eventSkipped++;return;}
         var aliases=savedAliasesForSession(gid,date,sess);
         if(aliases.some(function(k){return savedSessionKeys[k];})) return;
         aliases.forEach(function(k){savedSessionKeys[k]=true;});
         var teamList=sess.teams?(Array.isArray(sess.teams)?sess.teams:Object.values(sess.teams)):[];
-        if(addScoreSet(teamList,sess.scores||{},aliases[0],sessionDate)) hasSavedScores=true;
+        overallStats.teamsSeen+=teamList.length;
+        if(addScoreSet(teamList,sess.scores||{},aliases[0],sessionDate)){ hasSavedScores=true; overallStats.scoredSessions++; }
       });
     });
     var activeSessions=pubActiveSessions(active);
@@ -3469,7 +3471,9 @@ function loadOverallEventRankings(){
       var list=Object.keys(totals).map(function(k){ totals[k].nights=Object.keys(nights[k]||{}).length; delete totals[k].matchSlots; return totals[k]; });
       list.sort(function(a,b){return b.total-a.total||b.placement-a.placement||b.kills-a.kills||String(a.name).localeCompare(String(b.name));});
       renderOverallEventRankings(list);
-      if(sub) sub.textContent=list.length ? (list.length+" teams · "+pubOverallRangeLabel()+" · live included") : ("No teams found · "+pubOverallRangeLabel());
+      if(sub) sub.textContent=list.length
+        ? (list.length+" teams · "+pubOverallRangeLabel()+" · saved sessions "+overallStats.scoredSessions+"/"+overallStats.sessions)
+        : ("No scoring rows found · saved sessions "+overallStats.scoredSessions+"/"+overallStats.sessions+" · date skipped "+overallStats.dateSkipped+" · event skipped "+overallStats.eventSkipped);
     });
   }).catch(function(e){
     if(tbody) tbody.innerHTML='<tr><td colspan="8" style="color:#ff4444;padding:1rem;">Overall rankings failed to load.</td></tr>';
@@ -3620,11 +3624,12 @@ function loadPubArchive(){
       var card = document.createElement("div"); card.className="arch-card";
       var bodyId = "arch-body-"+idx;
       var togId = "arch-tog-"+idx;
+      var downloadBtn = isAdmin ? '<button class="btn" onclick="event.stopPropagation();downloadArchive('+idx+')" style="font-size:11px;padding:4px 12px;border-radius:20px;">⬇ Download</button>' : '';
       card.innerHTML =
         '<div class="arch-hdr" onclick="toggleArch(\''+bodyId+'\',\''+togId+'\')">'+
           '<div><div class="arch-name">🏆 '+ev.name+'</div><div class="arch-date">'+dateStr+'</div></div>'+
           '<div style="display:flex;align-items:center;gap:10px;">'+
-            '<button class="btn" onclick="event.stopPropagation();downloadArchive('+idx+')" style="font-size:11px;padding:4px 12px;border-radius:20px;">⬇ Download</button>'+
+            downloadBtn+
             '<span class="arch-toggle" id="'+togId+'">▼</span>'+
           '</div>'+
         '</div>'+
@@ -3652,6 +3657,7 @@ function toggleArch(bodyId, togId){
 }
 
 function downloadArchive(idx){
+  if(!isAdmin){toast("Admin login required",false);return;}
   var ev = pubArchiveList[idx];
   if(!ev) return;
   var RPTS=[10,6,5,4,3,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
@@ -3831,9 +3837,7 @@ document.getElementById("s-add-btn").onclick = function(){
     }).catch(function(e){btn.textContent="Add Streamer";btn.disabled=false;toast("Error: "+e.message,false);});
   }
   if(sPhotoFile){
-    var reader=new FileReader();
-    reader.onload=function(e){if(isPngLogoFile(sPhotoFile,e.target.result)){ doSave(e.target.result); return; } var img=new Image();img.onload=function(){var c=document.createElement("canvas");c.width=80;c.height=80;c.getContext("2d").drawImage(img,0,0,80,80);doSave(c.toDataURL("image/jpeg",0.8));};img.src=e.target.result;};
-    reader.readAsDataURL(sPhotoFile);
+    uploadLogoFileWithFallback(sPhotoFile,name,"streamers").then(doSave).catch(function(e){btn.textContent="Add Streamer";btn.disabled=false;toast("Logo error: "+(e.message||e),false);});
   } else { doSave(""); }
 };
 
@@ -4118,11 +4122,7 @@ document.getElementById("scrim-reg-btn").onclick = function() {
     }).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});
   }
   if(scrimLogoFile){
-    var reader=new FileReader();
-    reader.onload=function(e){
-      if(isPngLogoFile(scrimLogoFile,e.target.result)){ doSave(e.target.result); return; } var img=new Image(); img.onload=function(){ var c=document.createElement("canvas");c.width=80;c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); doSave(c.toDataURL("image/jpeg",0.7)); }; img.src=e.target.result;
-    };
-    reader.readAsDataURL(scrimLogoFile);
+    uploadLogoFileWithFallback(scrimLogoFile,name,"scrim-registration").then(doSave).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Logo error: "+(e.message||e);msg.style.color="#ff4444";});
   }else{doSave(document.getElementById("scrim-reg-logo-prev").dataset.savedLogo || findSavedRegistrationLogo(name) || "");}
 };
 
@@ -4456,6 +4456,36 @@ function uploadRoadmapDataUrl(dataUrl, folder, name){
   var cleanName=String(name||"roadmap-image.jpg").replace(/[^a-zA-Z0-9_.-]/g,"_");
   var path=folder+"/"+Date.now()+"_"+cleanName;
   return storage.ref(path).put(blob,{contentType:blob.type||"image/jpeg"}).then(function(s){return s.ref.getDownloadURL();});
+}
+function logoStorageFolder(kind, name){
+  return "pmac/team-logos/"+EVENT_ID+"/"+String(kind||"team")+"/"+sanitizeKey(logoKey(name)||"LOGO");
+}
+function ensureLogoStorageUrl(logo, name, kind){
+  if(!String(logo||"").startsWith("data:")) return Promise.resolve(logo||"");
+  return uploadRoadmapDataUrl(logo, logoStorageFolder(kind,name), cleanStorageLogoName(name)+".png").catch(function(){ return logo; });
+}
+function cleanStorageLogoName(name){
+  return String(name||"logo").replace(/[^a-zA-Z0-9_.-]/g,"_").slice(0,80);
+}
+function fileToLegacyLogoData(file, quality){
+  return new Promise(function(resolve,reject){
+    var reader=new FileReader();
+    reader.onerror=reject;
+    reader.onload=function(e){
+      if(isPngLogoFile(file,e.target.result)){ resolve(e.target.result); return; }
+      var img=new Image();
+      img.onload=function(){ var c=document.createElement("canvas"); c.width=80; c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); resolve(c.toDataURL("image/jpeg",quality||0.7)); };
+      img.onerror=reject;
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function uploadLogoFileWithFallback(file, name, kind){
+  if(!file) return Promise.resolve("");
+  return uploadRoadmapFile(file, logoStorageFolder(kind,name)).catch(function(){
+    return fileToLegacyLogoData(file,0.7);
+  });
 }
 function saveRoadmapAdmin(){ if(!isAdmin){toast("Admin login required",false);return;} var d=collectRoadmapData(); setRoadmapStatus("Uploading roadmap pictures to Firebase Storage..."); var jobs=[]; var sf=document.getElementById("roadmap-side-file"); if(sf&&sf.files&&sf.files[0]) jobs.push(uploadRoadmapFile(sf.files[0],"pmac/roadmap/"+EVENT_ID+"/"+roadmapMode+"/side").then(function(u){d.sideImageUrl=u; var input=document.getElementById("roadmap-side-url"); if(input) input.value=u;})); else if(isRoadmapPreviewData(d.sideImageUrl)) jobs.push(uploadRoadmapDataUrl(d.sideImageUrl,"pmac/roadmap/"+EVENT_ID+"/"+roadmapMode+"/side","side.jpg").then(function(u){d.sideImageUrl=u; var input=document.getElementById("roadmap-side-url"); if(input) input.value=u;})); var hf=document.getElementById("roadmap-highlight-file"); if(hf&&hf.files&&hf.files[0]) jobs.push(uploadRoadmapFile(hf.files[0],"pmac/roadmap/"+EVENT_ID+"/"+roadmapMode+"/highlight").then(function(u){d.highlightUrl=u;})); else if(isRoadmapPreviewData(d.highlightUrl)) jobs.push(uploadRoadmapDataUrl(d.highlightUrl,"pmac/roadmap/"+EVENT_ID+"/"+roadmapMode+"/highlight","highlight.jpg").then(function(u){d.highlightUrl=u;})); d.maps.forEach(function(m,i){ var f=document.getElementById("rm-file-"+i), name=normalizeRoadmapMapName(m.name)||("MAP_"+(i+1)); if(f&&f.files&&f.files[0]) jobs.push(uploadRoadmapFile(f.files[0],"pmac/roadmap/"+EVENT_ID+"/map-library/"+roadmapMapLibraryKey(name)).then(function(u){m.imageUrl=u; var imgEl=document.getElementById("rm-img-"+i), prev=document.getElementById("rm-prev-"+i); if(imgEl){imgEl.value=u; imgEl.dataset.mapName=name;} if(prev) prev.style.backgroundImage=cssRoadmapBg(u); m.bg=cleanRoadmapFallbackBg(m.bg,u); var bgEl=document.getElementById("rm-bg-"+i); if(bgEl) bgEl.value=m.bg; roadmapMapLibrary[roadmapMapLibraryKey(name)]={name:name,imageUrl:u,updatedAt:Date.now()};})); else if(isRoadmapPreviewData(m.imageUrl)) jobs.push(uploadRoadmapDataUrl(m.imageUrl,"pmac/roadmap/"+EVENT_ID+"/map-library/"+roadmapMapLibraryKey(name),name+".jpg").then(function(u){m.imageUrl=u; var imgEl=document.getElementById("rm-img-"+i), prev=document.getElementById("rm-prev-"+i); if(imgEl){imgEl.value=u; imgEl.dataset.mapName=name;} if(prev) prev.style.backgroundImage=cssRoadmapBg(u); m.bg=cleanRoadmapFallbackBg(m.bg,u); var bgEl=document.getElementById("rm-bg-"+i); if(bgEl) bgEl.value=m.bg; roadmapMapLibrary[roadmapMapLibraryKey(name)]={name:name,imageUrl:u,updatedAt:Date.now()};})); else if(/^file:/i.test(String(m.imageUrl||""))) jobs.push(Promise.reject(new Error("Map "+(i+1)+" is a local file. Upload it so it can be saved to Firebase Storage."))); }); Promise.all(jobs).then(function(){ d.maps.forEach(function(m){ if(m.imageUrl && !isFirebaseStorageRoadmapUrl(m.imageUrl)){ if(/^https?:/i.test(m.imageUrl)) setRoadmapStatus("Warning: one map uses external URL, not Firebase Storage.",false); } }); var libraryUpdates=buildRoadmapMapLibraryUpdates(d); roadmapMapLibrary=Object.assign({},roadmapMapLibrary,libraryUpdates); d.mapLibrary=roadmapMapLibrary; return db.ref(roadmapPath()).set(d).then(function(){ if(Object.keys(libraryUpdates).length) db.ref(roadmapMapLibraryPath()).update(libraryUpdates).catch(function(){}); }); }).then(function(){ roadmapData=d; var sf=document.getElementById("roadmap-side-file"), hf=document.getElementById("roadmap-highlight-file"); if(sf) sf.value=""; if(hf) hf.value=""; for(var ci=0;ci<document.querySelectorAll(".roadmap-map-card").length;ci++){var cf=document.getElementById("rm-file-"+ci); if(cf) cf.value="";} fillRoadmapForm(); setRoadmapStatus("Saved. Map pictures are Firebase Storage URLs for remote OBS users."); toast("Roadmap saved",true); }).catch(function(e){ setRoadmapStatus(e.message||"Save failed",false); toast("Roadmap save failed",false); }); }
 </script>
