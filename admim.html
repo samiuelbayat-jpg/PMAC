@@ -752,7 +752,8 @@ function saveKillsNow(team,el){
 function broadcastElimination(team){
   const item=teams.find(t=>t.name===team)||{};
   const tag=String(item.tag||compactTeamTag(team)||"").toUpperCase().slice(0,8);
-  overlaySettingsRef.child("eliminationAlert").set({team,tag,match:currentMatch+1,ts:Date.now()}).catch(()=>{});
+  if(!overlaySettingsRef){ showToast("Overlay settings path is not ready",false); return Promise.reject(new Error("Overlay settings path is not ready")); }
+  return overlaySettingsRef.child("eliminationAlert").set({team,tag,match:currentMatch+1,ts:Date.now()}).then(()=>showToast("Elimination sent to OBS",true)).catch(e=>{ showToast("Elimination broadcast failed: "+(e&&e.message?e.message:e),false); throw e; });
 }
 function stepPlayers(team,delta){
   const el=document.getElementById(`players_${scoreDomKey(team)}_${currentMatch}`);
@@ -778,10 +779,11 @@ function savePlayersNow(team,el){
       updateScoreCardPreview(team,row);
     }
   }
+  if(eliminated) broadcastElimination(team).catch(()=>{});
   clearTimeout(playersSaveTimers[team]);
-  playersSaveTimers[team]=setTimeout(()=>autoSave(team,{eliminated}),2000);
+  playersSaveTimers[team]=setTimeout(()=>autoSave(team),450);
 }
-function autoSave(team,opts){ const row=scoreRowFromInputs(team); if(!row) return Promise.resolve(); const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; updateScoreCardPreview(team,row); return saveOneTeamScore(safe).then(()=>{ if(opts&&opts.eliminated) broadcastElimination(team); document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); const savedDiv=document.getElementById(`saved_${scoreDomKey(team)}`); if(savedDiv){ savedDiv.classList.add("show"); setTimeout(()=>savedDiv.classList.remove("show"),1200); } }); }
+function autoSave(team,opts){ const row=scoreRowFromInputs(team); if(!row) return Promise.resolve(); const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; updateScoreCardPreview(team,row); return saveOneTeamScore(safe).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); const savedDiv=document.getElementById(`saved_${scoreDomKey(team)}`); if(savedDiv){ savedDiv.classList.add("show"); setTimeout(()=>savedDiv.classList.remove("show"),1200); } }); }
 function clearTeamMatch(team){ const safe=sanitizeKey(team); if(scores[safe]) scores[safe][currentMatch]=emptyScoreRow(); else scores[safe]=emptyScoreRows(); saveOneTeamScore(safe); renderScoreGrid(); }
 function saveAll(){ teams.forEach(t=>{ const row=scoreRowFromInputs(t.name); if(row){ const safe=sanitizeKey(t.name); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; } }); scores._activeMatch=activeMatchPayload(); return _scoresRef().set(scores).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); showToast("All saved",true); }); }
 function confirmReset(){
