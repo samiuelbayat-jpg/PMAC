@@ -691,14 +691,15 @@ function saveOneTeamScore(safe){
 function updateScoreCardPreview(team,row){
   const card=document.getElementById(`prev_${scoreDomKey(team)}`);
   if(!card) return;
+  const missed = row && row.missed === true;
   const rankVal = (row.rank !== null && row.rank !== undefined && row.rank !== '') ? parseInt(row.rank) : null;
-  const killsVal = (row.kills !== null && row.kills !== undefined && row.kills !== '') ? parseInt(row.kills) : 0;
-  const playersVal = playerCount(row.players);
-  const pp = rankVal ? placementPts(rankVal) : 0;
+  const killsVal = missed ? 0 : ((row.kills !== null && row.kills !== undefined && row.kills !== '') ? parseInt(row.kills) : 0);
+  const playersVal = missed ? 0 : playerCount(row.players);
+  const pp = rankVal && !missed ? placementPts(rankVal) : 0;
   const total = pp + killsVal;
-  card.innerHTML = (rankVal !== null || killsVal > 0 || playersVal !== 4) ? `Alive: <span>${playersVal}/4</span> · Place: <span>${pp}</span> + Kills: <span>${killsVal}</span> = <span>${total} pts</span>` : "";
+  card.innerHTML = missed ? `<span>M${currentMatch+1} MISSED</span> · This match only` : ((rankVal !== null || killsVal > 0 || playersVal !== 4) ? `Alive: <span>${playersVal}/4</span> · Place: <span>${pp}</span> + Kills: <span>${killsVal}</span> = <span>${total} pts</span>` : "");
   const wrap=card.closest(".team-card");
-  if(wrap) wrap.classList.toggle("has-data", rankVal !== null || killsVal > 0 || playersVal !== 4);
+  if(wrap) wrap.classList.toggle("has-data", missed || rankVal !== null || killsVal > 0 || playersVal !== 4);
 }
 function scoreDomKey(team){ return sanitizeKey(String(team||"")).replace(/[^A-Za-z0-9_-]/g,"_"); }
 function switchMatch(idx){ saveAll().then(()=>{ currentMatch=Math.max(0,Math.min(9,parseInt(idx)||0)); publishActiveMatch(); renderScoreGrid(); }); }
@@ -718,15 +719,16 @@ function renderScoreGrid(){
         const used=getUsedRanks(t.name); 
         let rankOpts='<option value="">—</option>'; 
         for(let r=1;r<=25;r++){ const taken=used[r]; const disabled=taken?'disabled':''; const selected=(m.rank===r)?'selected':''; rankOpts+=`<option value="${r}" ${selected} ${disabled}>${r}${taken?` (${taken.slice(0,8)})`:''}</option>`; } 
-        const rankVal = (m.rank !== null && m.rank !== undefined && m.rank !== '') ? parseInt(m.rank) : null;
-        const killsVal = (m.kills !== null && m.kills !== undefined && m.kills !== '') ? parseInt(m.kills) : 0;
-        const playersVal = playerCount(m.players);
+        const missed = m && m.missed === true;
+        const rankVal = !missed && m.rank !== null && m.rank !== undefined && m.rank !== '' ? parseInt(m.rank) : null;
+        const killsVal = missed ? 0 : ((m.kills !== null && m.kills !== undefined && m.kills !== '') ? parseInt(m.kills) : 0);
+        const playersVal = missed ? 0 : playerCount(m.players);
         const pp = rankVal ? placementPts(rankVal) : 0;
         const total = pp + killsVal;
-        const previewHtml = (rankVal !== null || killsVal > 0 || playersVal !== 4) ? `Alive: <span>${playersVal}/4</span> · Place: <span>${pp}</span> + Kills: <span>${killsVal}</span> = <span>${total} pts</span>` : '';
+        const previewHtml = missed ? `<span>M${currentMatch+1} MISSED</span> · This match only` : ((rankVal !== null || killsVal > 0 || playersVal !== 4) ? `Alive: <span>${playersVal}/4</span> · Place: <span>${pp}</span> + Kills: <span>${killsVal}</span> = <span>${total} pts</span>` : '');
         const cardDiv=document.createElement("div"); 
-        cardDiv.className="team-card"+(rankVal !== null || killsVal > 0 || playersVal !== 4 ? " has-data":""); 
-        cardDiv.innerHTML=`<div class="card-header"><img class="card-logo" src="${t.logo||''}" onerror="this.style.opacity=0.2"><div class="card-name">${t.name}</div><span class="card-clear" onclick="clearTeamMatch('${call}')">clear</span></div><div class="card-inputs"><div class="inp-group"><div class="inp-label">Rank</div><select class="inp rank-sel" id="rank_${dom}_${currentMatch}" onchange="autoSave('${call}')">${rankOpts}</select></div><div class="inp-group"><div class="inp-label">Kills</div><input class="inp kills-inp" type="number" min="0" step="1" id="kills_${dom}_${currentMatch}" value="${m.kills??''}" oninput="saveKillsNow('${call}',this)" onchange="saveKillsNow('${call}',this)"></div><div class="inp-group"><div class="inp-label">Players</div><div class="num-stepper"><input class="inp players-inp" type="number" inputmode="numeric" min="0" max="4" step="1" id="players_${dom}_${currentMatch}" value="${playersVal}" oninput="savePlayersNow('${call}',this)" onchange="savePlayersNow('${call}',this)"><div class="step-arrows"><button class="step-btn" type="button" aria-label="Players up" onclick="stepPlayers('${call}',1)">▲</button><button class="step-btn" type="button" aria-label="Players down" onclick="stepPlayers('${call}',-1)">▼</button></div></div></div></div><div class="card-pts-preview" id="prev_${dom}">${previewHtml}</div><div class="card-saved" id="saved_${dom}"></div>`; 
+        cardDiv.className="team-card"+(missed || rankVal !== null || killsVal > 0 || playersVal !== 4 ? " has-data":""); 
+        cardDiv.innerHTML=`<div class="card-header"><img class="card-logo" src="${t.logo||''}" onerror="this.style.opacity=0.2"><div class="card-name">${t.name}</div><span class="card-clear" onclick="clearTeamMatch('${call}')">clear</span></div><div class="card-inputs"><div class="inp-group"><div class="inp-label">Miss M${currentMatch+1}</div><button class="inp miss-btn" type="button" id="miss_${dom}_${currentMatch}" data-missed="${missed?'1':'0'}" onclick="toggleMissed('${call}')" style="cursor:pointer;font-weight:900;color:${missed?'#ffffff':'#8a96a8'};background:${missed?'#343a42':'#11161d'};border:1px solid ${missed?'#8f969c':'rgba(255,255,255,.12)'};">${missed?('M'+(currentMatch+1)+' MISSED'):'PLAY'}</button></div><div class="inp-group"><div class="inp-label">Rank</div><select class="inp rank-sel" id="rank_${dom}_${currentMatch}" onchange="autoSave('${call}')">${rankOpts}</select></div><div class="inp-group"><div class="inp-label">Kills</div><input class="inp kills-inp" type="number" min="0" step="1" id="kills_${dom}_${currentMatch}" value="${missed?'':(m.kills??'')}" oninput="saveKillsNow('${call}',this)" onchange="saveKillsNow('${call}',this)"></div><div class="inp-group"><div class="inp-label">Players</div><div class="num-stepper"><input class="inp players-inp" type="number" inputmode="numeric" min="0" max="4" step="1" id="players_${dom}_${currentMatch}" value="${playersVal}" oninput="savePlayersNow('${call}',this)" onchange="savePlayersNow('${call}',this)"><div class="step-arrows"><button class="step-btn" type="button" aria-label="Players up" onclick="stepPlayers('${call}',1)">▲</button><button class="step-btn" type="button" aria-label="Players down" onclick="stepPlayers('${call}',-1)">▼</button></div></div></div></div><div class="card-pts-preview" id="prev_${dom}">${previewHtml}</div><div class="card-saved" id="saved_${dom}"></div>`; 
         grid.appendChild(cardDiv); 
     }); 
 }
@@ -735,10 +737,30 @@ function scoreRowFromInputs(team){
   const rankEl=document.getElementById(`rank_${dom}_${currentMatch}`);
   const killsEl=document.getElementById(`kills_${dom}_${currentMatch}`);
   const playersEl=document.getElementById(`players_${dom}_${currentMatch}`);
+  const missEl=document.getElementById(`miss_${dom}_${currentMatch}`);
   if(!rankEl||!killsEl) return null;
+  const missed = missEl && missEl.dataset.missed === "1";
+  if(missed) return {rank:null,kills:0,players:0,missed:true,match:currentMatch+1};
   const players=playerCount(playersEl?playersEl.value:4);
   if(playersEl && String(playersEl.value)!==String(players)) playersEl.value=players;
-  return {rank: rankEl.value?parseInt(rankEl.value):null, kills: killsEl.value?parseInt(killsEl.value):null, players: players};
+  return {rank: rankEl.value?parseInt(rankEl.value):null, kills: killsEl.value?parseInt(killsEl.value):null, players: players, missed:false, match:currentMatch+1};
+}
+function toggleMissed(team){
+  const dom=scoreDomKey(team);
+  const missEl=document.getElementById(`miss_${dom}_${currentMatch}`);
+  if(!missEl) return;
+  const missed=missEl.dataset.missed!=="1";
+  missEl.dataset.missed=missed?"1":"0";
+  missEl.textContent=missed?("M"+(currentMatch+1)+" MISSED"):"PLAY";
+  missEl.style.color=missed?"#ffffff":"#8a96a8";
+  missEl.style.background=missed?"#343a42":"#11161d";
+  missEl.style.borderColor=missed?"#8f969c":"rgba(255,255,255,.12)";
+  const rankEl=document.getElementById(`rank_${dom}_${currentMatch}`), killsEl=document.getElementById(`kills_${dom}_${currentMatch}`), playersEl=document.getElementById(`players_${dom}_${currentMatch}`);
+  if(missed){ if(rankEl) rankEl.value=""; if(killsEl) killsEl.value=""; if(playersEl) playersEl.value=0; }
+  else { if(playersEl) playersEl.value=4; }
+  const row=scoreRowFromInputs(team);
+  if(row){ const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; updateScoreCardPreview(team,row); }
+  autoSave(team);
 }
 function killCount(v){ const n=parseInt(v); if(!Number.isFinite(n)) return 0; return Math.max(0,n); }
 function saveKillsNow(team,el){
