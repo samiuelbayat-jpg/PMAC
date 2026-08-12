@@ -92,8 +92,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .card-name{font-weight:800;font-size:14px;letter-spacing:0.04em;text-transform:uppercase;flex:1;}
 .card-clear{font-size:11px;color:#606878;cursor:pointer;font-family:'Share Tech Mono',monospace;padding:2px 6px;border-radius:3px;border:1px solid transparent;}
 .card-clear:hover{color:#ff4444;border-color:rgba(255,68,68,0.3);}
-.card-inputs{display:flex;gap:10px;}
-.inp-group{flex:1;}
+.card-inputs{display:grid;grid-template-columns:minmax(60px,.8fr) minmax(72px,1fr) minmax(72px,1fr) minmax(112px,1.25fr);gap:8px;align-items:end;}
+.inp-group{min-width:0;}
 .inp-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:5px;}
 .inp{width:100%;background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#eef0f5;font-weight:700;font-size:20px;padding:8px 10px;border-radius:4px;outline:none;text-align:center;-moz-appearance:textfield;font-family:'Barlow Condensed',sans-serif;}
 .inp::-webkit-inner-spin-button,.inp::-webkit-outer-spin-button{-webkit-appearance:none;}
@@ -101,9 +101,10 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .rank-sel option:disabled{color:#404855;background:#0f1115;}
 .kills-inp{border-color:rgba(232,184,0,0.28);color:#e8b800;-moz-appearance:auto;appearance:auto;padding-right:4px;}
 .kills-inp::-webkit-inner-spin-button,.kills-inp::-webkit-outer-spin-button{-webkit-appearance:auto;appearance:auto;opacity:1;}
-.players-inp{border-color:rgba(0,201,122,0.28);color:#00c97a;-moz-appearance:auto;appearance:auto;padding-right:4px;}
+.miss-btn{font-size:13px;padding-left:4px;padding-right:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.players-inp{border-color:rgba(0,201,122,0.28);color:#00c97a;-moz-appearance:auto;appearance:auto;padding:8px 4px;font-size:24px;min-width:52px;}
 .players-inp::-webkit-inner-spin-button,.players-inp::-webkit-outer-spin-button{-webkit-appearance:auto;appearance:auto;opacity:1;}
-.num-stepper{display:grid;grid-template-columns:1fr 32px;gap:4px;align-items:stretch;}.num-stepper .inp{min-width:0;}.step-arrows{display:grid;grid-template-rows:1fr 1fr;gap:3px;}.step-btn{background:#161a1f;border:1px solid rgba(255,255,255,0.14);color:#00c97a;border-radius:4px;font-size:13px;font-weight:900;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:20px;font-family:Arial,sans-serif;}.step-btn:active{background:#00c97a;color:#020403;border-color:#00c97a;}
+.num-stepper{display:grid;grid-template-columns:minmax(52px,1fr) 32px;gap:4px;align-items:stretch;}.num-stepper .inp{min-width:52px;}.step-arrows{display:grid;grid-template-rows:1fr 1fr;gap:3px;}.step-btn{background:#161a1f;border:1px solid rgba(255,255,255,0.14);color:#00c97a;border-radius:4px;font-size:13px;font-weight:900;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:20px;font-family:Arial,sans-serif;}.step-btn:active{background:#00c97a;color:#020403;border-color:#00c97a;}
 .inp:focus{border-color:#e8b800;}
 .card-pts-preview{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;margin-top:6px;text-align:center;}
 .card-pts-preview span{color:#e8b800;}
@@ -743,7 +744,7 @@ function renderScoreGrid(){
         const previewHtml = missed ? `<span>M${currentMatch+1} MISSED</span> · This match only` : ((rankVal !== null || killsVal > 0 || playersVal !== 4) ? `Alive: <span>${playersVal}/4</span> · Place: <span>${pp}</span> + Kills: <span>${killsVal}</span> = <span>${total} pts</span>` : '');
         const cardDiv=document.createElement("div"); 
         cardDiv.className="team-card"+(missed || rankVal !== null || killsVal > 0 || playersVal !== 4 ? " has-data":""); 
-        cardDiv.innerHTML=`<div class="card-header"><img class="card-logo" src="${t.logo||''}" onerror="this.style.opacity=0.2"><div class="card-name">${t.name}</div><span class="card-clear" onclick="clearTeamMatch('${call}')">clear</span></div><div class="card-inputs"><div class="inp-group"><div class="inp-label">Miss M${currentMatch+1}</div><button class="inp miss-btn" type="button" id="miss_${dom}_${currentMatch}" data-missed="${missed?'1':'0'}" onclick="toggleMissed('${call}')" style="cursor:pointer;font-weight:900;color:${missed?'#ffffff':'#8a96a8'};background:${missed?'#343a42':'#11161d'};border:1px solid ${missed?'#8f969c':'rgba(255,255,255,.12)'};">${missed?('M'+(currentMatch+1)+' MISSED'):'PLAY'}</button></div><div class="inp-group"><div class="inp-label">Rank</div><select class="inp rank-sel" id="rank_${dom}_${currentMatch}" onchange="autoSave('${call}')">${rankOpts}</select></div><div class="inp-group"><div class="inp-label">Kills</div><input class="inp kills-inp" type="number" min="0" step="1" id="kills_${dom}_${currentMatch}" value="${missed?'':(m.kills??'')}" oninput="saveKillsNow('${call}',this)" onchange="saveKillsNow('${call}',this)"></div><div class="inp-group"><div class="inp-label">Players</div><div class="num-stepper"><input class="inp players-inp" type="number" inputmode="numeric" min="0" max="4" step="1" id="players_${dom}_${currentMatch}" value="${playersVal}" oninput="savePlayersNow('${call}',this)" onchange="savePlayersNow('${call}',this)"><div class="step-arrows"><button class="step-btn" type="button" aria-label="Players up" onclick="stepPlayers('${call}',1)">▲</button><button class="step-btn" type="button" aria-label="Players down" onclick="stepPlayers('${call}',-1)">▼</button></div></div></div></div><div class="card-pts-preview" id="prev_${dom}">${previewHtml}</div><div class="card-saved" id="saved_${dom}"></div>`; 
+        cardDiv.innerHTML=`<div class="card-header"><img class="card-logo" src="${t.logo||''}" onerror="this.style.opacity=0.2"><div class="card-name">${t.name}</div><span class="card-clear" onclick="clearTeamMatch('${call}')">clear</span></div><div class="card-inputs"><div class="inp-group"><div class="inp-label">Miss M${currentMatch+1}</div><button class="inp miss-btn" type="button" id="miss_${dom}_${currentMatch}" data-missed="${missed?'1':'0'}" onclick="toggleMissed('${call}')" style="cursor:pointer;font-weight:900;color:${missed?'#ffffff':'#8a96a8'};background:${missed?'#343a42':'#11161d'};border:1px solid ${missed?'#8f969c':'rgba(255,255,255,.12)'};">${missed?'MISSED':'PLAY'}</button></div><div class="inp-group"><div class="inp-label">Rank</div><select class="inp rank-sel" id="rank_${dom}_${currentMatch}" onchange="autoSave('${call}')">${rankOpts}</select></div><div class="inp-group"><div class="inp-label">Kills</div><input class="inp kills-inp" type="number" min="0" step="1" id="kills_${dom}_${currentMatch}" value="${missed?'':(m.kills??'')}" oninput="saveKillsNow('${call}',this)" onchange="saveKillsNow('${call}',this)"></div><div class="inp-group"><div class="inp-label">Players</div><div class="num-stepper"><input class="inp players-inp" type="number" inputmode="numeric" min="0" max="4" step="1" id="players_${dom}_${currentMatch}" value="${playersVal}" oninput="savePlayersNow('${call}',this)" onchange="savePlayersNow('${call}',this)"><div class="step-arrows"><button class="step-btn" type="button" aria-label="Players up" onclick="stepPlayers('${call}',1)">▲</button><button class="step-btn" type="button" aria-label="Players down" onclick="stepPlayers('${call}',-1)">▼</button></div></div></div></div><div class="card-pts-preview" id="prev_${dom}">${previewHtml}</div><div class="card-saved" id="saved_${dom}"></div>`; 
         grid.appendChild(cardDiv); 
     }); 
 }
@@ -766,7 +767,7 @@ function toggleMissed(team){
   if(!missEl) return;
   const missed=missEl.dataset.missed!=="1";
   missEl.dataset.missed=missed?"1":"0";
-  missEl.textContent=missed?("M"+(currentMatch+1)+" MISSED"):"PLAY";
+  missEl.textContent=missed?"MISSED":"PLAY";
   missEl.style.color=missed?"#ffffff":"#8a96a8";
   missEl.style.background=missed?"#343a42":"#11161d";
   missEl.style.borderColor=missed?"#8f969c":"rgba(255,255,255,.12)";
