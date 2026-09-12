@@ -82,6 +82,25 @@ body.design-pmgo .player-pipes,body.design-pmgo .player-dots{grid-column:2;width
 body.design-pmgo .t-place{display:none;}body.design-pmgo .t-pts{display:block;color:#111;background:transparent;border-radius:0;font-size:18px;font-weight:800;text-align:center;padding:0;box-shadow:none;}body.design-pmgo .t-kills{display:block;color:#111;font-size:18px;font-weight:800;text-align:center;}
 body.design-pmgo .ticker{right:276px;height:38px;background:#3f423e;border-top:3px solid #d00618;}body.design-pmgo .ticker-label{background:#d00618;color:#fff;letter-spacing:.08em;}body.design-pmgo .ti-name{color:#fff;}body.design-pmgo .ti-val{color:#d7ded5;}body.design-pmgo .ti-pts,body.design-pmgo .ti-pos{color:#fff;}
 .team-row.missed-current{filter:grayscale(.55);box-shadow:inset 0 0 18px rgba(120,126,132,.30),0 0 9px rgba(120,126,132,.22);opacity:.84;}.team-row.missed-current .t-name,.team-row.missed-current .t-kills,.team-row.missed-current .t-place,.team-row.missed-current .t-pts,.team-row.missed-current .pos{color:#8f969c!important;text-shadow:none;}.missed-label{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:900;letter-spacing:.12em;color:#8f969c;text-transform:uppercase;margin-top:2px;}body.design-pmgo .team-row.missed-current{background:#5f625d!important;filter:grayscale(.65);opacity:.9;}body.design-pmgo .team-row.missed-current .t-name,body.design-pmgo .team-row.missed-current .t-kills,body.design-pmgo .team-row.missed-current .t-pts,body.design-pmgo .team-row.missed-current .pos{color:#d3d6d2!important;}body.design-pmgo .missed-label{font-size:12px;color:#d3d6d2;margin:0;text-align:center;}
+.elim-alert[data-style="pmgo"]{top:34px;padding:0;width:620px;max-width:620px;height:132px;background:#070809;border:1px solid rgba(255,190,55,.38);border-radius:0;clip-path:none;box-shadow:0 0 0 1px rgba(0,0,0,.78) inset,0 16px 35px rgba(0,0,0,.38);text-align:left;overflow:hidden;}
+.elim-alert[data-style="pmgo"]:before{opacity:.48;background:linear-gradient(103deg,transparent 0 66%,rgba(255,255,255,.08) 68%,transparent 75%),radial-gradient(circle at 18% 14%,rgba(255,255,255,.17),transparent 28%);}
+.elim-alert[data-style="pmgo"]:after{display:none;}
+.elim-alert[data-style="pmgo"] .elim-content{height:100%;justify-content:flex-start;gap:0;position:relative;}
+.elim-alert[data-style="pmgo"] .elim-logo-wrap{width:148px;height:132px;flex:0 0 148px;border:0;border-radius:0;box-shadow:none;background:linear-gradient(135deg,#c92600 0%,#e05905 44%,#982100 100%);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.elim-alert[data-style="pmgo"] .elim-logo-wrap:before{content:"";position:absolute;inset:0;background:linear-gradient(145deg,rgba(255,255,255,.16),transparent 44%);pointer-events:none;}
+.elim-alert[data-style="pmgo"] .elim-logo{position:relative;z-index:1;width:82px;height:82px;border-radius:0;object-fit:contain;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.18);}
+.elim-alert[data-style="pmgo"] .elim-logo-fallback{position:relative;z-index:1;width:82px;height:82px;border-radius:0;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:14px;}
+.elim-alert[data-style="pmgo"] .elim-copy{height:100%;flex:1;display:flex;flex-direction:column;justify-content:center;padding:16px 28px 14px;background:linear-gradient(180deg,#101112,#060708);border-left:2px solid rgba(255,176,36,.54);text-align:center;}
+.elim-alert[data-style="pmgo"] .elim-kicker{display:block;font-family:'Share Tech Mono',monospace;font-size:18px;line-height:1;color:#dfe589;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
+.elim-alert[data-style="pmgo"] .elim-team{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;max-width:none;white-space:nowrap;text-shadow:none;color:#fff;letter-spacing:0;}
+.elim-alert[data-style="pmgo"] .elim-team:before,.elim-alert[data-style="pmgo"] .elim-team:after{display:none;content:"";}
+.elim-alert[data-style="pmgo"] .elim-pmgo-name{max-width:390px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:22px;font-weight:900;line-height:1;color:#fff;text-transform:uppercase;letter-spacing:.05em;text-shadow:0 2px 0 #000;}
+.elim-alert[data-style="pmgo"] .elim-pmgo-score{display:flex;align-items:baseline;justify-content:center;gap:22px;}
+.elim-alert[data-style="pmgo"] .elim-pmgo-count{font-size:68px;font-weight:900;line-height:.84;color:#fff;text-shadow:2px 2px 0 #000;}
+.elim-alert[data-style="pmgo"] .elim-pmgo-word{font-size:56px;font-weight:900;line-height:.84;color:#f1a21d;text-transform:uppercase;text-shadow:2px 2px 0 #221200;}
+.elim-alert[data-style="pmgo"] .elim-meta{position:absolute;left:105px;bottom:10px;margin:0;font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;line-height:1;color:#fff;letter-spacing:0;text-shadow:0 2px 6px rgba(0,0,0,.85);z-index:2;}
+.elim-alert[data-style="pmgo"][data-logo="no"] .elim-logo-wrap{display:flex;}
+.elim-alert[data-style="pmgo"][data-logo="no"] .elim-logo,.elim-alert[data-style="pmgo"][data-logo="no"] .elim-logo-fallback{display:none!important;}
 </style>
 </head>
 <body class="design-classic">
@@ -206,21 +225,29 @@ function showEliminationAlert(a){
   lastEliminationTs=a.ts;
   const box=document.getElementById("elim-alert"), teamEl=document.getElementById("elim-team"), metaEl=document.getElementById("elim-meta"), logoEl=document.getElementById("elim-logo"), fallbackEl=document.getElementById("elim-logo-fallback");
   if(!box||!teamEl||!metaEl) return;
+  const activeElimStyle=String(overlaySettings.elimStyle||"compact").toLowerCase();
+  box.dataset.style=activeElimStyle;
+  box.dataset.logo=overlaySettings.elimShowLogo||"yes";
   const tag=String(a.tag||"").trim().toUpperCase();
   const team=String(a.team||"TEAM").trim().toUpperCase();
   const display=tag||team;
   const matched=findEliminationTeam(team,tag);
-  const logo=matched && matched.logo ? matched.logo : "";
+  const logo=a.logo || (matched && matched.logo ? matched.logo : "");
   if(logoEl&&fallbackEl){
     if(logo){ logoEl.src=logo; logoEl.style.display="block"; fallbackEl.style.display="none"; }
     else { logoEl.removeAttribute("src"); logoEl.style.display="none"; fallbackEl.style.display="flex"; }
   }
   const elimInfo=getEliminationInfo(matched,team,tag);
-  if(["official","bluecard"].includes(overlaySettings.elimStyle||"")){
-    teamEl.innerHTML="<span class=\"elim-name\">"+escapeHtml(display)+"</span><span class=\"elim-word\">ELIMINATED</span>";
+  const alertRank = a.rank!==null && a.rank!==undefined && a.rank!=="" ? a.rank : elimInfo.rank;
+  const alertKills = a.kills!==null && a.kills!==undefined && a.kills!=="" ? a.kills : elimInfo.kills;
+  if(activeElimStyle==="pmgo"){
+    teamEl.innerHTML="<span class=\"elim-pmgo-name\">"+escapeHtml(display)+"</span><span class=\"elim-pmgo-score\"><span class=\"elim-pmgo-count\">"+escapeHtml(alertKills)+"</span><span class=\"elim-pmgo-word\">ELIMS</span></span>";
+    metaEl.innerHTML="<span class=\"elim-pmgo-rank\">#"+escapeHtml(alertRank)+"</span>";
+  }else if(["official","bluecard"].includes(activeElimStyle)){
+    teamEl.innerHTML="<span class=\"elim-name\">"+escapeHtml(display)+"</span><span class=\"elim-word\">ELIMINATED · "+escapeHtml(alertKills)+" ELIMS</span>";
     metaEl.textContent="";
   }else{
-    teamEl.innerHTML="TEAM "+escapeHtml(display)+" <span class=\"elim-word\">ELIMINATED</span>";
+    teamEl.innerHTML="<span class=\"elim-name\">TEAM "+escapeHtml(display)+"</span> <span class=\"elim-word\">ELIMINATED · "+escapeHtml(alertKills)+" ELIMS</span>";
     metaEl.textContent=(tag&&team&&tag!==team?team+" · ":"")+(a.match?"Match "+a.match:"");
   }
   box.classList.add("show");
