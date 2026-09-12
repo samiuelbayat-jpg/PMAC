@@ -87,8 +87,8 @@ body.design-pmgo .team-row{grid-template-columns:42px minmax(0,1fr) 50px 40px 42
 body.design-pmgo .pos{align-self:stretch;display:flex;align-items:center;justify-content:center;min-height:37px;background:var(--top4-color);color:#fff!important;text-shadow:0 2px 0 rgba(0,0,0,.38);box-shadow:inset -1px 0 0 rgba(255,255,255,.18);}
 body.design-pmgo .team-row.eliminated-team .pos,body.design-pmgo .team-row.missed-current .pos{background:var(--top4-color)!important;color:#fff!important;}
 body.design-pmgo .pmgo-team-cell{padding-left:8px;}
-body.design-pmgo .ticker{background:var(--ov-bg);border-top:3px solid var(--ov-accent);}
-body.design-pmgo .ticker-label{background:var(--ov-accent);color:#fff;}
+body.design-pmgo .ticker{background:var(--ov-bg);border-top:3px solid var(--top4-color);}
+body.design-pmgo .ticker-label{background:var(--top4-color);color:#fff;}
 .team-row.missed-current{filter:grayscale(.55);box-shadow:inset 0 0 18px rgba(120,126,132,.30),0 0 9px rgba(120,126,132,.22);opacity:.84;}.team-row.missed-current .t-name,.team-row.missed-current .t-kills,.team-row.missed-current .t-place,.team-row.missed-current .t-pts,.team-row.missed-current .pos{color:#8f969c!important;text-shadow:none;}.missed-label{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:900;letter-spacing:.12em;color:#8f969c;text-transform:uppercase;margin-top:2px;}body.design-pmgo .team-row.missed-current{background:#5f625d!important;filter:grayscale(.65);opacity:.9;}body.design-pmgo .team-row.missed-current .t-name,body.design-pmgo .team-row.missed-current .t-kills,body.design-pmgo .team-row.missed-current .t-pts{color:#d3d6d2!important;}body.design-pmgo .team-row.missed-current .pos{background:var(--top4-color)!important;color:#fff!important;text-shadow:0 2px 0 rgba(0,0,0,.38)!important;}body.design-pmgo .missed-label{font-size:12px;color:#d3d6d2;margin:0;text-align:center;}
 .elim-alert[data-style="pmgo"]{top:250px;padding:0;width:620px;max-width:620px;height:132px;background:#070809;border:1px solid rgba(255,190,55,.38);border-radius:0;clip-path:none;box-shadow:0 0 0 1px rgba(0,0,0,.78) inset,0 16px 35px rgba(0,0,0,.38);text-align:left;overflow:hidden;}
 .elim-alert[data-style="pmgo"]:before{opacity:.48;background:linear-gradient(103deg,transparent 0 66%,rgba(255,255,255,.08) 68%,transparent 75%),radial-gradient(circle at 18% 14%,rgba(255,255,255,.17),transparent 28%);}
@@ -139,11 +139,8 @@ body.design-pmgo .ticker-label{background:var(--ov-accent);color:#fff;}
 .top4-dot.dead:after{box-shadow:none;}
 .top4-win-head{grid-template-columns:58px minmax(0,1fr) 118px;}
 .top4-alive{gap:2px;padding-right:4px;}
-.top4-dot{display:inline-block;position:relative;width:25px;height:22px;border-radius:0;background:url("pubg-helmet.png") center/contain no-repeat;box-shadow:none;filter:brightness(0) saturate(100%) invert(69%) sepia(94%) saturate(1713%) hue-rotate(82deg) brightness(101%) contrast(105%) drop-shadow(0 0 7px rgba(24,231,121,.64));}
-.top4-dot:before,.top4-dot:after{display:none;}
-.top4-dot.dead{background:url("pubg-helmet.png") center/contain no-repeat;filter:grayscale(1) brightness(.42) opacity(.66);box-shadow:none;}
-.top4-dot{background:#19e978;-webkit-mask:url("pubg-helmet.png") center/contain no-repeat;mask:url("pubg-helmet.png") center/contain no-repeat;filter:drop-shadow(0 0 7px rgba(24,231,121,.72));}
-.top4-dot.dead{background:#3a3e45;-webkit-mask:url("pubg-helmet.png") center/contain no-repeat;mask:url("pubg-helmet.png") center/contain no-repeat;filter:opacity(.68);}
+.top4-helmet{width:25px;height:22px;object-fit:contain;display:block;filter:brightness(0) saturate(100%) invert(65%) sepia(88%) saturate(1116%) hue-rotate(96deg) brightness(105%) contrast(103%) drop-shadow(0 0 7px rgba(24,231,121,.72));}
+.top4-helmet.dead{filter:brightness(0) saturate(100%) invert(23%) sepia(4%) saturate(469%) hue-rotate(182deg) brightness(91%) contrast(84%) opacity(.74);}
 </style>
 </head>
 <body class="design-classic">
@@ -242,7 +239,7 @@ function applyColumnHeaders(){
 function applyOverlaySettings(){
   const s=overlaySettings||{};
   const activeDesign = currentOverlayDesign();
-  const sharedPmgoColor = s.top4Color || "#d85a10";
+  const sharedPmgoColor = s.accent || s.top4Color || "#d85a10";
   const accentColor = activeDesign==="pmgo" ? sharedPmgoColor : (s.accent||"#e8b800");
   const top4Color = activeDesign==="pmgo" ? sharedPmgoColor : (s.top4Color||s.accent||"#d85a10");
   document.body.className="design-"+activeDesign;
@@ -343,7 +340,7 @@ function playerIndicator(count){
 function top4AliveDots(count){
   const alive=playerCount(count);
   let html="";
-  for(let i=0;i<4;i++) html+='<span class="top4-dot '+(i<alive?'':'dead')+'"></span>';
+  for(let i=0;i<4;i++) html+='<img class="top4-helmet '+(i<alive?'':'dead')+'" src="pubg-helmet.png" alt="">';
   return html;
 }
 function top4Logo(team){
