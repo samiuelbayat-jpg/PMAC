@@ -123,7 +123,7 @@ function eventBasePath(){ return EVENT_ID==="default" ? "pmac" : "pmac/events/"+
 function eventPath(child){ return eventBasePath()+"/"+child; }
 localStorage.setItem("pmac_active_event", EVENT_ID);
 var RANK_PTS = [10,6,5,4,3,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-var teams = [], scores = {}, eventInfo = {};
+var teams = [], scores = {}, eventInfo = {}, teamLogoLibrary = {};
 var teamsReady = false, scoresReady = false;
 var EVENT_LOGO = null;
 var BG_IMAGE = null;
@@ -131,6 +131,18 @@ var EVENT_LOGO_DATA = "";
 var BG_IMAGE_DATA = "";
 var EVENT_LOGO_NAME = "";
 var BG_IMAGE_NAME = "";
+function logoKey(name){ return String(name||"").trim().toUpperCase().replace(/\s+/g," "); }
+function addLogoToLibrary(item){
+  if(!item) return;
+  var name=logoKey(item.name), tag=logoKey(item.tag), logo=item.logo||"";
+  if(name&&logo) teamLogoLibrary[name]=logo;
+  if(tag&&logo) teamLogoLibrary[tag]=logo;
+}
+function resolveTeamLogo(team){
+  if(team&&team.logo) return team.logo;
+  var name=team?logoKey(team.name):"", tag=team?logoKey(team.tag):"";
+  return (name&&teamLogoLibrary[name]) || (tag&&teamLogoLibrary[tag]) || "";
+}
 var GFX_SETUP_KEY = "pmac_gfx_generator_setup_v2";
 var gfxRestoringSetup = false;
 function gfxInputIds(){return ["inp-title","inp-title-size","inp-title-font","inp-sub","inp-design","inp-slot-label","inp-team-size","inp-bg","inp-accent","inp-light","inp-secondary","inp-stage","inp-qualify","inp-group","inp-date","inp-time","inp-matches","inp-bg-bright","inp-bg-contrast","inp-bg-blur","inp-bg-tint","inp-panel-alpha"];}
@@ -195,6 +207,15 @@ db.ref(eventPath("event")).once("value").then(function(s){
   eventInfo = s.val()||{};
   if(eventInfo.name) document.getElementById("inp-title").value = eventInfo.name;
 });
+function watchLogoLibrary(path){
+  db.ref(path).on("value",function(snap){
+    var data=snap.val()||{};
+    Object.keys(data).forEach(function(k){ addLogoToLibrary(data[k]); });
+    build();
+  });
+}
+watchLogoLibrary(eventPath("teamLogos"));
+if(EVENT_ID!=="default") watchLogoLibrary("pmac/teamLogos");
 var liveTeamsRef=null, liveScoresRef=null;
 function activeSessions(session){
   if(!session) return [];
@@ -347,7 +368,7 @@ function getStandings(){
       if(m.rank!=null||m.kills!=null){tp+=rp+kp;tk+=kp;}
       if(m.rank==1) wins++;
     }
-    return {name:t.name,tag:t.tag||"",logo:t.logo||"",kills:tk,pts:tp,plc:tp-tk,wins:wins};
+    return {name:t.name,tag:t.tag||"",logo:resolveTeamLogo(t),kills:tk,pts:tp,plc:tp-tk,wins:wins};
   }).sort(function(a,b){return b.pts-a.pts||b.kills-a.kills;});
 }
 
