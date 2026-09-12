@@ -229,6 +229,9 @@ function hexToRgba(hex,a){
 function currentOverlayDesign(){
   return FORCE_DESIGN || (overlaySettings && overlaySettings.design) || "classic";
 }
+function pmgoSharedColor(s){
+  return (s && (s.accent || s.top4Color)) || "#d85a10";
+}
 function applyColumnHeaders(){
   const headers=document.querySelector(".col-headers");
   if(!headers) return;
@@ -241,17 +244,19 @@ function applyColumnHeaders(){
 function applyOverlaySettings(){
   const s=overlaySettings||{};
   const activeDesign = currentOverlayDesign();
-  const sharedPmgoColor = s.accent || s.top4Color || "#d85a10";
+  const sharedPmgoColor = pmgoSharedColor(s);
   const accentColor = activeDesign==="pmgo" ? sharedPmgoColor : (s.accent||"#e8b800");
-  const top4Color = activeDesign==="pmgo" ? sharedPmgoColor : (s.top4Color||s.accent||"#d85a10");
+  const top4Color = activeDesign==="pmgo" ? sharedPmgoColor : (s.accent||s.top4Color||"#d85a10");
   document.body.className="design-"+activeDesign;
   applyColumnHeaders();
   document.documentElement.style.setProperty("--ov-accent",accentColor);
+  document.body.style.setProperty("--ov-accent",accentColor);
   document.documentElement.style.setProperty("--ov-bg",hexToRgba(s.bg||"#0a0b0d",0.96));
   document.documentElement.style.setProperty("--ov-text",s.text||"#eef0f5");
   document.documentElement.style.setProperty("--alive-color",s.aliveColor||"#00d26a");
   document.documentElement.style.setProperty("--dead-color",s.deadColor||"#252a31");
   document.documentElement.style.setProperty("--top4-color",top4Color);
+  document.body.style.setProperty("--top4-color",top4Color);
   document.documentElement.style.setProperty("--elim-bg",hexToRgba(s.elimBgColor||"#b00000",0.94));
   document.documentElement.style.setProperty("--elim-bg-soft",hexToRgba(s.elimBgColor||"#b00000",0.70));
   document.documentElement.style.setProperty("--elim-text",s.elimTextColor||"#ffffff");
