@@ -717,28 +717,35 @@ function drawWWCDCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBright,bgC
 function loadImage(url){
   return new Promise(function(resolve){
     if(!url){resolve(null);return;}
-    var img=new Image();
     // base64 loads instantly with no CORS issues
     if(url.indexOf("data:")===0){
+      var img=new Image();
       img.onload=function(){resolve(img);};
       img.onerror=function(){resolve(null);};
       img.src=url;
       return;
     }
-    // For external URLs try weserv proxy with 5s timeout
     var done=false;
-    var timer=setTimeout(function(){if(!done){done=true;resolve(null);}},2000);
-    img.crossOrigin="anonymous";
-    img.onload=function(){if(!done){done=true;clearTimeout(timer);resolve(img);}};
-    img.onerror=function(){
-      // try weserv proxy
-      var img2=new Image();
-      img2.crossOrigin="anonymous";
-      img2.onload=function(){if(!done){done=true;clearTimeout(timer);resolve(img2);}};
-      img2.onerror=function(){if(!done){done=true;clearTimeout(timer);resolve(null);}};
-      img2.src="https://images.weserv.nl/?url="+encodeURIComponent(url.replace("https://",""));
-    };
-    img.src=url;
+    var noProtocol=url.replace(/^https?:\/\//,"");
+    var noQuery=url.split("?")[0].replace(/^https?:\/\//,"");
+    var candidates=[
+      url,
+      "https://images.weserv.nl/?url="+encodeURIComponent(noProtocol)+"&output=png",
+      "https://images.weserv.nl/?url=ssl:"+encodeURIComponent(noProtocol)+"&output=png",
+      "https://images.weserv.nl/?url="+encodeURIComponent(noQuery)+"&output=png",
+      "https://wsrv.nl/?url="+encodeURIComponent(noProtocol)+"&output=png"
+    ];
+    var timer=setTimeout(function(){if(!done){done=true;resolve(null);}},7000);
+    function tryCandidate(i){
+      if(done) return;
+      if(i>=candidates.length){done=true;clearTimeout(timer);resolve(null);return;}
+      var img=new Image();
+      img.crossOrigin="anonymous";
+      img.onload=function(){if(!done){done=true;clearTimeout(timer);resolve(img);}};
+      img.onerror=function(){tryCandidate(i+1);};
+      img.src=candidates[i];
+    }
+    tryCandidate(0);
   });
 }
 
