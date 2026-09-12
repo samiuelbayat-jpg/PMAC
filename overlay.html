@@ -509,7 +509,7 @@ function render() {
 }
 
 function escapeHtml(str) {
-  if (!str) return '';
+  str = String(str == null ? '' : str);
   return str.replace(/[&<>]/g, function(m) {
     if (m === '&') return '&amp;';
     if (m === '<') return '&lt;';
