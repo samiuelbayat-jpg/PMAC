@@ -264,7 +264,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div class="inp-wrap"><div class="inp-lbl">Alive Indicator</div><select class="text-inp" id="ov-alive-style"><option value="bars">Bold Bars Under Tag</option><option value="pipes">|||| After Tag</option><option value="dots">Round Dots After Tag</option></select></div>
         <div class="inp-wrap"><div class="inp-lbl">Alive Color</div><input class="text-inp" type="color" id="ov-alive-color" value="#00d26a" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Dead Color</div><input class="text-inp" type="color" id="ov-dead-color" value="#252a31" style="min-width:90px;height:42px;padding:4px;"></div>
-        <div class="inp-wrap"><div class="inp-lbl">Elimination Style</div><select class="text-inp" id="ov-elim-style"><option value="compact">Compact Alert</option><option value="slash">Slash Broadcast</option><option value="clean">Clean Bar</option><option value="danger">Danger Red</option><option value="official">Official Elims Card</option><option value="bluecard">Blue Elims Card</option></select></div>
+        <div class="inp-wrap"><div class="inp-lbl">Elimination Style</div><select class="text-inp" id="ov-elim-style"><option value="compact">Compact Alert</option><option value="slash">Slash Broadcast</option><option value="clean">Clean Bar</option><option value="danger">Danger Red</option><option value="official">Official Elims Card</option><option value="bluecard">Blue Elims Card</option><option value="pmgo">PMGO Elims Card</option></select></div>
         <div class="inp-wrap"><div class="inp-lbl">Elim Background</div><input class="text-inp" type="color" id="ov-elim-bg" value="#b00000" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Elim Text</div><input class="text-inp" type="color" id="ov-elim-text" value="#ffffff" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Elim Edge</div><input class="text-inp" type="color" id="ov-elim-accent" value="#ff3434" style="min-width:90px;height:42px;padding:4px;"></div>
@@ -790,8 +790,11 @@ function saveKillsNow(team,el){
 function broadcastElimination(team){
   const item=teams.find(t=>t.name===team)||{};
   const tag=String(item.tag||compactTeamTag(team)||"").toUpperCase().slice(0,8);
+  const row=scoreRowFromInputs(team) || ((scores[sanitizeKey(team)]||[])[currentMatch]) || {};
+  const rank = row.rank!==null && row.rank!==undefined && row.rank!=="" ? parseInt(row.rank) : null;
+  const kills = row.kills!==null && row.kills!==undefined && row.kills!=="" ? parseInt(row.kills) : 0;
   if(!overlaySettingsRef){ showToast("Overlay settings path is not ready",false); return Promise.reject(new Error("Overlay settings path is not ready")); }
-  return overlaySettingsRef.child("eliminationAlert").set({team,tag,match:currentMatch+1,ts:Date.now()}).then(()=>showToast("Elimination sent to OBS",true)).catch(e=>{ showToast("Elimination broadcast failed: "+(e&&e.message?e.message:e),false); throw e; });
+  return overlaySettingsRef.child("eliminationAlert").set({team,tag,logo:item.logo||"",rank,kills,match:currentMatch+1,ts:Date.now()}).then(()=>showToast("Elimination sent to OBS",true)).catch(e=>{ showToast("Elimination broadcast failed: "+(e&&e.message?e.message:e),false); throw e; });
 }
 function stepPlayers(team,delta){
   const el=document.getElementById(`players_${scoreDomKey(team)}_${currentMatch}`);
@@ -1472,6 +1475,11 @@ function applyOverlayDesignPreset(design){
   set("ov-text","#101010");
   set("ov-alive-color","#13c58b");
   set("ov-dead-color","#2c302d");
+  set("ov-elim-style","pmgo");
+  set("ov-elim-bg","#070809");
+  set("ov-elim-text","#ffffff");
+  set("ov-elim-accent","#f1a21d");
+  set("ov-elim-logo","yes");
   showToast("PMGO official colors loaded. Click Save Overlay Settings.", true);
 }
 function saveOverlaySettings(){
