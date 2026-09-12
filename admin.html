@@ -272,8 +272,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div class="inp-wrap"><div class="inp-lbl">Elim Popup Logo</div><select class="text-inp" id="ov-elim-logo" onchange="saveOverlaySettingsSoon()"><option value="yes">Show Team Logo</option><option value="no">Hide Logo</option></select></div>
         <div class="inp-wrap"><div class="inp-lbl">Streamer Name</div><input class="text-inp" id="ov-streamer-name" placeholder="e.g. ARA MINI LEAGUE LIVE"></div>
         <div class="inp-wrap"><div class="inp-lbl">Streamer Logo</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><input type="file" id="ov-streamer-logo-file" accept="image/*" style="display:none" onchange="ovPreviewLogo(this)"><button class="logo-inp-btn" type="button" onclick="document.getElementById('ov-streamer-logo-file').click()">Upload Logo</button><img id="ov-logo-preview" class="ov-preview-logo"></div></div>
+        <div class="inp-wrap"><div class="inp-lbl">Top 4 Helmet</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><input type="file" id="ov-top4-helmet-file" accept="image/*" style="display:none" onchange="ovPreviewTop4Helmet(this)"><button class="logo-inp-btn" type="button" onclick="document.getElementById('ov-top4-helmet-file').click()">Upload Helmet</button><img id="ov-top4-helmet-preview" class="ov-preview-logo"></div></div>
       </div>
-      <div class="ov-actions"><button class="btn btn-primary" onclick="saveOverlaySettings()">💾 Save / Send To OBS</button><button class="btn" onclick="clearOverlayLogo()">Clear Logo</button><button class="btn" onclick="openStandalone('overlay.html')">Open Overlay</button></div>
+      <div class="ov-actions"><button class="btn btn-primary" onclick="saveOverlaySettings()">💾 Save / Send To OBS</button><button class="btn" onclick="clearOverlayLogo()">Clear Logo</button><button class="btn" onclick="clearTop4Helmet()">Clear Helmet</button><button class="btn" onclick="openStandalone('overlay.html')">Open Overlay</button></div>
       <div class="ov-hint">Color and design changes auto-save to Firebase and update overlay.html live. OBS should use overlay.html as the browser source.</div>
     </div>
   </div>
@@ -1457,9 +1458,11 @@ function egClearGroup(gid, date){
 // The key bridge: when a session is active, _teamsRef() and _scoresRef() point to session paths
 
 // ========== OVERLAY SETTINGS ==========
-let overlaySettings = { design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"", aliveStyle:"bars", aliveColor:"#00d26a", deadColor:"#252a31", top4Mode:"auto", top4Color:"#d85a10", elimStyle:"compact", elimBgColor:"#b00000", elimTextColor:"#ffffff", elimAccentColor:"#ff3434", elimShowLogo:"yes" };
+let overlaySettings = { design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"", top4HelmetUrl:"", aliveStyle:"bars", aliveColor:"#00d26a", deadColor:"#252a31", top4Mode:"auto", top4Color:"#d85a10", elimStyle:"compact", elimBgColor:"#b00000", elimTextColor:"#ffffff", elimAccentColor:"#ff3434", elimShowLogo:"yes" };
 let overlayLogoDraft = null;
 let overlayLogoDraftFile = null;
+let top4HelmetDraft = null;
+let top4HelmetDraftFile = null;
 let overlayAutoSaveTimer = null;
 function loadOverlaySettings(){ if(overlaySettingsRef) overlaySettingsRef.off(); overlaySettingsRef.on("value", snap => { overlaySettings = Object.assign({}, overlaySettings, snap.val() || {}); fillOverlaySettingsForm(); }); }
 function fillOverlaySettingsForm(){
@@ -1467,6 +1470,7 @@ function fillOverlaySettingsForm(){
   const sharedColor = (overlaySettings.design==="pmgo" ? (overlaySettings.accent || overlaySettings.top4Color || "#d85a10") : overlaySettings.accent) || "#d85a10";
   set("ov-design", overlaySettings.design || "classic"); set("ov-accent", sharedColor); set("ov-bg", overlaySettings.bg || "#0a0b0d"); set("ov-text", overlaySettings.text || "#eef0f5"); set("ov-alive-style", overlaySettings.aliveStyle || "bars"); set("ov-alive-color", overlaySettings.aliveColor || "#00d26a"); set("ov-dead-color", overlaySettings.deadColor || "#252a31"); set("ov-top4", overlaySettings.top4Mode || "auto"); set("ov-elim-style", overlaySettings.elimStyle || "compact"); set("ov-elim-bg", overlaySettings.elimBgColor || "#b00000"); set("ov-elim-text", overlaySettings.elimTextColor || "#ffffff"); set("ov-elim-accent", overlaySettings.elimAccentColor || "#ff3434"); set("ov-elim-logo", overlaySettings.elimShowLogo || "yes"); set("ov-streamer-name", overlaySettings.streamerName || "");
   const prev=document.getElementById("ov-logo-preview"); if(prev){ const src=overlayLogoDraft || overlaySettings.streamerLogo || ""; prev.src=src; prev.style.display=src?"inline-block":"none"; }
+  const helmetPrev=document.getElementById("ov-top4-helmet-preview"); if(helmetPrev){ const src=top4HelmetDraft || overlaySettings.top4HelmetUrl || ""; helmetPrev.src=src; helmetPrev.style.display=src?"inline-block":"none"; }
 }
 function saveOverlaySettingsSoon(){
   clearTimeout(overlayAutoSaveTimer);
@@ -1474,6 +1478,8 @@ function saveOverlaySettingsSoon(){
 }
 function ovPreviewLogo(input){ const file=input.files[0]; if(!file) return; overlayLogoDraftFile=file; const reader=new FileReader(); reader.onload=e=>{ overlayLogoDraft=e.target.result; fillOverlaySettingsForm(); }; reader.readAsDataURL(file); }
 function clearOverlayLogo(){ overlayLogoDraft=""; overlayLogoDraftFile=null; overlaySettings.streamerLogo=""; fillOverlaySettingsForm(); }
+function ovPreviewTop4Helmet(input){ const file=input.files[0]; if(!file) return; top4HelmetDraftFile=file; const reader=new FileReader(); reader.onload=e=>{ top4HelmetDraft=e.target.result; fillOverlaySettingsForm(); }; reader.readAsDataURL(file); }
+function clearTop4Helmet(){ top4HelmetDraft=""; top4HelmetDraftFile=null; overlaySettings.top4HelmetUrl=""; fillOverlaySettingsForm(); }
 function applyOverlayDesignPreset(design){
   if(design!=="pmgo") return;
   const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.value=val; };
@@ -1491,15 +1497,16 @@ function applyOverlayDesignPreset(design){
 }
 function saveOverlaySettings(opts){
   opts = opts || {};
-  const upload = overlayLogoDraftFile ? uploadLogoFileToStorage(overlayLogoDraftFile,"streamer","overlay") : uploadLogoDataUrlToStorage(overlayLogoDraft!==null?overlayLogoDraft:"","streamer","overlay");
-  upload.then(logoUrl=>{
+  const streamerUpload = overlayLogoDraftFile ? uploadLogoFileToStorage(overlayLogoDraftFile,"streamer","overlay") : uploadLogoDataUrlToStorage(overlayLogoDraft!==null?overlayLogoDraft:"","streamer","overlay");
+  const helmetUpload = top4HelmetDraftFile ? uploadLogoFileToStorage(top4HelmetDraftFile,"top4-helmet","overlay") : uploadLogoDataUrlToStorage(top4HelmetDraft!==null?top4HelmetDraft:"","top4-helmet","overlay");
+  Promise.all([streamerUpload, helmetUpload]).then(([logoUrl, helmetUrl])=>{
     const sharedColor = document.getElementById("ov-accent").value;
-    const data={ design:document.getElementById("ov-design").value, accent:sharedColor, bg:document.getElementById("ov-bg").value, text:document.getElementById("ov-text").value, aliveStyle:document.getElementById("ov-alive-style").value, aliveColor:document.getElementById("ov-alive-color").value, deadColor:document.getElementById("ov-dead-color").value, top4Mode:document.getElementById("ov-top4").value, top4Color:sharedColor, elimStyle:document.getElementById("ov-elim-style").value, elimBgColor:document.getElementById("ov-elim-bg").value, elimTextColor:document.getElementById("ov-elim-text").value, elimAccentColor:document.getElementById("ov-elim-accent").value, elimShowLogo:document.getElementById("ov-elim-logo").value, streamerName:document.getElementById("ov-streamer-name").value.trim(), streamerLogo:overlayLogoDraft!==null?logoUrl:(overlaySettings.streamerLogo||""), updatedAt:Date.now() };
+    const data={ design:document.getElementById("ov-design").value, accent:sharedColor, bg:document.getElementById("ov-bg").value, text:document.getElementById("ov-text").value, aliveStyle:document.getElementById("ov-alive-style").value, aliveColor:document.getElementById("ov-alive-color").value, deadColor:document.getElementById("ov-dead-color").value, top4Mode:document.getElementById("ov-top4").value, top4Color:sharedColor, elimStyle:document.getElementById("ov-elim-style").value, elimBgColor:document.getElementById("ov-elim-bg").value, elimTextColor:document.getElementById("ov-elim-text").value, elimAccentColor:document.getElementById("ov-elim-accent").value, elimShowLogo:document.getElementById("ov-elim-logo").value, streamerName:document.getElementById("ov-streamer-name").value.trim(), streamerLogo:overlayLogoDraft!==null?logoUrl:(overlaySettings.streamerLogo||""), top4HelmetUrl:top4HelmetDraft!==null?helmetUrl:(overlaySettings.top4HelmetUrl||""), updatedAt:Date.now() };
     const writes=[overlaySettingsRef.update(data)];
     if(activeEventId!=="default") writes.push(db.ref("pmac/overlaySettings").update(data).catch(()=>null));
     localStorage.setItem("pmac_overlay_settings_latest", JSON.stringify(data));
     return Promise.all(writes);
-  }).then(()=>{ overlayLogoDraft=null; overlayLogoDraftFile=null; showToast(opts.auto?"Overlay change sent to OBS":"Overlay settings saved and sent to OBS", true); }).catch(e=>showToast("Overlay save failed: "+(e&&e.message?e.message:e),false));
+  }).then(()=>{ overlayLogoDraft=null; overlayLogoDraftFile=null; top4HelmetDraft=null; top4HelmetDraftFile=null; showToast(opts.auto?"Overlay change sent to OBS":"Overlay settings saved and sent to OBS", true); }).catch(e=>showToast("Overlay save failed: "+(e&&e.message?e.message:e),false));
 }
 // ========== FORUM ==========
 

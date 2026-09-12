@@ -141,6 +141,8 @@ body.design-pmgo .ticker-label{background:var(--top4-color);color:#fff;}
 .top4-alive{gap:2px;padding-right:4px;}
 .top4-helmet{width:25px;height:22px;object-fit:contain;display:block;filter:brightness(0) saturate(100%) invert(65%) sepia(88%) saturate(1116%) hue-rotate(96deg) brightness(105%) contrast(103%) drop-shadow(0 0 7px rgba(24,231,121,.72));}
 .top4-helmet.dead{filter:brightness(0) saturate(100%) invert(23%) sepia(4%) saturate(469%) hue-rotate(182deg) brightness(91%) contrast(84%) opacity(.74);}
+.top4-helmet-fallback{width:21px;height:18px;border-radius:12px 12px 5px 5px;background:#19e978;display:block;box-shadow:0 0 8px rgba(24,231,121,.72);}
+.top4-helmet-fallback.dead{background:#3a3e45;box-shadow:none;opacity:.74;}
 </style>
 </head>
 <body class="design-classic">
@@ -218,7 +220,7 @@ let activeMatchIndex = 0;
 let lastStandingSnapshot = null;
 let renderCount = 0;
 let overlayMessage = "Connecting...";
-let overlaySettings = { design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"", aliveStyle:"bars", aliveColor:"#00d26a", deadColor:"#252a31", top4Mode:"auto", top4Color:"#d85a10", elimStyle:"compact", elimBgColor:"#b00000", elimTextColor:"#ffffff", elimAccentColor:"#ff3434", elimShowLogo:"yes" };
+let overlaySettings = { design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"", top4HelmetUrl:"", aliveStyle:"bars", aliveColor:"#00d26a", deadColor:"#252a31", top4Mode:"auto", top4Color:"#d85a10", elimStyle:"compact", elimBgColor:"#b00000", elimTextColor:"#ffffff", elimAccentColor:"#ff3434", elimShowLogo:"yes" };
 function hexToRgba(hex,a){
   const v=(hex||"#0a0b0d").replace("#","");
   const r=parseInt(v.slice(0,2),16)||10,g=parseInt(v.slice(2,4),16)||11,b=parseInt(v.slice(4,6),16)||13;
@@ -340,7 +342,8 @@ function playerIndicator(count){
 function top4AliveDots(count){
   const alive=playerCount(count);
   let html="";
-  for(let i=0;i<4;i++) html+='<img class="top4-helmet '+(i<alive?'':'dead')+'" src="pubg-helmet.png" alt="">';
+  const helmetSrc = (overlaySettings && overlaySettings.top4HelmetUrl) || "pubg-helmet.png";
+  for(let i=0;i<4;i++) html+='<img class="top4-helmet '+(i<alive?'':'dead')+'" src="'+escapeHtml(helmetSrc)+'" alt="" onerror="this.outerHTML=\'<span class=\\\'top4-helmet-fallback '+(i<alive?'':'dead')+'\\\'></span>\'">';
   return html;
 }
 function top4Logo(team){
