@@ -246,6 +246,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="btn" onclick="openStandalone('promotions.html')">📢 Promotions</button>
     <button class="btn" onclick="openStandalone('scoreboard.html')">🏆 Scoreboard</button>
     <button class="btn" onclick="openStandalone('overlay.html')">🎥 OBS Overlay</button>
+    <button class="btn" onclick="openDefaultStandalone('team-match-points-overlay.html?mode=overall&limit=16')">📊 Team Match Overlay</button>
     <button class="btn" onclick="openDefaultStandalone('highlights-roadmap-overlay.html')">🗺️ Roadmap Overlay</button>
     <button class="btn" onclick="openDefaultStandalone('highlights-roadmap-overlay.html?mode=scrim')">🗺️ Scrim Roadmap</button>
     <button class="btn" onclick="openStandalone('archive.html')">📦 Archive</button>
@@ -295,7 +296,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div class="inp-wrap"><div class="inp-lbl">Streamer Logo</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><input type="file" id="ov-streamer-logo-file" accept="image/*" style="display:none" onchange="ovPreviewLogo(this)"><button class="logo-inp-btn" type="button" onclick="document.getElementById('ov-streamer-logo-file').click()">Upload Logo</button><img id="ov-logo-preview" class="ov-preview-logo"></div></div>
         <div class="inp-wrap"><div class="inp-lbl">Top 4 Helmet</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><input type="file" id="ov-top4-helmet-file" accept="image/*" style="display:none" onchange="ovPreviewTop4Helmet(this)"><button class="logo-inp-btn" type="button" onclick="document.getElementById('ov-top4-helmet-file').click()">Upload Helmet</button><img id="ov-top4-helmet-preview" class="ov-preview-logo"></div></div>
       </div>
-      <div class="ov-actions"><button class="btn btn-primary" onclick="saveOverlaySettings()">💾 Save / Send To OBS</button><button class="btn" onclick="clearOverlayLogo()">Clear Logo</button><button class="btn" onclick="clearTop4Helmet()">Clear Helmet</button><button class="btn" onclick="openStandalone('overlay.html')">Open Overlay</button><button class="btn" onclick="copyStandaloneLink('overlay.html','OBS overlay')">Copy OBS Link</button><button class="btn" onclick="copyDefaultStandaloneLink('highlights-roadmap-overlay.html','OBS highlights')">Copy Highlights Link</button></div>
+      <div class="ov-actions"><button class="btn btn-primary" onclick="saveOverlaySettings()">💾 Save / Send To OBS</button><button class="btn" onclick="clearOverlayLogo()">Clear Logo</button><button class="btn" onclick="clearTop4Helmet()">Clear Helmet</button><button class="btn" onclick="openStandalone('overlay.html')">Open Overlay</button><button class="btn" onclick="copyStandaloneLink('overlay.html','OBS overlay')">Copy OBS Link</button><button class="btn" onclick="copyDefaultStandaloneLink('team-match-points-overlay.html?mode=overall&limit=16','Team match overlay')">Copy Team Match Link</button><button class="btn" onclick="copyDefaultStandaloneLink('highlights-roadmap-overlay.html','OBS highlights')">Copy Highlights Link</button></div>
       <div class="ov-hint">Color and design changes auto-save to Firebase and update overlay.html live. OBS should use overlay.html as the browser source.</div>
     </div>
   </div>
