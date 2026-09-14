@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PMAF Team Match Points Overlay</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    :root{--title-color:#f4eadc;--sub-bg:#d95b06;--sub-accent:#f47a19;--sub-text:#ffffff;--col-bg:#d95b06;--team-a:#f2eee6;--team-b:#ddd8cf;--row-bg:#eeeae2;--row-text:#080808;--line:#e36b0a;--cell-line:#d6d1c7;--total-a:#f2eee6;--total-b:#ddd8cf;--total-c:#c9c2b7}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{width:100%;height:100%;overflow:hidden;background:transparent}
+    body{position:relative;font-family:"Barlow Condensed",Arial,sans-serif;color:#fff}
+    .stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:left top;background:#020202;overflow:hidden}
+    .stage:before{content:"";position:absolute;left:40px;top:72px;width:342px;height:10px;background:linear-gradient(90deg,#fff 0 5px,transparent 5px 48px,#fff 48px 60px,transparent 60px 76px,#fff 76px 100%);opacity:.95}
+    .stage:after{content:"2026";position:absolute;left:38px;bottom:52px;font-family:"Share Tech Mono",monospace;font-size:14px;font-weight:900;letter-spacing:.24em;color:#fff}
+    .panel{position:absolute;left:120px;right:120px;top:104px;padding:0;background:transparent;filter:drop-shadow(0 18px 36px rgba(0,0,0,.35))}
+    .head{position:relative;z-index:1}
+    .titlebar{height:200px;display:flex;align-items:center;justify-content:flex-start;gap:38px;padding:18px 0 0;color:var(--title-color);text-shadow:0 4px 12px rgba(0,0,0,.55)}
+    .title{font-size:88px;line-height:.9;font-weight:900;text-transform:uppercase;letter-spacing:0;white-space:nowrap}
+    .title span{color:var(--sub-accent)}
+    .sub{position:relative;min-width:650px;height:54px;display:flex;align-items:center;justify-content:center;font-size:32px;line-height:1;color:var(--sub-text);background:var(--sub-bg);text-transform:uppercase;padding:0 38px;font-weight:900;text-shadow:none;clip-path:polygon(18px 0,100% 0,calc(100% - 20px) 100%,0 100%)}
+    .rank-columns{display:grid;grid-template-columns:1fr 1fr;gap:38px;align-items:start}
+    .rank-column{min-width:0}
+    .colhead{height:60px;display:grid;grid-template-columns:112px minmax(0,1fr) 86px 104px 112px;align-items:center;background:linear-gradient(90deg,var(--sub-bg),var(--col-bg));border:2px solid var(--sub-accent);color:#fff}
+    .hcell{height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;text-align:center;text-transform:uppercase;color:#fff}
+    .hcell.teamh{justify-content:flex-start;padding-left:22px}
+    .rows{position:relative;z-index:1;visibility:hidden}
+    .rows.ready{visibility:visible}
+    .row{position:relative;z-index:0;height:var(--row-h,58px);display:grid;grid-template-columns:112px minmax(0,1fr) 86px 104px 112px;align-items:center;margin-top:10px;background:linear-gradient(90deg,var(--total-a),var(--total-b));color:var(--row-text);border:2px solid var(--sub-accent);opacity:0;transform:translateX(-260px);filter:blur(3px)}
+    .row>*{position:relative;z-index:1}
+    .row:before{display:none}
+    .row:after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:rgba(255,255,255,.76)}
+    .row.animate-in{animation:rowSlideIn 1.05s cubic-bezier(.18,.86,.2,1) both;animation-delay:calc(var(--i,0) * 160ms)}
+    @keyframes rowSlideIn{0%{opacity:0;transform:translateX(-360px);filter:blur(3px)}65%{opacity:1;filter:blur(0)}100%{opacity:1;transform:translateX(0);filter:blur(0)}}
+    .rank{font-size:var(--rank-size,29px);font-weight:900;text-align:center;color:var(--row-text);border-right:2px solid rgba(0,0,0,.28)}
+    .team{min-width:0;display:flex;align-items:center;gap:14px;padding-left:14px}
+    .logo{width:var(--logo-w,38px);height:var(--logo-h,38px);display:flex;align-items:center;justify-content:center;overflow:visible;flex:0 0 auto;filter:drop-shadow(0 2px 3px rgba(0,0,0,.28))}
+    .logo img{width:100%;height:100%;object-fit:contain;display:block;transform:scale(var(--logo-scale,1))}
+    .logo span{font-size:15px;font-weight:900;color:var(--row-text)}
+    .name{font-size:var(--name-size,32px);font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--row-text)}
+    .points,.total{height:100%;display:flex;align-items:center;justify-content:center;font-size:var(--point-size,29px);font-weight:900;color:var(--row-text)}
+    .total{font-size:var(--total-size,30px)}
+    .footer-center{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);font-family:"Share Tech Mono",monospace;font-size:16px;font-weight:900;letter-spacing:.38em;text-transform:uppercase;color:#fff}
+    .footer-date{position:absolute;right:38px;bottom:52px;font-family:"Share Tech Mono",monospace;font-size:16px;font-weight:900;letter-spacing:.20em;text-transform:uppercase;color:#fff}
+    .empty{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:42px;font-weight:900;text-transform:uppercase;color:rgba(255,255,255,.8);background:rgba(0,0,0,.28)}
+    .status{position:absolute;right:24px;bottom:20px;font-family:"Share Tech Mono",monospace;font-size:12px;color:rgba(255,255,255,.55)}
+    .theme-controls{position:fixed;right:18px;top:18px;z-index:50;display:none;width:300px;background:rgba(8,10,14,.94);border:1px solid rgba(255,255,255,.18);padding:14px;color:#fff;font-family:Arial,sans-serif;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+    .theme-controls.show{display:block}
+    .theme-controls h2{font-size:16px;margin-bottom:10px;text-transform:uppercase}
+    .theme-row{display:grid;grid-template-columns:1fr 48px;gap:10px;align-items:center;margin:8px 0;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+    .theme-row input{width:48px;height:30px;border:0;background:transparent;cursor:pointer}
+    .theme-controls button{width:100%;margin-top:8px;border:0;background:#ffd33f;color:#111;padding:9px 10px;font-weight:900;cursor:pointer;text-transform:uppercase}
+    .theme-controls textarea{width:100%;height:70px;margin-top:8px;background:#111823;color:#dbe7ff;border:1px solid rgba(255,255,255,.15);font-size:11px;padding:7px;resize:none}
+  </style>
+</head>
+<body>
+<div class="theme-controls" id="theme-controls">
+  <h2>Overlay Colors</h2>
+  <label class="theme-row">Title<input type="color" data-theme="titleColor" value="#f4eadc"></label>
+  <label class="theme-row">Header Orange<input type="color" data-theme="team" value="#d95b06"></label>
+  <label class="theme-row">Accent Orange<input type="color" data-theme="accent" value="#f47a19"></label>
+  <label class="theme-row">Row Text<input type="color" data-theme="text" value="#080808"></label>
+  <label class="theme-row">Row Light<input type="color" data-theme="total1" value="#f2eee6"></label>
+  <label class="theme-row">Row Main<input type="color" data-theme="total2" value="#ddd8cf"></label>
+  <label class="theme-row">Row Dark<input type="color" data-theme="total3" value="#c9c2b7"></label>
+  <button onclick="resetTheme()">Reset Colors</button>
+  <button onclick="copyThemeLink()">Copy OBS Link</button>
+  <textarea id="theme-link" readonly></textarea>
+</div>
+<div class="stage" id="stage">
+  <div class="panel" id="panel">
+    <div class="head" id="head"></div>
+    <div class="rows" id="rows"></div>
+    <div class="empty" id="empty">Waiting for teams and scores</div>
+  </div>
+  <div class="footer-center" id="footer-center">GROUP STAGE</div>
+  <div class="footer-date" id="footer-date"></div>
+  <div class="status" id="status"></div>
+</div>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyD-RFu-40Igcoqhm8QBbu_PgdFxV6aUIQA",
+  authDomain:"pubg-mobile-afghanistan.firebaseapp.com",
+  databaseURL:"https://pubg-mobile-afghanistan-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"pubg-mobile-afghanistan",
+  storageBucket:"pubg-mobile-afghanistan.firebasestorage.app",
+  messagingSenderId:"279105805502",
+  appId:"1:279105805502:web:8def653069d0b3d73bd2ef"
+});
+
+var db=firebase.database();
+var qs=new URLSearchParams(location.search);
+var EVENT_ID=qs.get("event")||localStorage.getItem("pmac_active_event")||"default";
+var MATCHES=Math.max(1,Math.min(12,parseInt(qs.get("matches")||"6",10)||6));
+var LIMIT=Math.max(1,Math.min(64,parseInt(qs.get("limit")||"16",10)||16));
+var TITLE=qs.get("title")||"OVERALL RANKINGS";
+var SUBTITLE=qs.get("subtitle")||"";
+var MODE=qs.get("mode")||qs.get("scope")||"event";
+var OVERALL_MODE=/^(overall|all|history)$/i.test(MODE);
+var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null;
+var THEME_KEY="pmac_match_points_theme_"+EVENT_ID;
+var THEME_DEFAULTS={titleColor:"#f4eadc",team:"#d95b06",accent:"#f47a19",text:"#080808",total1:"#f2eee6",total2:"#ddd8cf",total3:"#c9c2b7"};
+var THEME_VARS={titleColor:"--title-color",team:"--team-b",accent:"--sub-accent",text:"--row-text",total1:"--total-a",total2:"--total-b",total3:"--total-c"};
+var HAS_THEME_PARAMS=Object.keys(THEME_DEFAULTS).some(function(k){return !!qs.get(k);});
+
+document.documentElement.style.setProperty("--matches",MATCHES);
+
+function readTheme(){
+  var saved={};
+  try{saved=JSON.parse(localStorage.getItem(THEME_KEY)||"{}");}catch(e){saved={};}
+  Object.keys(THEME_DEFAULTS).forEach(function(k){if(qs.get(k))saved[k]=qs.get(k);});
+  return Object.assign({},THEME_DEFAULTS,saved);
+}
+function applyTheme(theme,save){
+  Object.keys(THEME_VARS).forEach(function(k){
+    var val=theme[k]||THEME_DEFAULTS[k];
+    document.documentElement.style.setProperty(THEME_VARS[k],val);
+    var inp=document.querySelector('[data-theme="'+k+'"]');
+    if(inp)inp.value=val;
+  });
+  document.documentElement.style.setProperty("--team-a",lightenHex(theme.team||THEME_DEFAULTS.team,.45));
+  document.documentElement.style.setProperty("--sub-bg",theme.team||THEME_DEFAULTS.team);
+  document.documentElement.style.setProperty("--col-bg",darkenHex(theme.team||THEME_DEFAULTS.team,.10));
+  if(save)localStorage.setItem(THEME_KEY,JSON.stringify(theme));
+  updateThemeLink(theme);
+}
+function darkenHex(hex,mix){
+  hex=String(hex||"#d95b06").replace("#","");
+  var n=parseInt(hex.length===3?hex.replace(/(.)/g,"$1$1"):hex,16);
+  var r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  r=Math.round(r*(1-mix));g=Math.round(g*(1-mix));b=Math.round(b*(1-mix));
+  return "#"+[r,g,b].map(function(v){return v.toString(16).padStart(2,"0");}).join("");
+}
+function lightenHex(hex,mix){
+  hex=String(hex||"#ffd83d").replace("#","");
+  var n=parseInt(hex.length===3?hex.replace(/(.)/g,"$1$1"):hex,16);
+  var r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  r=Math.round(r+(255-r)*mix);g=Math.round(g+(255-g)*mix);b=Math.round(b+(255-b)*mix);
+  return "#"+[r,g,b].map(function(v){return v.toString(16).padStart(2,"0");}).join("");
+}
+function themeUrl(theme){
+  var u=new URL(location.href);
+  u.searchParams.delete("controls");
+  u.searchParams.set("event",EVENT_ID);
+  u.searchParams.set("matches",MATCHES);
+  u.searchParams.set("limit",LIMIT);
+  Object.keys(THEME_DEFAULTS).forEach(function(k){u.searchParams.set(k,theme[k]||THEME_DEFAULTS[k]);});
+  return u.toString();
+}
+function updateThemeLink(theme){
+  var box=document.getElementById("theme-link");
+  if(box)box.value=themeUrl(theme||readTheme());
+}
+function resetTheme(){applyTheme(Object.assign({},THEME_DEFAULTS),true);}
+function copyThemeLink(){
+  var box=document.getElementById("theme-link");
+  if(!box)return;
+  box.select();
+  try{navigator.clipboard.writeText(box.value);}catch(e){document.execCommand("copy");}
+}
+function setupThemeControls(){
+  var controls=document.getElementById("theme-controls");
+  var theme=readTheme();
+  applyTheme(theme,false);
+  if(qs.get("controls")==="1")controls.classList.add("show");
+  document.querySelectorAll("[data-theme]").forEach(function(inp){
+    inp.addEventListener("input",function(){
+      theme=readTheme();
+      document.querySelectorAll("[data-theme]").forEach(function(i){theme[i.dataset.theme]=i.value;});
+      applyTheme(theme,true);
+    });
+  });
+}
+
+function fitStage(){
+  var scale=Math.min(window.innerWidth/1920,window.innerHeight/1080);
+  document.getElementById("stage").style.transform="scale("+scale+")";
+}
+window.addEventListener("resize",fitStage);
+fitStage();
+setupThemeControls();
+
+function eventBasePath(){return EVENT_ID==="default"?"pmac":"pmac/events/"+EVENT_ID;}
+function eventPath(child){return eventBasePath()+"/"+child;}
+function esc(v){
+  return String(v==null?"":v).replace(/[&<>"']/g,function(m){
+    return m==="&"?"&amp;":m==="<"?"&lt;":m===">"?"&gt;":m==='"'?"&quot;":"&#39;";
+  });
+}
+function watchTheme(){
+  if(HAS_THEME_PARAMS) return;
+  if(themeRef) themeRef.off();
+  themeRef=db.ref(eventPath("matchPointsOverlay/theme"));
+  themeRef.on("value",function(s){
+    var theme=Object.assign({},THEME_DEFAULTS,s.val()||{});
+    applyTheme(theme,true);
+  });
+}
+function sanitizeKey(n){return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_");}
+function norm(n){return String(n||"").trim().toUpperCase();}
+function initials(n){return String(n||"?").trim().split(/\s+/).slice(0,2).map(function(s){return s[0]||"";}).join("").toUpperCase()||"?";}
+function placePoints(rank){
+  var r=parseInt(rank,10);
+  if(r===1)return 10;if(r===2)return 6;if(r===3)return 5;if(r===4)return 4;if(r===5)return 3;if(r===6)return 2;if(r===7||r===8)return 1;
+  return 0;
+}
+function rowPoints(row){
+  if(!row)return 0;
+  if(row.total!==undefined&&row.total!==null&&row.total!=="")return parseInt(row.total,10)||0;
+  if(row.points!==undefined&&row.points!==null&&row.points!=="")return parseInt(row.points,10)||0;
+  if(row.pts!==undefined&&row.pts!==null&&row.pts!=="")return parseInt(row.pts,10)||0;
+  return (parseInt(row.kills,10)||0)+placePoints(row.rank);
+}
+function rowKills(row){
+  var k=parseInt(row&&row.kills,10);
+  return Number.isFinite(k)?Math.max(0,k):0;
+}
+function rowRankPoints(row){
+  if(!row)return 0;
+  var explicit=parseInt(row.rankPts!==undefined?row.rankPts:(row.placePoints!==undefined?row.placePoints:row.placementPoints),10);
+  if(Number.isFinite(explicit))return Math.max(0,explicit);
+  if(row.total!==undefined||row.points!==undefined||row.pts!==undefined)return Math.max(0,rowPoints(row)-rowKills(row));
+  return placePoints(row.rank);
+}
+function scoreRowsForTeam(team){
+  if(team&&team.matchRows) return team.matchRows;
+  var key=sanitizeKey(team.name);
+  var tagKey=team&&team.tag?sanitizeKey(team.tag):"";
+  return scores[key]||scores[norm(team.name)]||scores[team.name]||(tagKey&&scores[tagKey])||[];
+}
+function teamTotal(team){
+  if(team&&Number.isFinite(Number(team.totalOverall))) return Number(team.totalOverall)||0;
+  var rows=scoreRowsForTeam(team),sum=0;
+  for(var i=0;i<MATCHES;i++)sum+=rowPoints(rows[i]||{});
+  return sum;
+}
+function teamStats(team){
+  if(team&&Number.isFinite(Number(team.killsOverall))&&Number.isFinite(Number(team.rankPtsOverall))){
+    return {kills:Number(team.killsOverall)||0,rankPts:Number(team.rankPtsOverall)||0,total:teamTotal(team)};
+  }
+  var rows=scoreRowsForTeam(team),kills=0,rankPts=0;
+  for(var i=0;i<MATCHES;i++){kills+=rowKills(rows[i]||{});rankPts+=rowRankPoints(rows[i]||{});}
+  return {kills:kills,rankPts:rankPts,total:teamTotal(team)};
+}
+function setStatus(t){document.getElementById("status").textContent=t||"";}
+function toList(v){
+  return Array.isArray(v)?v:Object.keys(v||{}).map(function(k){var o=v[k]||{};if(!o.id)o.id=k;return o;});
+}
+function useableRegistrationTeams(v){
+  return toList(v).filter(function(t){return t&&t.name&&(t.status==="approved"||t.approved===true||t.idPassConfirmed===true||!t.status);});
+}
+function refreshTeams(){
+  teams=scoreTeams.length?scoreTeams:regTeams;
+  render();
+}
+function attachDataRefs(base,fallbackBase){
+  if(teamsRef)teamsRef.off();
+  if(regsRef)regsRef.off();
+  if(scoresRef)scoresRef.off();
+  teamsRef=db.ref(base+"/teams");
+  regsRef=db.ref((fallbackBase||base)+"/registrations");
+  scoresRef=db.ref(base+(base.indexOf("/eventGroups/")>-1?"/scores":"/matches"));
+  teamsRef.on("value",function(s){scoreTeams=toList(s.val()||[]);refreshTeams();},function(e){setStatus(e.message);});
+  regsRef.on("value",function(s){regTeams=useableRegistrationTeams(s.val()||{});refreshTeams();},function(){regTeams=[];refreshTeams();});
+  scoresRef.on("value",function(s){scores=s.val()||{};render();},function(e){setStatus(e.message);});
+}
+function activeSessionList(active){
+  if(!active) return [];
+  if(Array.isArray(active.sessions)) return active.sessions.filter(function(s){return s&&s.group&&s.date;});
+  if(active.group&&active.date) return [{group:active.group,date:active.date}];
+  return [];
+}
+function attachActiveSessionList(list){
+  if(teamsRef)teamsRef.off();
+  if(regsRef)regsRef.off();
+  if(scoresRef)scoresRef.off();
+  if(!list.length){ attachDataRefs(eventBasePath(),eventBasePath()); return; }
+  Promise.all(list.map(function(a){
+    var base=eventPath("eventGroups/"+a.group+"/sessions/"+a.date);
+    return Promise.all([db.ref(base+"/teams").once("value"),db.ref(base+"/scores").once("value")]).then(function(snaps){
+      return {teams:toList(snaps[0].val()||[]),scores:snaps[1].val()||{},group:a.group,date:a.date};
+    });
+  })).then(function(parts){
+    var teamMap={}, scoreMap={};
+    parts.forEach(function(part){
+      (part.teams||[]).forEach(function(t){
+        if(!t||!t.name) return;
+        var key=teamKey(t);
+        if(!teamMap[key]) teamMap[key]=t;
+        scoreMap[sanitizeKey(t.name)]=part.scores[sanitizeKey(t.name)]||part.scores[sanitizeKey(t.tag||"")]||part.scores[t.name]||[];
+      });
+    });
+    scoreTeams=Object.keys(teamMap).map(function(k){return teamMap[k];});
+    regTeams=[];
+    scores=scoreMap;
+    refreshTeams();
+  }).catch(function(e){setStatus(e&&e.message?e.message:"active session load failed");});
+}
+function watchActive(){
+  if(activeRef)activeRef.off();
+  activeRef=db.ref(eventPath("activeSession"));
+  activeRef.on("value",function(s){
+    var list=activeSessionList(s.val());
+    if(list.length===1) attachDataRefs(eventPath("eventGroups/"+list[0].group+"/sessions/"+list[0].date),eventBasePath());
+    else attachActiveSessionList(list);
+  },function(){attachDataRefs(eventBasePath(),eventBasePath());});
+}
+function cleanDate(v){
+  var m=String(v||"").match(/\d{4}-\d{2}-\d{2}/);
+  return m?m[0]:"";
+}
+function inOverallRange(date){
+  date=cleanDate(date);
+  var start=cleanDate(eventInfo.overallStartDate||"");
+  var end=cleanDate(eventInfo.overallEndDate||"");
+  if(start&&date&&date<start) return false;
+  if(end&&date&&date>end) return false;
+  return true;
+}
+function teamKey(t){
+  var tag=norm(t&&t.tag);
+  return tag ? "TAG:"+tag : "NAME:"+norm(t&&t.name);
+}
+function matchStats(row){
+  if(!row) return null;
+  var rank=parseInt(row.rank,10), kills=parseInt(row.kills,10);
+  var hasRank=Number.isFinite(rank)&&rank>=1&&rank<=25;
+  var hasKills=Number.isFinite(kills)&&kills>0;
+  if(!hasRank&&!hasKills&&row.total===undefined&&row.points===undefined&&row.pts===undefined) return null;
+  return {rank:hasRank?rank:null,kills:Number.isFinite(kills)?Math.max(0,kills):0,rankPts:rowRankPoints(row),total:rowPoints(row)};
+}
+function addOverallScores(totals,teamList,scoreSet,slotPrefix){
+  toList(teamList).forEach(function(t){
+    if(!t||!t.name) return;
+    var k=teamKey(t);
+    if(!totals[k]) totals[k]={name:t.name,tag:t.tag||"",logo:t.logo||"",matchRows:[],totalOverall:0,killsOverall:0,rankPtsOverall:0,playedOverall:0,matchSlots:{}};
+    if(t.logo&&!totals[k].logo) totals[k].logo=t.logo;
+    if(t.tag&&!totals[k].tag) totals[k].tag=t.tag;
+    var md=scoreRowsFromSet(scoreSet,t);
+    for(var i=0;i<50;i++){
+      var st=matchStats(md&&md[i]);
+      if(!st) continue;
+      var slot=slotPrefix+"|M"+(i+1);
+      if(totals[k].matchSlots[slot]) continue;
+      totals[k].matchSlots[slot]=true;
+      totals[k].totalOverall+=st.total;
+      totals[k].killsOverall+=st.kills;
+      totals[k].rankPtsOverall+=st.rankPts;
+      totals[k].playedOverall++;
+      if(totals[k].matchRows.length<MATCHES) totals[k].matchRows.push({total:st.total,rank:st.rank,kills:st.kills});
+    }
+  });
+}
+function scoreRowsFromSet(scoreSet,t){
+  var keys=[t&&t.name,t&&t.tag,norm(t&&t.name),norm(t&&t.tag)].map(sanitizeKey).filter(Boolean);
+  for(var i=0;i<keys.length;i++) if(scoreSet&&scoreSet[keys[i]]) return scoreSet[keys[i]];
+  return [];
+}
+function detachOverallRefs(){
+  [eventInfoRef,eventGroupsRef,mainTeamsRef,mainScoresRef].forEach(function(r){if(r)r.off();});
+}
+function renderOverallFromSnapshots(){
+  var groups=window.__overallGroups||{}, mainTeams=window.__overallMainTeams||[], mainScores=window.__overallMainScores||{};
+  var totals={};
+  mainTeams=toList(mainTeams);
+  mainTeams.forEach(function(t){ if(t&&t.name&&!totals[teamKey(t)]) totals[teamKey(t)]={name:t.name,tag:t.tag||"",logo:t.logo||"",matchRows:[],totalOverall:0,playedOverall:0,matchSlots:{}}; });
+  Object.keys(groups).sort().forEach(function(gid){
+    var sessions=(groups[gid]&&groups[gid].sessions)||{};
+    Object.keys(sessions).sort().forEach(function(date){
+      var sess=sessions[date]||{};
+      var d=cleanDate(sess.date||date);
+      if(!inOverallRange(d)) return;
+      addOverallScores(totals,sess.teams||[],sess.scores||{},d||date);
+    });
+  });
+  if(!Object.keys(totals).some(function(k){return totals[k].playedOverall>0;})){
+    addOverallScores(totals,mainTeams,mainScores,"MAIN");
+  }
+  teams=Object.keys(totals).map(function(k){delete totals[k].matchSlots; return totals[k];});
+  scores={};
+  render();
+}
+function watchOverall(){
+  detachOverallRefs();
+  eventInfoRef=db.ref(eventPath("event"));
+  eventGroupsRef=db.ref(eventPath("eventGroups"));
+  mainTeamsRef=db.ref(eventPath("teams"));
+  mainScoresRef=db.ref(eventPath("matches"));
+  eventInfoRef.on("value",function(s){eventInfo=s.val()||{};renderOverallFromSnapshots();});
+  eventGroupsRef.on("value",function(s){window.__overallGroups=s.val()||{};renderOverallFromSnapshots();});
+  mainTeamsRef.on("value",function(s){window.__overallMainTeams=s.val()||[];renderOverallFromSnapshots();});
+  mainScoresRef.on("value",function(s){window.__overallMainScores=s.val()||{};renderOverallFromSnapshots();});
+}
+function renderHead(){
+  var head=document.getElementById("head"),html="";
+  var title=esc(TITLE);
+  if(/^overall rankings$/i.test(TITLE)) title='OVERALL <span>RANKINGS</span>';
+  var sub=SUBTITLE || eventInfo.name || eventInfo.title || (EVENT_ID==="default"?"PMAF":EVENT_ID).replace(/[-_]/g," ");
+  html+='<div class="titlebar"><div class="title">'+title+'</div><div class="sub">'+esc(sub)+'</div></div>';
+  head.innerHTML=html;
+  var foot=document.getElementById("footer-date");
+  if(foot) foot.textContent="DATE: "+(eventInfo.date||eventInfo.overallEndDate||eventInfo.overallStartDate||new Date().toISOString().slice(0,10));
+}
+function renderLogo(team){
+  if(team.logo)return '<img src="'+esc(team.logo)+'" alt="" onload="fitLogo(this)">';
+  return '<span>'+esc(initials(team.name))+'</span>';
+}
+function fitLogo(img){
+  var scale=1;
+  var longest=Math.max(img.naturalWidth||0,img.naturalHeight||0);
+  try{
+    var c=document.createElement("canvas"),w=img.naturalWidth||0,h=img.naturalHeight||0;
+    c.width=w;c.height=h;
+    var ctx=c.getContext("2d",{willReadFrequently:true});
+    ctx.drawImage(img,0,0,w,h);
+    var data=ctx.getImageData(0,0,w,h).data,minX=w,minY=h,maxX=0,maxY=0,found=false;
+    for(var y=0;y<h;y++){
+      for(var x=0;x<w;x++){
+        if(data[(y*w+x)*4+3]>18){if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y;found=true;}
+      }
+    }
+    if(found){
+      var visual=Math.max(maxX-minX+1,maxY-minY+1);
+      var ratio=visual/Math.max(w,h);
+      if(ratio<.45)scale=2.05;
+      else if(ratio<.60)scale=1.62;
+      else if(ratio<.72)scale=1.34;
+    }
+  }catch(e){
+    if(longest&&longest<80)scale=1.85;
+    else if(longest&&longest<130)scale=1.45;
+  }
+  img.style.setProperty("--logo-scale",scale);
+}
+function fitRows(count){
+  var root=document.documentElement;
+  var perCol=Math.max(1,Math.ceil(count/2));
+  var rowH=Math.max(46,Math.min(58,Math.floor((565-(Math.max(perCol-1,0)*10))/perCol)));
+  root.style.setProperty("--row-h",rowH+"px");
+  root.style.setProperty("--rank-size",Math.max(23,Math.min(30,rowH*.52))+"px");
+  root.style.setProperty("--name-size",Math.max(24,Math.min(32,rowH*.54))+"px");
+  root.style.setProperty("--point-size",Math.max(23,Math.min(30,rowH*.52))+"px");
+  root.style.setProperty("--total-size",Math.max(24,Math.min(31,rowH*.54))+"px");
+  root.style.setProperty("--logo-w",Math.max(30,Math.min(42,rowH*.68))+"px");
+  root.style.setProperty("--logo-h",Math.max(30,Math.min(42,rowH*.68))+"px");
+}
+function renderColumn(list,startIdx){
+  var html='<div class="rank-column"><div class="colhead"><div class="hcell rankh">RANK</div><div class="hcell teamh">TEAM</div><div class="hcell">ELIMS</div><div class="hcell">RANK PTS</div><div class="hcell">TOTAL PTS</div></div>';
+  html+=list.map(function(t,idx){
+    var stats=teamStats(t),rank=startIdx+idx+1;
+    return '<div class="row" style="--i:'+rank+'"><div class="rank">#'+rank+'</div><div class="team"><div class="logo">'+renderLogo(t)+'</div><div class="name">'+esc(String(t.name||"").toUpperCase())+'</div></div><div class="points">'+stats.kills+'</div><div class="points">'+stats.rankPts+'</div><div class="total">'+stats.total+'</div></div>';
+  }).join("");
+  return html+'</div>';
+}
+function render(){
+  renderHead();
+  var list=(teams||[]).filter(function(t){return t&&t.name;}).map(function(t){return Object.assign({},t,{total:teamTotal(t)});});
+  list.sort(function(a,b){return b.total-a.total||norm(a.name).localeCompare(norm(b.name));});
+  list=list.slice(0,LIMIT);
+  fitRows(list.length);
+  var rows=document.getElementById("rows");
+  rows.classList.remove("ready");
+  rows.innerHTML="";
+  var empty=document.getElementById("empty");
+  if(!list.length){
+    empty.textContent=OVERALL_MODE
+      ? "NO TEAMS FOUND FOR EVENT "+EVENT_ID+" - CHECK EVENT ID OR SAVE NIGHT SESSION"
+      : "NO ACTIVE TEAMS - USE MODE=OVERALL OR SET ACTIVE SESSION";
+  }
+  empty.style.display=list.length?"none":"flex";
+  var cut=Math.ceil(list.length/2);
+  rows.innerHTML='<div class="rank-columns">'+renderColumn(list.slice(0,cut),0)+renderColumn(list.slice(cut),cut)+'</div>';
+  requestAnimationFrame(function(){
+    rows.classList.add("ready");
+    rows.querySelectorAll(".row").forEach(function(row){row.classList.add("animate-in");});
+  });
+  setStatus((OVERALL_MODE?"overall: ":"event: ")+EVENT_ID+" | teams: "+teams.length);
+}
+
+watchTheme();
+if(OVERALL_MODE) watchOverall(); else watchActive();
+</script>
+</body>
+</html>
