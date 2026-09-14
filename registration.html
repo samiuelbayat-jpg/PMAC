@@ -319,7 +319,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .pub-hero-rank{font-family:'Share Tech Mono',monospace;font-size:9px;color:#f5c842;letter-spacing:.2em;text-transform:uppercase;margin-bottom:3px;}
 .pub-hero-name{font-weight:900;font-size:26px;text-transform:uppercase;letter-spacing:.04em;color:#fff;line-height:1;margin-bottom:4px;}
 .pub-hero-stats{display:flex;gap:1.25rem;align-items:center;flex-shrink:0;}
-.pub-hstat{text-align:center;background:rgba(0,0,0,0.42);border:1px solid rgba(255,255,255,0.10);border-radius:8px;padding:8px 12px;min-width:92px;box-shadow:0 8px 22px rgba(0,0,0,0.22);}
+.pub-hstat{text-align:center;}
 .pub-hstat-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:#606878;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px;}
 .pub-hstat-val{font-weight:900;font-size:30px;line-height:1;}
 .pub-hstat-val.plc{color:#f5c842;}
@@ -342,94 +342,23 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .pub-p2{background:rgba(192,192,192,0.1);border:1px solid rgba(192,192,192,0.3);color:#d0d0d0;}
 .pub-p3{background:rgba(205,127,50,0.1);border:1px solid rgba(205,127,50,0.3);color:#ffa500;}
 .pub-pX{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:#606878;}
-.pub-rank-wrap{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:48px;}
-.pub-qual-arrow{font-size:13px;line-height:1;color:#00d47e;font-weight:900;text-shadow:0 0 10px rgba(0,212,126,0.55);}
 .pub-tname{font-weight:800;font-size:13px;text-transform:uppercase;}
 .pub-tmeta{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;}
+.pub-team-scoreline{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;font-family:'Share Tech Mono',monospace;font-size:9px;text-transform:uppercase;}
+.pub-team-scoreline span{display:inline-flex;align-items:center;gap:3px;border:1px solid rgba(255,255,255,0.08);border-radius:4px;background:#10141b;padding:3px 5px;color:#8a96a8;white-space:nowrap;}
+.pub-team-scoreline b{color:#eef0f5;}
+.pub-team-scoreline .pt-k b{color:#ff6040;}
+.pub-team-scoreline .pt-p b{color:#e8b800;}
+.pub-team-scoreline .pt-t{border-color:rgba(232,184,0,0.32);background:rgba(232,184,0,0.09);color:#e8b800;}
+.pub-team-scoreline .pt-t b{color:#f5c842;font-size:11px;}
 .pub-logo-cell{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.1);}
 .pub-mc{display:flex;flex-direction:column;align-items:center;gap:1px;}
 .pub-mr{font-size:9px;font-weight:700;}
 .pub-mk{font-size:10px;font-weight:700;}
 .r1{color:#00c97a;} .r2{color:#e8b800;} .rb{color:#ff4444;}
 .kh{color:#ff4444;} .km{color:#e8b800;} .kl{color:#606878;}
-.pub-kv,.pub-pv{display:inline-flex;align-items:center;justify-content:center;min-width:42px;min-height:28px;padding:4px 9px;border-radius:6px;background:rgba(0,0,0,0.62);border:1px solid rgba(255,255,255,0.12);box-shadow:0 6px 14px rgba(0,0,0,0.24);font-family:'Share Tech Mono',monospace;}
-.pub-kv{font-weight:900;font-size:13px;color:#f5c842;}
-.pub-pv{font-weight:900;font-size:15px;color:#071015;background:linear-gradient(180deg,#ffe06a,#d9a900);border-color:rgba(255,224,106,0.55);box-shadow:0 0 18px rgba(245,200,66,0.22),0 6px 14px rgba(0,0,0,0.24);}
-.pub-score-body{overflow-x:auto;}
-.pub-overall{margin-top:1.25rem;background:#0f1115;border:1px solid rgba(245,200,66,0.18);border-radius:10px;overflow:hidden;}
-.pub-overall-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:rgba(245,200,66,0.06);border-bottom:1px solid rgba(255,255,255,0.08);flex-wrap:wrap;}
-.pub-overall-title{font-weight:900;font-size:18px;color:#f5c842;text-transform:uppercase;letter-spacing:.06em;}
-.pub-overall-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;letter-spacing:.08em;text-transform:uppercase;}
-.pub-overall-range{display:none;align-items:flex-end;gap:8px;flex-wrap:wrap;}
-.pub-overall-range .range-field{display:flex;flex-direction:column;gap:3px;}
-.pub-overall-range label{font-family:'Share Tech Mono',monospace;font-size:8px;color:#8c95a3;letter-spacing:.08em;text-transform:uppercase;}
-.pub-overall-range input{height:30px;background:#171b21;border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;padding:0 8px;font-size:12px;}
-.pub-overall-body{overflow-x:auto;padding:0 10px 10px;}
-@media(max-width:640px){
-  .pub-hero{display:grid;grid-template-columns:34px 46px minmax(0,1fr);gap:8px;padding:12px;margin-bottom:10px;align-items:center;}
-  .pub-hero-crown{font-size:24px;}
-  .pub-hero-logo,.pub-hero-logo-ph{width:46px;height:46px;border-width:2px;font-size:14px;}
-  .pub-hero-info{min-width:0;}
-  .pub-hero-rank{font-size:8px;letter-spacing:.12em;}
-  .pub-hero-name{font-size:17px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .pub-hero-stats{grid-column:1 / -1;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
-  .pub-hdiv{display:none;}
-  .pub-hstat{min-width:0;padding:7px 5px;border-radius:6px;}
-  .pub-hstat-lbl{font-size:7px;letter-spacing:.06em;}
-  .pub-hstat-val{font-size:23px;}
-  .pub-score-body{overflow-x:hidden;padding-bottom:8px;}
-  .pub-score-table{min-width:0;width:100%;table-layout:fixed;font-size:10px;}
-  .pub-score-table th:nth-child(2),.pub-score-table td:nth-child(2),
-  .pub-score-table th:nth-child(n+4):nth-child(-n+13),.pub-score-table td:nth-child(n+4):nth-child(-n+13){display:none;}
-  .pub-score-table th:nth-child(1),.pub-score-table td:nth-child(1){width:32px;}
-  .pub-score-table th:nth-child(14),.pub-score-table td:nth-child(14){width:36px;}
-  .pub-score-table th:nth-child(15),.pub-score-table td:nth-child(15){width:42px;}
-  .pub-score-table th:nth-child(16),.pub-score-table td:nth-child(16){width:46px;}
-  .pub-score-table th{font-size:7px;letter-spacing:.02em;padding:7px 1px;}
-  .pub-score-table td{padding:7px 1px;}
-  .pub-score-table .pub-tname{display:block;max-width:100%;font-size:11px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .pub-score-table .pub-tmeta{display:block;max-width:100%;font-size:7px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .pub-score-table .pub-pos{width:24px;height:24px;font-size:11px;}
-  .pub-score-table .pub-kv,.pub-score-table .pub-pv{min-width:0;width:30px;min-height:24px;padding:3px 2px;border-radius:5px;font-size:10px;}
-  .pub-score-table .pub-pv{width:34px;font-size:11px;}
-  .pub-overall{margin-left:-6px;margin-right:-6px;border-radius:8px;}
-  .pub-overall-head{align-items:flex-start;padding:10px;gap:8px;}
-  .pub-overall-title{font-size:14px;letter-spacing:.04em;}
-  .pub-overall-sub{font-size:8px;line-height:1.35;}
-  .pub-overall-range{width:100%;gap:6px;}
-  .pub-overall-range .range-field{flex:1 1 118px;}
-  .pub-overall-range input{width:100%;height:28px;font-size:11px;}
-  .pub-overall-range .ctrl-btn{height:28px;padding:0 10px;font-size:10px;}
-  .pub-overall-body{overflow-x:hidden;padding:0 0 8px;}
-  .pub-overall-table{min-width:0;width:100%;table-layout:fixed;font-size:10px;}
-  .pub-overall-table th:nth-child(2),.pub-overall-table td:nth-child(2),
-  .pub-overall-table th:nth-child(4),.pub-overall-table td:nth-child(4),
-  .pub-overall-table th:nth-child(5),.pub-overall-table td:nth-child(5){display:none;}
-  .pub-overall-table th:nth-child(1),.pub-overall-table td:nth-child(1){width:34px;}
-  .pub-overall-table th:nth-child(6),.pub-overall-table td:nth-child(6){width:36px;}
-  .pub-overall-table th:nth-child(7),.pub-overall-table td:nth-child(7){width:42px;}
-  .pub-overall-table th:nth-child(8),.pub-overall-table td:nth-child(8){width:46px;}
-  .pub-overall-table th{font-size:7px;letter-spacing:.02em;padding:7px 1px;}
-  .pub-overall-table td{padding:7px 1px;}
-  .pub-overall-table .pub-tname{display:block;max-width:100%;font-size:11px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .pub-overall-table .pub-tmeta{display:block;max-width:100%;font-size:7px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .pub-overall-table .pub-pos{width:24px;height:24px;font-size:11px;}
-  .pub-overall-table .pub-rank-wrap{min-width:30px;gap:2px;}
-  .pub-overall-table .pub-qual-arrow{font-size:9px;}
-  .pub-overall-table .pub-kv,.pub-overall-table .pub-pv{min-width:0;width:32px;min-height:24px;padding:3px 2px;border-radius:5px;font-size:11px;}
-  .pub-overall-table .pub-pv{font-size:12px;}
-}
-@media(max-width:390px){
-  .pub-overall-table th:nth-child(1),.pub-overall-table td:nth-child(1){width:32px;}
-  .pub-overall-table th:nth-child(6),.pub-overall-table td:nth-child(6){width:34px;}
-  .pub-overall-table th:nth-child(7),.pub-overall-table td:nth-child(7){width:40px;}
-  .pub-overall-table th:nth-child(8),.pub-overall-table td:nth-child(8){width:44px;}
-  .pub-overall-table .pub-kv,.pub-overall-table .pub-pv{width:30px;font-size:10px;}
-  .pub-overall-table .pub-pv{font-size:11px;}
-}
-#sec-scores.overall-only .pub-current-view{display:none;}
-#sec-scores.overall-only .pub-overall{margin-top:0;}
-#sec-scores.current-only .pub-overall{display:none;}
+.pub-kv{font-weight:700;font-size:14px;color:#e8b800;}
+.pub-pv{font-weight:900;font-size:16px;color:#f5c842;}
 .arch-card{background:#0f1115;border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:1rem;overflow:hidden;}
 .arch-hdr{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);}
 .arch-hdr:hover{background:rgba(255,255,255,0.02);}
@@ -457,6 +386,23 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .ctrl-btn{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:#161a1f;border:1px solid rgba(255,255,255,0.12);color:#8a96a8;border-radius:20px;padding:5px 14px;cursor:pointer;transition:all .2s;}
 .ctrl-btn:hover{border-color:rgba(232,184,0,0.4);color:#eef0f5;}
 .ctrl-btn.active{background:linear-gradient(135deg,#f0c000,#e8b800);border-color:#e8b800;color:#000;}
+.pub-score-shell{background:#0d1016;border:1px solid rgba(232,184,0,0.22);border-radius:10px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,0.28);}
+.pub-score-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;padding:16px 18px;background:linear-gradient(135deg,rgba(232,184,0,0.12),rgba(0,201,122,0.05),rgba(13,16,22,0.96));border-bottom:1px solid rgba(255,255,255,0.08);flex-wrap:wrap;}
+.pub-score-kicker{font-family:'Share Tech Mono',monospace;font-size:9px;color:#e8b800;letter-spacing:.18em;text-transform:uppercase;margin-bottom:4px;}
+.pub-score-title{font-weight:900;font-size:28px;line-height:1;text-transform:uppercase;color:#fff;letter-spacing:.05em;}
+.pub-score-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;margin-top:6px;}
+.pub-score-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.pub-score-live{font-family:'Share Tech Mono',monospace;font-size:9px;color:#00c97a;text-transform:uppercase;letter-spacing:.12em;border:1px solid rgba(0,201,122,0.35);border-radius:20px;padding:6px 10px;background:rgba(0,201,122,0.07);}
+.pub-score-body{padding:14px;}
+.pub-hero{border-radius:8px;background:linear-gradient(135deg,#121820,#102018,#17130a);border:1px solid rgba(232,184,0,0.35);box-shadow:none;}
+.pub-mini-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px;}
+.pub-mini-stat{border-color:rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;background:#10141b;}
+.pub-table-wrap{overflow-x:auto;border:1px solid rgba(255,255,255,0.07);border-radius:8px;background:#090b0f;}
+.pub-table{min-width:900px;}
+.pub-table th{background:#111722;color:#aeb6c4;border-bottom:1px solid rgba(232,184,0,0.16);}
+.pub-table td{border-bottom:1px solid rgba(255,255,255,0.055);}
+.pub-table tbody tr:hover{background:rgba(232,184,0,0.045);}
+@media(max-width:760px){.pub-score-title{font-size:22px}.pub-mini-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.pub-hero{align-items:flex-start;flex-wrap:wrap}.pub-hero-stats{width:100%;justify-content:space-between}.pub-hdiv{display:none;}}
 /* STREAMERS */
 .streamers-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;flex-wrap:wrap;gap:8px;}
 .streamers-title{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:.15em;text-transform:uppercase;}
@@ -514,17 +460,6 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 .roadmap-preview{height:72px;border-radius:5px;background:#161a1f;background-size:cover;background-position:center;margin-top:6px;border:1px solid rgba(255,255,255,.1);}
 .roadmap-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:1rem;border-top:1px solid rgba(255,255,255,.08);padding-top:1rem;}
 .roadmap-status{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;}
-.overlay-color-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:1rem;}
-.overlay-color-field{display:grid;grid-template-columns:1fr 54px;gap:10px;align-items:center;background:#10141a;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px;}
-.overlay-color-field label{font-family:'Share Tech Mono',monospace;color:#8a96a8;font-size:9px;letter-spacing:.1em;text-transform:uppercase;}
-.overlay-color-field input[type=color]{width:54px;height:34px;border:0;background:transparent;cursor:pointer;}
-.overlay-color-preview{margin-top:1rem;background:#0b0d11;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:12px;}
-.overlay-color-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;text-transform:uppercase;color:var(--mp-title,#fff);line-height:1;}
-.overlay-color-row{display:grid;grid-template-columns:64px 1fr repeat(6,52px) 74px;gap:0;margin-top:10px;color:var(--mp-text,#080808);font-family:'Barlow Condensed',sans-serif;font-weight:900;text-align:center;}
-.overlay-color-row span{background:#fff;border-right:1px solid #c8c8c8;padding:8px 6px;}
-.overlay-color-row span:nth-child(1),.overlay-color-row span:nth-child(2){background:linear-gradient(90deg,var(--mp-team-a,#fff099),var(--mp-team,#ffd83d));}
-.overlay-color-row span:last-child{background:linear-gradient(180deg,var(--mp-total1,#fff3a8),var(--mp-total2,#ffd33f),var(--mp-total3,#e39b00));border-left:3px solid #111;}
-.overlay-link-box{width:100%;min-height:70px;background:#111823;color:#dbe7ff;border:1px solid rgba(255,255,255,.14);border-radius:6px;padding:8px;font-family:'Share Tech Mono',monospace;font-size:10px;resize:vertical;}
 
 </style>
 </head>
@@ -582,14 +517,11 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
   <button class="tab" id="tab-gfx" onclick="showTab('gfx')"><span>🎪</span><span>GFX Results</span></button>
   <button class="tab" id="tab-lobby" onclick="showTab('lobby')"><span>🏆</span><span>Top Teams Lobby</span></button>
   <button class="tab" id="tab-scores" onclick="showTab('scores')"><span>📊</span><span>Scoreboard</span></button>
-  <button class="tab" id="tab-overall" onclick="showOverallRankings()"><span>🏅</span><span>Overall Rankings</span></button>
   <button class="tab" id="tab-archive" onclick="showTab('archive')"><span>🗄</span><span>Archive</span></button>
   <button class="tab" id="tab-events" onclick="window.location.href='promotions.html'"><span>📣</span><span>Events</span></button>
   <button class="tab" id="tab-streamers" onclick="showTab('streamers')"><span>🔴</span><span>Live Streamers</span></button>
   <button class="tab" id="tab-idpass" onclick="showTab('idpass')" style="display:none;"><span>🔑</span><span>ID Pass</span></button>
   <button class="tab" id="tab-rulelog" onclick="showTab('rulelog')" style="display:none;"><span>✓</span><span>Rules Agreed</span></button>
-  <button class="tab" id="tab-roadmap" onclick="showTab('roadmap')" style="display:none;"><span>🗺</span><span>Roadmap OBS</span></button>
-  <button class="tab" id="tab-overlaycolors" onclick="showTab('overlaycolors')" style="display:none;"><span>🎨</span><span>Overlay Colors</span></button>
 </div>
 
 <div class="section" id="sec-rulesagree">
@@ -681,22 +613,12 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 
     <div class="roadmap-grid">
       <div class="roadmap-card">
-        <h4>Standalone Timer</h4>
-        <div class="roadmap-field"><label>Standalone Timer Countdown</label><input id="roadmap-countdown" placeholder="10:00 or 01:30:00"></div>
-        <div class="roadmap-field"><label>Standalone Timer Type</label><select id="roadmap-timer-style"><option value="shadow">Bold White Shadow</option><option value="clean">Bold Clean White</option><option value="digital">Digital Timer</option><option value="compact">Compact Timer</option><option value="outline">Bold Outline</option><option value="glow">Neon Glow</option><option value="block">Boxed Block</option><option value="minimal">Minimal Bold</option></select></div>
-        <div class="roadmap-field"><label>Timer Color</label><input id="roadmap-timer-color" type="color" value="#ffffff"></div>
-        <div class="roadmap-field"><label>Shadow Color</label><input id="roadmap-timer-shadow" type="color" value="#000000"></div>
-        <div class="roadmap-field"><label>Outline Color</label><input id="roadmap-timer-outline" type="color" value="#000000"></div>
-        <div class="roadmap-field"><label>Glow Color</label><input id="roadmap-timer-glow" type="color" value="#e8b800"></div>
-        <div class="roadmap-field"><label>Standalone Timer OBS URL</label><input id="roadmap-timer-url" readonly onclick="this.select()" title="Use this as a separate OBS browser source"></div>
-      </div>
-      <div class="roadmap-card">
         <h4>Overlay Text</h4>
         <div class="roadmap-field"><label>Event Title</label><input id="roadmap-event-title" placeholder="Grand Finals"></div>
         <div class="roadmap-field"><label>Event Count</label><input id="roadmap-event-count" placeholder="1/12"></div>
         <div class="roadmap-field"><label>Bottom Ticker</label><input id="roadmap-ticker" placeholder="From the drop to the last one standing show!"></div>
+        <div class="roadmap-field"><label>Countdown Text</label><input id="roadmap-countdown" placeholder="04:00"></div>
         <div class="roadmap-field"><label>Timer Label</label><input id="roadmap-next-label" placeholder="Next Match"></div>
-        <div class="roadmap-field"><label>Left Logo Background Design</label><select id="roadmap-side-design"><option value="red">Red PMAF</option><option value="dark">Dark Esports</option><option value="gold">Gold Trophy</option><option value="glass">Glass Picture</option><option value="clean">Clean Picture</option><option value="split">Split Red / Black</option><option value="vertical">Moving Vertical Logos</option></select></div>
         <div class="roadmap-field"><label>Left Side Picture</label><input type="file" id="roadmap-side-file" accept="image/*" onchange="previewRoadmapSideFile()"></div>
         <div class="roadmap-field"><label>Or Left Picture URL</label><input id="roadmap-side-url" placeholder="https://... or uploaded image"></div>
         <div class="roadmap-preview" id="roadmap-side-prev"></div>
@@ -708,17 +630,6 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
         <div class="roadmap-field"><label>Or Image/Video URL</label><input id="roadmap-highlight-url" placeholder="https://... or file:///..."></div>
         <div class="roadmap-field"><label>Big Text On Picture</label><input id="roadmap-highlight-title" placeholder="MATCH HIGHLIGHTS"></div>
         <div class="roadmap-field"><label>Small Text On Picture</label><textarea id="roadmap-highlight-sub" placeholder="Tonight maps, winners, or sponsor text..."></textarea></div>
-      </div>
-      <div class="roadmap-card">
-        <h4>Community Page Background</h4>
-        <div class="roadmap-field"><label>Upload PMAF Community Background</label><input type="file" id="community-bg-file" accept="image/*" onchange="previewCommunityBackgroundFile()"></div>
-        <div class="roadmap-field"><label>Or Background URL</label><input id="community-bg-url" placeholder="https://... or uploaded image" oninput="previewCommunityBackgroundUrl()"></div>
-        <div class="roadmap-preview" id="community-bg-prev" style="height:120px;"></div>
-        <div class="roadmap-actions" style="margin-top:.75rem;padding-top:.75rem;">
-          <button class="btn btn-gold" onclick="saveCommunityBackground()" style="padding:7px 14px;font-size:11px;">Save Background</button>
-          <button class="btn btn-red" onclick="clearCommunityBackground()" style="padding:7px 14px;font-size:11px;">Clear Background</button>
-          <span class="roadmap-status" id="community-bg-status"></span>
-        </div>
       </div>
     </div>
 
@@ -735,50 +646,6 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <button class="btn" onclick="resetRoadmapDefaults()" style="padding:8px 16px;font-size:12px;">Load Defaults</button>
       <button class="btn btn-gold" onclick="saveRoadmapAdmin()" style="padding:8px 20px;font-size:12px;">Save Roadmap</button>
       <span class="roadmap-status" id="roadmap-status"></span>
-    </div>
-  </div>
-</div>
-
-<div class="section" id="sec-overlaycolors">
-  <div class="roadmap-admin">
-    <div class="roadmap-head">
-      <div>
-        <div class="roadmap-title">Match Points Overlay Colors</div>
-        <div class="roadmap-sub">Admin-only colors for team-match-points-overlay.html. Saved colors are separated by event ID and update OBS automatically.</div>
-      </div>
-      <button class="btn" onclick="loadMatchPointsTheme()" style="padding:6px 16px;font-size:12px;">Refresh</button>
-    </div>
-    <div class="roadmap-grid">
-      <div class="roadmap-card">
-        <h4>OBS Link</h4>
-        <div class="roadmap-field"><label>Matches To Show</label><input id="mp-theme-matches" type="number" min="1" max="12" value="6" oninput="updateMatchPointsThemeLink()"></div>
-        <div class="roadmap-field"><label>Max Teams</label><input id="mp-theme-limit" type="number" min="1" max="64" value="64" oninput="updateMatchPointsThemeLink()"></div>
-        <div class="roadmap-field"><label>Overlay Title</label><input id="mp-theme-title-text" value="MATCH BY MATCH POINTS" oninput="updateMatchPointsThemeLink()"></div>
-        <div class="roadmap-field"><label>OBS URL</label><textarea class="overlay-link-box" id="mp-theme-link" readonly onclick="this.select()"></textarea></div>
-      </div>
-      <div class="roadmap-card">
-        <h4>Preview</h4>
-        <div class="overlay-color-preview" id="mp-theme-preview">
-          <div class="overlay-color-title">Match By Match Points</div>
-          <div class="overlay-color-row"><span>#1</span><span>TEAM</span><span>8</span><span>12</span><span>6</span><span>10</span><span>4</span><span>9</span><span>49</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="overlay-color-grid">
-      <div class="overlay-color-field"><label>Title Text</label><input type="color" data-mp-theme="titleColor" id="mp-theme-title" value="#ffffff"></div>
-      <div class="overlay-color-field"><label>Team Yellow</label><input type="color" data-mp-theme="team" id="mp-theme-team" value="#ffd83d"></div>
-      <div class="overlay-color-field"><label>Accent Red</label><input type="color" data-mp-theme="accent" id="mp-theme-accent" value="#e00018"></div>
-      <div class="overlay-color-field"><label>Row Text</label><input type="color" data-mp-theme="text" id="mp-theme-text" value="#080808"></div>
-      <div class="overlay-color-field"><label>Total Light</label><input type="color" data-mp-theme="total1" id="mp-theme-total1" value="#fff3a8"></div>
-      <div class="overlay-color-field"><label>Total Main</label><input type="color" data-mp-theme="total2" id="mp-theme-total2" value="#ffd33f"></div>
-      <div class="overlay-color-field"><label>Total Dark</label><input type="color" data-mp-theme="total3" id="mp-theme-total3" value="#e39b00"></div>
-    </div>
-    <div class="roadmap-actions">
-      <button class="btn btn-gold" onclick="saveMatchPointsTheme()" style="padding:8px 20px;font-size:12px;">Save Colors</button>
-      <button class="btn" onclick="resetMatchPointsTheme()" style="padding:8px 16px;font-size:12px;">Load Defaults</button>
-      <button class="btn" onclick="copyMatchPointsThemeLink()" style="padding:8px 16px;font-size:12px;">Copy OBS Link</button>
-      <button class="btn" onclick="openMatchPointsThemeOverlay()" style="padding:8px 16px;font-size:12px;">Open Overlay</button>
-      <span class="roadmap-status" id="mp-theme-status"></span>
     </div>
   </div>
 </div>
@@ -846,8 +713,6 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
       <div class="eg">
         <div class="ef"><div class="el">Event Name</div><input class="ei" type="text" id="ei-name" placeholder="PMAC Cup"></div>
         <div class="ef"><div class="el">Date</div><input class="ei" type="date" id="ei-date"></div>
-        <div class="ef"><div class="el">Overall Start Date</div><input class="ei" type="date" id="ei-overall-start"></div>
-        <div class="ef"><div class="el">Overall Finish Date</div><input class="ei" type="date" id="ei-overall-end"></div>
         <div class="ef"><div class="el">Max Teams</div><input class="ei" type="number" id="ei-max" placeholder="24"></div>
         <div class="ef"><div class="el">Prize Pool</div><input class="ei" type="text" id="ei-prize" placeholder="e.g. $500"></div>
         <div class="ef"><div class="el">Platform</div><input class="ei" type="text" id="ei-platform" placeholder="Online - PUBG Mobile"></div>
@@ -1089,7 +954,7 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
         <button class="arr-btn" id="gfx-prev" onclick="gfxNav(-1)">←</button>
         <span class="gfx-cnt" id="gfx-cnt">0 / 0</span>
         <button class="arr-btn" id="gfx-next" onclick="gfxNav(1)">→</button>
-        <a class="gfx-dl" id="gfx-dl" href="" target="_blank" style="display:none;">⬇ Download</a>
+        <a class="gfx-dl" id="gfx-dl" href="" download target="_blank" style="display:none;">⬇ Download</a>
       </div>
     </div>
   </div>
@@ -1136,56 +1001,37 @@ textarea.ei{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:4
 </div>
 
 <!-- SCOREBOARD SECTION -->
-<div class="section current-only" id="sec-scores">
-  <div class="pub-current-view">
-  <div style="display:flex;gap:8px;align-items:center;margin-bottom:1rem;flex-wrap:wrap;">
-    <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;letter-spacing:.1em;text-transform:uppercase;">Sort by</span>
-    <button class="ctrl-btn active" id="pub-btn-pts" onclick="pubSortBy('pts')">Total Pts</button>
-    <button class="ctrl-btn" id="pub-btn-kills" onclick="pubSortBy('kills')">Kills</button>
-    <button class="ctrl-btn" id="pub-btn-name" onclick="pubSortBy('name')">Name</button>
-  </div>
-  <div id="manage-session-tools" style="display:none;gap:8px;align-items:flex-end;margin-bottom:1rem;flex-wrap:wrap;background:#0f1115;border:1px solid rgba(245,200,66,0.18);border-radius:9px;padding:10px;">
-    <div class="range-field"><label>Night date</label><input type="date" id="manage-session-date"></div>
-    <div class="range-field"><label>Session name</label><input id="manage-session-name" placeholder="A VS B"></div>
-    <button class="ctrl-btn" onclick="saveManageScoreAsSession()">Save Current Manage Score As Night Session</button>
-    <button class="ctrl-btn" onclick="returnToMainManageScore()">Return To Main Manage Score</button>
-    <span class="roadmap-status" id="manage-session-status"></span>
-  </div>
-  <div id="pub-hero-wrap"></div>
-  <div class="pub-score-body">
-    <table class="pub-table pub-score-table">
-      <thead>
-        <tr>
-          <th>#</th><th>Logo</th><th class="left">Team</th>
-          <th>M1</th><th>M2</th><th>M3</th><th>M4</th><th>M5</th>
-          <th>M6</th><th>M7</th><th>M8</th><th>M9</th><th>M10</th>
-          <th>Kills</th><th>Place Pts</th><th>Total</th>
-        </tr>
-      </thead>
-      <tbody id="pub-tbody"></tbody>
-    </table>
-  </div>
-  </div>
-  <div class="pub-overall">
-    <div class="pub-overall-head">
+<div class="section" id="sec-scores">
+  <div class="pub-score-shell">
+    <div class="pub-score-head">
       <div>
-        <div class="pub-overall-title">Overall Event Rankings</div>
-        <div class="pub-overall-sub" id="pub-overall-sub">All saved nights for this event</div>
+        <div class="pub-score-kicker">Live from managing score</div>
+        <div class="pub-score-title">Overall Rankings</div>
+        <div class="pub-score-sub" id="pub-score-sub">Waiting for active match results...</div>
       </div>
-      <div class="pub-overall-range" id="pub-overall-range">
-        <div class="range-field"><label>Start date</label><input type="date" id="pub-overall-start"></div>
-        <div class="range-field"><label>Finish date</label><input type="date" id="pub-overall-end"></div>
-        <div class="range-field"><label>Max matches</label><input type="number" min="1" max="50" id="pub-overall-max" style="width:84px;"></div>
-        <button class="ctrl-btn" onclick="savePublicOverallRange()">Save Dates</button>
+      <div class="pub-score-controls">
+        <span class="pub-score-live" id="pub-score-live">● Live</span>
+        <button class="ctrl-btn active" id="pub-btn-pts" onclick="pubSortBy('pts')">Total Pts</button>
+        <button class="ctrl-btn" id="pub-btn-kills" onclick="pubSortBy('kills')">Kills</button>
+        <button class="ctrl-btn" id="pub-btn-name" onclick="pubSortBy('name')">Name</button>
       </div>
     </div>
-    <div class="pub-overall-body">
-      <table class="pub-table pub-overall-table">
-        <thead>
-          <tr><th>#</th><th>Logo</th><th class="left">Team</th><th>Nights</th><th>Matches</th><th>Kills</th><th>Place Pts</th><th>Total</th></tr>
-        </thead>
-        <tbody id="pub-overall-tbody"><tr><td colspan="8" style="color:#606878;padding:1rem;">Loading overall rankings...</td></tr></tbody>
-      </table>
+    <div class="pub-score-body">
+      <div id="pub-hero-wrap"></div>
+      <div class="pub-mini-stats" id="pub-mini-stats"></div>
+      <div class="pub-table-wrap">
+        <table class="pub-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Logo</th><th class="left">Team</th>
+              <th>M1</th><th>M2</th><th>M3</th><th>M4</th><th>M5</th>
+              <th>M6</th><th>M7</th><th>M8</th><th>M9</th><th>M10</th>
+              <th>Kills</th><th>Place Pts</th><th>Total</th>
+            </tr>
+          </thead>
+          <tbody id="pub-tbody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -1371,164 +1217,11 @@ var storage = firebase.storage();
 var teamLogoLibrary = {};
 var logoLookupTimers = {};
 function sanitizeKey(n){ return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_"); }
-function cssUrl(v){ return String(v||"").replace(/\\/g,"\\\\").replace(/"/g,'\\"').replace(/\n/g,""); }
 function escapeHtml(v){
   return String(v||"").replace(/[&<>"']/g,function(ch){
     return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch];
   });
 }
-function communityBackgroundPath(){ return eventPath("event/communityBackground"); }
-function setCommunityBgStatus(msg, ok){ var el=document.getElementById("community-bg-status"); if(el){ el.textContent=msg||""; el.style.color=ok===false?"#ff5555":"#8a96a8"; } }
-function applyCommunityBackground(url){
-  var clean=String(url||"").trim();
-  if(clean){
-    document.body.style.backgroundImage='linear-gradient(rgba(5,7,10,0.65),rgba(5,7,10,0.65)),url("'+cssUrl(clean)+'")';
-  }else{
-    document.body.style.backgroundImage="";
-  }
-  var input=document.getElementById("community-bg-url");
-  if(input && input.value!==clean) input.value=clean;
-  var prev=document.getElementById("community-bg-prev");
-  if(prev) prev.style.backgroundImage=clean ? 'url("'+cssUrl(clean)+'")' : "";
-}
-function watchCommunityBackground(){
-  db.ref(communityBackgroundPath()).on("value",function(s){
-    var data=s.val()||{};
-    applyCommunityBackground(data.url||"");
-  },function(e){ console.warn("Community background failed",e); });
-}
-function previewCommunityBackgroundUrl(){ var v=(document.getElementById("community-bg-url")||{}).value||""; applyCommunityBackground(v); }
-function previewCommunityBackgroundFile(){
-  var f=document.getElementById("community-bg-file");
-  if(!f||!f.files||!f.files[0]) return;
-  roadMapImageToDataUrl(f.files[0],1600,900,0.82).then(function(u){
-    var input=document.getElementById("community-bg-url");
-    if(input) input.value=u;
-    applyCommunityBackground(u);
-    setCommunityBgStatus("Background preview ready. Press Save Background to upload it to Firebase Storage.",true);
-  }).catch(function(e){ setCommunityBgStatus(e.message||"Image preview failed",false); });
-}
-function saveCommunityBackground(){
-  if(!isAdmin || !auth.currentUser){ toast("Admin login required",false); return; }
-  var f=document.getElementById("community-bg-file");
-  var input=document.getElementById("community-bg-url");
-  setCommunityBgStatus("Saving...");
-  var job=(f&&f.files&&f.files[0]) ? uploadRoadmapFile(f.files[0],"pmac/community-background/"+EVENT_ID) : Promise.resolve((input&&input.value||"").trim());
-  job.then(function(url){
-    url=String(url||"").trim();
-    return db.ref(communityBackgroundPath()).set({url:url,updatedAt:firebase.database.ServerValue.TIMESTAMP,updatedBy:auth.currentUser.uid}).then(function(){return url;});
-  }).then(function(url){
-    applyCommunityBackground(url);
-    if(input) input.value=url;
-    setCommunityBgStatus("Saved. Firebase Storage background is active for this event.",true);
-    toast("Community background saved",true);
-  }).catch(function(e){ setCommunityBgStatus(e.message||"Save failed",false); toast("Background save failed",false); });
-}
-function clearCommunityBackground(){
-  if(!isAdmin || !auth.currentUser){ toast("Admin login required",false); return; }
-  db.ref(communityBackgroundPath()).remove().then(function(){
-    var input=document.getElementById("community-bg-url"), file=document.getElementById("community-bg-file");
-    if(input) input.value="";
-    if(file) file.value="";
-    applyCommunityBackground("");
-    setCommunityBgStatus("Cleared. Original background restored.",true);
-    toast("Community background cleared",true);
-  }).catch(function(e){ setCommunityBgStatus(e.message||"Clear failed",false); });
-}
-watchCommunityBackground();
-var MATCH_POINTS_THEME_DEFAULTS={titleColor:"#ffffff",team:"#ffd83d",accent:"#e00018",text:"#080808",total1:"#fff3a8",total2:"#ffd33f",total3:"#e39b00"};
-function matchPointsThemePath(){ return eventPath("matchPointsOverlay/theme"); }
-function setMatchPointsThemeStatus(msg, ok){ var el=document.getElementById("mp-theme-status"); if(el){ el.textContent=msg||""; el.style.color=ok===false?"#ff5555":"#8a96a8"; } }
-function mpThemeInput(key){ return document.querySelector('[data-mp-theme="'+key+'"]'); }
-function lightenMatchPointsHex(hex,mix){
-  hex=String(hex||"#ffd83d").replace("#","");
-  var n=parseInt(hex.length===3?hex.replace(/(.)/g,"$1$1"):hex,16);
-  if(!Number.isFinite(n)) n=0xffd83d;
-  var r=(n>>16)&255,g=(n>>8)&255,b=n&255;
-  r=Math.round(r+(255-r)*mix); g=Math.round(g+(255-g)*mix); b=Math.round(b+(255-b)*mix);
-  return "#"+[r,g,b].map(function(v){return v.toString(16).padStart(2,"0");}).join("");
-}
-function collectMatchPointsTheme(){
-  var theme={};
-  Object.keys(MATCH_POINTS_THEME_DEFAULTS).forEach(function(k){
-    var el=mpThemeInput(k);
-    theme[k]=(el&&el.value)||MATCH_POINTS_THEME_DEFAULTS[k];
-  });
-  return theme;
-}
-function fillMatchPointsThemeForm(theme){
-  theme=Object.assign({},MATCH_POINTS_THEME_DEFAULTS,theme||{});
-  Object.keys(MATCH_POINTS_THEME_DEFAULTS).forEach(function(k){
-    var el=mpThemeInput(k);
-    if(el) el.value=theme[k]||MATCH_POINTS_THEME_DEFAULTS[k];
-  });
-  updateMatchPointsThemePreview(theme);
-  updateMatchPointsThemeLink();
-}
-function updateMatchPointsThemePreview(theme){
-  theme=Object.assign({},MATCH_POINTS_THEME_DEFAULTS,theme||collectMatchPointsTheme());
-  var prev=document.getElementById("mp-theme-preview");
-  if(!prev) return;
-  prev.style.setProperty("--mp-title",theme.titleColor);
-  prev.style.setProperty("--mp-team",theme.team);
-  prev.style.setProperty("--mp-team-a",lightenMatchPointsHex(theme.team,.45));
-  prev.style.setProperty("--mp-text",theme.text);
-  prev.style.setProperty("--mp-total1",theme.total1);
-  prev.style.setProperty("--mp-total2",theme.total2);
-  prev.style.setProperty("--mp-total3",theme.total3);
-}
-function matchPointsOverlayUrl(withThemeParams){
-  var url=new URL("team-match-points-overlay.html", window.location.href);
-  url.searchParams.set("event",EVENT_ID);
-  url.searchParams.set("mode","event");
-  url.searchParams.set("matches",Math.max(1,Math.min(12,parseInt((document.getElementById("mp-theme-matches")||{}).value||"6",10)||6)));
-  url.searchParams.set("limit",Math.max(1,Math.min(64,parseInt((document.getElementById("mp-theme-limit")||{}).value||"64",10)||64)));
-  url.searchParams.set("title",((document.getElementById("mp-theme-title-text")||{}).value||"MATCH BY MATCH POINTS").trim()||"MATCH BY MATCH POINTS");
-  if(withThemeParams){
-    var theme=collectMatchPointsTheme();
-    Object.keys(MATCH_POINTS_THEME_DEFAULTS).forEach(function(k){ url.searchParams.set(k,theme[k]||MATCH_POINTS_THEME_DEFAULTS[k]); });
-  }
-  return url.href;
-}
-function updateMatchPointsThemeLink(){
-  updateMatchPointsThemePreview();
-  var box=document.getElementById("mp-theme-link");
-  if(box) box.value=matchPointsOverlayUrl(false);
-}
-function loadMatchPointsTheme(){
-  if(!isAdmin) return;
-  setMatchPointsThemeStatus("Loading...");
-  db.ref(matchPointsThemePath()).once("value").then(function(s){
-    fillMatchPointsThemeForm(s.val()||MATCH_POINTS_THEME_DEFAULTS);
-    setMatchPointsThemeStatus("Loaded for event: "+EVENT_ID,true);
-  }).catch(function(e){ setMatchPointsThemeStatus(e.message||"Load failed",false); });
-}
-function saveMatchPointsTheme(){
-  if(!isAdmin || !auth.currentUser){ toast("Admin login required",false); return; }
-  var theme=collectMatchPointsTheme();
-  theme.updatedAt=firebase.database.ServerValue.TIMESTAMP;
-  theme.updatedBy=auth.currentUser.uid;
-  setMatchPointsThemeStatus("Saving...");
-  db.ref(matchPointsThemePath()).set(theme).then(function(){
-    setMatchPointsThemeStatus("Saved. OBS overlay will update automatically.",true);
-    toast("Overlay colors saved",true);
-  }).catch(function(e){ setMatchPointsThemeStatus(e.message||"Save failed",false); toast("Color save failed",false); });
-}
-function resetMatchPointsTheme(){ fillMatchPointsThemeForm(MATCH_POINTS_THEME_DEFAULTS); setMatchPointsThemeStatus("Defaults loaded. Press Save Colors to publish."); }
-function copyMatchPointsThemeLink(){
-  updateMatchPointsThemeLink();
-  var box=document.getElementById("mp-theme-link");
-  if(!box) return;
-  box.select();
-  try{ navigator.clipboard.writeText(box.value); }catch(e){ document.execCommand("copy"); }
-  setMatchPointsThemeStatus("OBS link copied.",true);
-}
-function openMatchPointsThemeOverlay(){ window.open(matchPointsOverlayUrl(false),"_blank"); }
-function setupMatchPointsThemeControls(){
-  document.querySelectorAll("[data-mp-theme]").forEach(function(el){ el.addEventListener("input",updateMatchPointsThemeLink); });
-  updateMatchPointsThemeLink();
-}
-setupMatchPointsThemeControls();
 function logoKey(name){ return String(name||"").trim().toUpperCase(); }
 function refreshSavedTeamLogoList(){
   var dl=document.getElementById("saved-team-logo-list");
@@ -1594,7 +1287,7 @@ function lookupFirebaseLogo(kind, name){
   var isScrim = kind === "scrim";
   var fileEl=document.getElementById(isScrim ? "scrim-reg-logo-file" : "reg-logo-file");
   if(fileEl && fileEl.files && fileEl.files[0]) return;
-  db.ref(eventPath("teamLogos/"+sanitizeKey(key))).once("value").then(function(s){
+  db.ref("pmac/teamLogos/"+sanitizeKey(key)).once("value").then(function(s){
     var item=s.val()||{};
     return item.logo || "";
   }).catch(function(){ return ""; }).then(function(savedLogo){
@@ -1611,7 +1304,7 @@ function lookupFirebaseLogo(kind, name){
     if(logo && logoKey(currentName)===key) setRegistrationLogoPreview(kind, logo);
   }).catch(function(e){ console.warn("Saved logo lookup failed", e); });
 }
-db.ref(eventPath("teamLogos")).on("value", function(s){
+db.ref("pmac/teamLogos").on("value", function(s){
   var data=s.val()||{};
   teamLogoLibrary={};
   Object.keys(data).forEach(function(k){
@@ -1626,15 +1319,13 @@ function saveTeamLogoToLibrary(team){
   if(!isAdmin || !auth.currentUser || !team || !team.name || !team.logo) return Promise.resolve();
   var key = sanitizeKey(logoKey(team.name));
   if(!key) return Promise.resolve();
-  return ensureLogoStorageUrl(team.logo, team.name, "team-library").then(function(logoUrl){
-    return db.ref(eventPath("teamLogos/"+key)).update({
-      name: logoKey(team.name),
-      logo: logoUrl,
-      source: "pmaf-community",
-      event: EVENT_ID,
-      savedAt: Date.now(),
-      savedBy: auth.currentUser.uid
-    });
+  return db.ref("pmac/teamLogos/"+key).update({
+    name: logoKey(team.name),
+    logo: team.logo,
+    source: "pmaf-community",
+    event: EVENT_ID,
+    savedAt: Date.now(),
+    savedBy: auth.currentUser.uid
   }).catch(function(e){ console.warn("Team logo library save failed", e); });
 }
 function seedApprovedRegistrationLogos(list){
@@ -1656,7 +1347,6 @@ var regs = {};
 var regsLoaded = false;
 var filterMode = "all";
 var regLogoFile = null;
-function isPngLogoFile(file,dataUrl){ return !!((file&&String(file.name||"").toLowerCase().endsWith(".png")) || (file&&String(file.type||"").toLowerCase().includes("png")) || String(dataUrl||"").toLowerCase().startsWith("data:image/png")); }
 var editEvStatus = "open";
 var PAYPAL_PAYMENT_EMAIL = "ztygf020@gmail.com";
 var RULEBOOK_VERSION = "PMAC_Tournament_Rulebook_v1.0";
@@ -2150,17 +1840,12 @@ db.ref(eventPath("event")).on("value", function(s) {
   evStatus = eventInfo.regStatus || "open";
   evMax = parseInt(eventInfo.maxTeams) || 24;
   updateCard();
-  updateOverallRangeControls();
-  if(document.getElementById("sec-scores") && document.getElementById("sec-scores").classList.contains("show")) loadOverallEventRankings();
 });
-function refreshCommunityEventGroupsOnce(){
-  return db.ref(eventPath("eventGroups")).once("value").then(function(s) {
-    communityEventGroups = s.val() || {};
-    renderGroupExportOptions();
-    renderScrimGroupExportOptions();
-  }).catch(function(){});
-}
-refreshCommunityEventGroupsOnce();
+db.ref(eventPath("eventGroups")).on("value", function(s) {
+  communityEventGroups = s.val() || {};
+  renderGroupExportOptions();
+  renderScrimGroupExportOptions();
+});
 db.ref(eventPath("idpass")).on("value", function(s) {
   idPassInfo = s.val() || {event:{},scrim:{}};
   renderIdPassAdmin();
@@ -2197,20 +1882,10 @@ function applyAdminUI() {
   }
   var gfxUpload=document.getElementById("gfx-admin-upload");
   if(gfxUpload) gfxUpload.style.display = isAdmin ? "block" : "none";
-  var gfxDownload=document.getElementById("gfx-dl");
-  if(gfxDownload && !isAdmin){ gfxDownload.removeAttribute("href"); gfxDownload.removeAttribute("download"); gfxDownload.style.display="none"; }
   var ruleTab=document.getElementById("tab-rulelog");
   if(ruleTab) ruleTab.style.display = isAdmin ? "" : "none";
-  var roadmapTab=document.getElementById("tab-roadmap");
-  if(roadmapTab) roadmapTab.style.display = isAdmin ? "" : "none";
-  var overlayColorsTab=document.getElementById("tab-overlaycolors");
-  if(overlayColorsTab) overlayColorsTab.style.display = isAdmin ? "" : "none";
-  var overallRange=document.getElementById("pub-overall-range");
-  if(overallRange) overallRange.style.display = isAdmin ? "flex" : "none";
-  var manageSessionTools=document.getElementById("manage-session-tools");
-  if(manageSessionTools) manageSessionTools.style.display = isAdmin ? "flex" : "none";
   updateIdPassTabVisibility();
-  if(!isAdmin && ((document.getElementById("sec-rulelog") && document.getElementById("sec-rulelog").classList.contains("show")) || (document.getElementById("sec-roadmap") && document.getElementById("sec-roadmap").classList.contains("show")) || (document.getElementById("sec-overlaycolors") && document.getElementById("sec-overlaycolors").classList.contains("show")))) showTab("reg");
+  if(!isAdmin && document.getElementById("sec-rulelog") && document.getElementById("sec-rulelog").classList.contains("show")) showTab("reg");
   renderRulesAgreedLog();
   renderCommunityForum();
 }
@@ -2333,8 +2008,6 @@ document.getElementById("edit-ev-btn").onclick = function() {
   if (w.style.display==="block") { w.style.display="none"; return; }
   document.getElementById("ei-name").value = eventInfo.name||"";
   document.getElementById("ei-date").value = eventInfo.date||"";
-  document.getElementById("ei-overall-start").value = eventInfo.overallStartDate||"";
-  document.getElementById("ei-overall-end").value = eventInfo.overallEndDate||"";
   document.getElementById("ei-max").value = eventInfo.maxTeams||24;
   document.getElementById("ei-prize").value = eventInfo.prize||"";
   document.getElementById("ei-platform").value = eventInfo.platform||"";
@@ -2363,7 +2036,7 @@ document.getElementById("save-ev-btn").onclick = function() {
   if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
   var bf=document.getElementById("banner-file").files[0];
   function save(burl) {
-    var d={name:document.getElementById("ei-name").value.trim()||"PMAC Tournament",date:document.getElementById("ei-date").value,overallStartDate:document.getElementById("ei-overall-start").value,overallEndDate:document.getElementById("ei-overall-end").value,overallMaxMatches:eventInfo.overallMaxMatches||"",maxTeams:parseInt(document.getElementById("ei-max").value)||24,prize:document.getElementById("ei-prize").value.trim(),platform:document.getElementById("ei-platform").value.trim(),description:document.getElementById("ei-desc").value.trim(),dailyInfo:document.getElementById("ei-daily-info").value.trim(),regStatus:editEvStatus};
+    var d={name:document.getElementById("ei-name").value.trim()||"PMAC Tournament",date:document.getElementById("ei-date").value,maxTeams:parseInt(document.getElementById("ei-max").value)||24,prize:document.getElementById("ei-prize").value.trim(),platform:document.getElementById("ei-platform").value.trim(),description:document.getElementById("ei-desc").value.trim(),dailyInfo:document.getElementById("ei-daily-info").value.trim(),regStatus:editEvStatus};
     if(burl) d.banner=burl; else if(eventInfo.banner) d.banner=eventInfo.banner;
     db.ref(eventPath("event")).update(d).then(function(){document.getElementById("edit-ev-wrap").style.display="none"; toast("Saved!",true);}).catch(function(e){toast("Error: "+e.message,false);});
   }
@@ -2433,7 +2106,17 @@ document.getElementById("reg-btn").onclick = function() {
     });
   }
   if(regLogoFile){
-    uploadLogoFileWithFallback(regLogoFile,name,"event-registration").then(doSave).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Logo error: "+(e.message||e);msg.style.color="#ff4444";});
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var img=new Image();
+      img.onload=function(){
+        var c=document.createElement("canvas");c.width=80;c.height=80;
+        c.getContext("2d").drawImage(img,0,0,80,80);
+        doSave(c.toDataURL("image/jpeg",0.7));
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(regLogoFile);
   }else{doSave(document.getElementById("reg-logo-prev").dataset.savedLogo || findSavedRegistrationLogo(name) || "");}
 };
 
@@ -2535,12 +2218,10 @@ function logoFileName(team){
   return ((team.name||"team")+" logo").replace(/[\\/:*?"<>|]+/g,"_").replace(/\s+/g,"_")+".png";
 }
 function triggerLogoDownload(url,fileName){
-  if(!isAdmin){toast("Admin login required",false);return;}
   var a=document.createElement("a");
   a.href=url;a.download=fileName;document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 function downloadTeamLogo(team){
-  if(!isAdmin){toast("Admin login required",false);return;}
   if(!team||!team.logo){toast("No logo found",false);return;}
   var fileName=logoFileName(team);
   if(team.logo.indexOf("data:")===0){triggerLogoDownload(team.logo,fileName);toast("Logo download started",true);return;}
@@ -2631,14 +2312,14 @@ function toggleGroupExportBox(){
   var box=document.getElementById("group-export-box");
   if(!box) return;
   box.style.display = box.style.display==="flex" ? "none" : "flex";
-  refreshCommunityEventGroupsOnce();
+  renderGroupExportOptions();
 }
 function toggleScrimGroupExportBox(){
   if(!isAdmin){toast("Admin login required",false);return;}
   var box=document.getElementById("scrim-group-export-box");
   if(!box) return;
   box.style.display = box.style.display==="flex" ? "none" : "flex";
-  refreshCommunityEventGroupsOnce();
+  renderScrimGroupExportOptions();
 }
 function approvedRegistrationTeams(){
   return Object.keys(regs).filter(function(k){return regs[k] && regs[k].status==="approved";}).map(function(k){
@@ -2658,9 +2339,6 @@ function shuffledCopy(list){
   return arr;
 }
 function emptyScoreRows(){ return Array(10).fill(null).map(function(){return {rank:null,kills:null};}); }
-function currentEventScope(){
-  return {eventId:EVENT_ID,eventName:eventInfo.name||"PMAF Event",eventDate:eventInfo.date||"",overallStartDate:eventInfo.overallStartDate||"",overallEndDate:eventInfo.overallEndDate||""};
-}
 function removeRegistrationByAdmin(key, path){
   if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return Promise.reject(new Error("Admin login required"));}
   return db.ref(eventPath(path)+"/"+key).remove();
@@ -2694,7 +2372,6 @@ function exportApprovedTeamsToGroups(){
     updates[base+"/scores"]=scores;
     updates[base+"/exportedFrom"]="pmaf-community";
     updates[base+"/exportedAt"]=Date.now();
-    updates[base+"/eventScope"]=currentEventScope();
   });
   db.ref().update(updates).then(function(){
     toast("Approved teams exported to groups",true);
@@ -2720,7 +2397,6 @@ function exportApprovedScrimTeamsToGroups(){
     updates[base+"/scores"]=scores;
     updates[base+"/exportedFrom"]="pmaf-daily-scrim";
     updates[base+"/exportedAt"]=Date.now();
-    updates[base+"/eventScope"]=currentEventScope();
   });
   db.ref().update(updates).then(function(){
     toast("Daily Scrim approved teams exported to groups",true);
@@ -2901,12 +2577,13 @@ function checkStatus(){
 
 // TABS
 function showTab(tab){
-  if((tab==="rulelog"||tab==="roadmap"||tab==="overlaycolors")&&!isAdmin){toast("Admin login required",false);return;}
+  if(tab==="roadmap"){showTab("reg");return;}
+  if(tab==="rulelog"&&!isAdmin){toast("Admin login required",false);return;}
   if(tab==="idpass"&&!getRememberedIdPassAccess()){toast("ID Pass is not unlocked yet",false);return;}
-  ["reg","scrim","gfx","lobby","scores","overall","archive","streamers","rulesagree","idpass","rulelog","roadmap","overlaycolors"].forEach(function(t){
+  ["reg","scrim","gfx","lobby","scores","archive","streamers","rulesagree","idpass","rulelog"].forEach(function(t){
     var tb=document.getElementById("tab-"+t); var sc=document.getElementById("sec-"+t);
     if(tb) tb.className="tab"+(t===tab?" active":"");
-    if(sc) sc.className="section"+(t===tab?" show":"")+(t==="scores"&&tab==="scores"?" current-only":"");
+    if(sc) sc.className="section"+(t===tab?" show":"");
   });
   var eventEntry=document.getElementById("entry-card-reg");
   var scrimEntry=document.getElementById("entry-card-scrim");
@@ -2919,8 +2596,6 @@ function showTab(tab){
   if(tab==="streamers"&&!streamersLoaded) loadStreamers();
   if(tab==="idpass") showPublicIdPass();
   if(tab==="rulelog") renderRulesAgreedLog();
-  if(tab==="roadmap") loadRoadmapAdmin();
-  if(tab==="overlaycolors") loadMatchPointsTheme();
 }
 document.getElementById("agree-save-btn").onclick=saveExistingRulesAgreement;
 document.getElementById("idpass-get-btn").onclick=showPublicIdPass;
@@ -2950,7 +2625,7 @@ function loadGFX(){
 function renderGFX(){
   var area=document.getElementById("gfx-img-area");var cnt=document.getElementById("gfx-cnt");var lbl=document.getElementById("gfx-label-t");var dt=document.getElementById("gfx-date-t");var thumbs=document.getElementById("gfx-thumbs");var prev=document.getElementById("gfx-prev");var next=document.getElementById("gfx-next");var dl=document.getElementById("gfx-dl");
   if(!gfxList.length){area.innerHTML='<div class="empty">No GFX images yet.</div>';cnt.textContent="0/0";lbl.textContent="";dt.textContent="";thumbs.innerHTML="";prev.disabled=true;next.disabled=true;dl.style.display="none";return;}
-  var item=gfxList[gfxIdx];area.innerHTML='<img src="'+item.url+'" alt="'+(item.label||"GFX")+'">';cnt.textContent=(gfxIdx+1)+" / "+gfxList.length;lbl.textContent=item.label||"Scoreboard";dt.textContent=item.uploadedAt?new Date(item.uploadedAt).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):"";prev.disabled=gfxIdx===0;next.disabled=gfxIdx===gfxList.length-1;if(isAdmin){dl.href=item.url;dl.setAttribute("download","");dl.style.display="inline-block";}else{dl.removeAttribute("href");dl.removeAttribute("download");dl.style.display="none";}
+  var item=gfxList[gfxIdx];area.innerHTML='<img src="'+item.url+'" alt="'+(item.label||"GFX")+'">';cnt.textContent=(gfxIdx+1)+" / "+gfxList.length;lbl.textContent=item.label||"Scoreboard";dt.textContent=item.uploadedAt?new Date(item.uploadedAt).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):"";prev.disabled=gfxIdx===0;next.disabled=gfxIdx===gfxList.length-1;dl.href=item.url;dl.style.display="inline-block";
   thumbs.innerHTML="";gfxList.forEach(function(g,i){var div=document.createElement("div");div.className="gfx-thumb"+(i===gfxIdx?" on":"");div.innerHTML='<img src="'+g.url+'" alt="'+(g.label||"")+'"><div class="gfx-thumb-l">'+(g.label||"Image "+(i+1))+"</div>";div.onclick=(function(idx){return function(){gfxIdx=idx;renderGFX();};})(i);thumbs.appendChild(div);});
 }
 function gfxNav(dir){gfxIdx=Math.max(0,Math.min(gfxList.length-1,gfxIdx+dir));renderGFX();}
@@ -3136,378 +2811,52 @@ document.getElementById("lb-add-btn").onclick = function(){
     }).catch(function(e){btn.textContent="Add Team";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});
   }
   if(lbLogoFile){
-    uploadLogoFileWithFallback(lbLogoFile,name,"lobby").then(doSave).catch(function(e){btn.textContent="Add Team";btn.disabled=false;msg.textContent="Logo error: "+(e.message||e);msg.style.color="#ff4444";});
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var img=new Image(); img.onload=function(){
+        var c=document.createElement("canvas");c.width=80;c.height=80;
+        c.getContext("2d").drawImage(img,0,0,80,80);
+        doSave(c.toDataURL("image/jpeg",0.7));
+      }; img.src=e.target.result;
+    }; reader.readAsDataURL(lbLogoFile);
   } else { doSave(""); }
 };
 
 // PUBG rank/kill helpers
 var RANK_PTS=[10,6,5,4,3,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-function pubNumOrNull(v){
-  if(v===null||v===undefined||String(v).trim()==="") return null;
-  var n=parseInt(v,10);
-  return isNaN(n)?null:n;
-}
-function pubMatchStats(m){
-  if(!m) return null;
-  var rank=pubNumOrNull(m.rank), kills=pubNumOrNull(m.kills);
-  var hasRank=rank!==null&&rank>=1&&rank<=25;
-  var hasKills=kills!==null&&kills>0;
-  if(!hasRank&&!hasKills) return null;
-  var rp=hasRank?RANK_PTS[rank-1]:0;
-  var kp=kills!==null?Math.max(0,kills):0;
-  return {rank:hasRank?rank:null,kills:kp,placement:rp,total:rp+kp};
-}
 function pubCalc(t, md){
   var ms=Array(10).fill(null).map(function(_,i){return (md&&md[i])||{rank:null,kills:null};});
   var tk=0,tp=0,plc=0,played=0;
   ms.forEach(function(m){
-    var st=pubMatchStats(m);
-    if(!st) return;
+    if(m.rank===null&&m.kills===null) return;
     played++;
-    var rp=st.placement;
-    var kp=st.kills;
+    var rp=(m.rank&&m.rank>=1&&m.rank<=25)?RANK_PTS[m.rank-1]:0;
+    var kp=m.kills?parseInt(m.kills)||0:0;
     tp+=rp+kp; tk+=kp; plc+=rp;
   });
   return {name:t.name,logo:t.logo||"",kills:tk,placement:plc,total:tp,played:played,matches:ms};
 }
-function pubSan(n){return String(n||"").replace(/[.#$\/\[\]]/g,"_");}
-function pubNorm(v){return String(v||"").trim().toUpperCase().replace(/\s+/g," ");}
-function pubTeamKey(t){var tag=pubNorm(t&&t.tag);return tag ? "TAG:"+tag : "NAME:"+pubNorm(t&&t.name);}
-function pubScoreRowsForTeam(scores,t){
-  var keys=[t&&t.name,t&&t.tag,pubNorm(t&&t.name),pubNorm(t&&t.tag)].map(pubSan).filter(Boolean);
-  for(var i=0;i<keys.length;i++){ if(scores&&scores[keys[i]]) return scores[keys[i]]; }
+function pubSan(n){return n.replace(/[.#$\/\[\]]/g,"_");}
+function pubScoreRows(md){
+  if(!md) return [];
+  if(Array.isArray(md)) return md;
+  if(typeof md==="object"){
+    var arr=[];
+    Object.keys(md).forEach(function(k){arr[parseInt(k,10)||0]=md[k];});
+    return arr;
+  }
   return [];
 }
-function pubSessionBelongsToCurrentEvent(sess){
-  var scope=sess&&sess.eventScope;
-  if(!scope) return true;
-  if(scope.eventId) return scope.eventId===EVENT_ID;
-  var cur=pubNorm(eventInfo.name||"");
-  var saved=pubNorm(scope.eventName||"");
-  return !cur || !saved || cur===saved;
-}
-function pubCleanDate(v){
-  var m=String(v||"").match(/\d{4}-\d{2}-\d{2}/);
-  return m?m[0]:"";
-}
-function pubDateInOverallRange(date){
-  date=pubCleanDate(date);
-  if(!date) return false;
-  var start=pubCleanDate(eventInfo.overallStartDate||"");
-  var end=pubCleanDate(eventInfo.overallEndDate||"");
-  if(start && date<start) return false;
-  if(end && date>end) return false;
-  return true;
-}
-function pubOverallRangeLabel(){
-  var start=pubCleanDate(eventInfo.overallStartDate||"");
-  var end=pubCleanDate(eventInfo.overallEndDate||"");
-  var max=parseInt(eventInfo.overallMaxMatches,10)||0;
-  var cap=max?(" · Max "+max+" matches"):"";
-  if(start&&end) return "From "+start+" to "+end+cap;
-  if(start) return "From "+start+" until finish"+cap;
-  return "All saved nights for this event"+cap;
-}
-function updateOverallRangeControls(){
-  var start=document.getElementById("pub-overall-start");
-  var end=document.getElementById("pub-overall-end");
-  var max=document.getElementById("pub-overall-max");
-  if(start) start.value=pubCleanDate(eventInfo.overallStartDate||"");
-  if(end) end.value=pubCleanDate(eventInfo.overallEndDate||"");
-  if(max) max.value=eventInfo.overallMaxMatches||"";
-}
-function savePublicOverallRange(){
-  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
-  var start=(document.getElementById("pub-overall-start")||{}).value||"";
-  var end=(document.getElementById("pub-overall-end")||{}).value||"";
-  var max=parseInt((document.getElementById("pub-overall-max")||{}).value,10)||0;
-  if(start&&end&&end<start){toast("Finish date must be after start date",false);return;}
-  if(max<0||max>50){toast("Max matches must be between 1 and 50",false);return;}
-  eventInfo.overallStartDate=start;
-  eventInfo.overallEndDate=end;
-  eventInfo.overallMaxMatches=max||"";
-  updateOverallRangeControls();
-  loadOverallEventRankings();
-  db.ref(eventPath("event")).update({overallStartDate:start,overallEndDate:end,overallMaxMatches:max||null}).then(function(){
-    toast("Overall date range saved",true);
-  }).catch(function(e){
-    toast("Date save failed: "+(e&&e.message?e.message:"permission denied"),false);
-  });
-}
-function manageSessionStatus(msg, ok){
-  var el=document.getElementById("manage-session-status");
-  if(el){el.textContent=msg||"";el.style.color=ok===false?"#ff5555":"#8a96a8";}
-}
-function manageSessionSlug(v){
-  return String(v||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40);
-}
-function readCurrentManageScoreForSession(){
-  return db.ref(eventPath("activeSession")).once("value").then(function(activeSnap){
-    var sessions=pubActiveSessions(activeSnap.val());
-    if(!sessions.length){
-      return Promise.all([
-        db.ref(eventPath("teams")).once("value"),
-        db.ref(eventPath("matches")).once("value")
-      ]).then(function(snaps){
-        var tv=snaps[0].val()||[], sv=snaps[1].val()||{};
-        return {teams:Array.isArray(tv)?tv:Object.values(tv),scores:sv,source:"main"};
-      });
-    }
-    var jobs=sessions.map(function(s){
-      var base=eventPath("eventGroups")+"/"+s.group+"/sessions/"+s.date;
-      return Promise.all([
-        db.ref(base+"/teams").once("value"),
-        db.ref(base+"/scores").once("value")
-      ]).then(function(snaps){
-        var tv=snaps[0].val()||[], sv=snaps[1].val()||{};
-        return {teams:Array.isArray(tv)?tv:Object.values(tv),scores:sv,group:s.group,date:s.date};
-      });
-    });
-    return Promise.all(jobs).then(function(parts){
-      var teamMap={}, scoreMap={};
-      parts.forEach(function(part){
-        (part.teams||[]).forEach(function(t){
-          if(!t||!t.name) return;
-          var key=sanitizeKey(t.name);
-          if(!teamMap[key]) teamMap[key]=t;
-          scoreMap[key]=part.scores[key]||part.scores[sanitizeKey(t.tag||"")]||part.scores[t.name]||emptyScoreRows();
-        });
-      });
-      return {teams:Object.values(teamMap),scores:scoreMap,source:"active-session",sessions:sessions};
-    });
-  });
-}
-function saveManageScoreAsSession(){
-  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
-  var dateEl=document.getElementById("manage-session-date");
-  var nameEl=document.getElementById("manage-session-name");
-  var date=(dateEl&&dateEl.value)||todayStr();
-  var label=(nameEl&&nameEl.value||"").trim();
-  var slug=manageSessionSlug(label);
-  var sessionKey=date+(slug?("-"+slug):"");
-  manageSessionStatus("Reading current Manage Score...");
-  Promise.all([
-    readCurrentManageScoreForSession(),
-    db.ref(eventPath("eventGroups/MANAGE/sessions/"+sessionKey)).once("value")
-  ]).then(function(snaps){
-    var current=snaps[0]||{}, sv=current.scores||{};
-    var teamList=(current.teams||[]).filter(function(t){return t&&t.name;});
-    if(!teamList.length) throw new Error("No teams found in Manage Score");
-    if(snaps[1].exists()&&!confirm("Session "+sessionKey+" already exists. Replace it with current Manage Score?")) return null;
-    var cleanScores={};
-    teamList.forEach(function(t){
-      if(!t||!t.name) return;
-      var key=sanitizeKey(t.name);
-      cleanScores[key]=sv[key]||sv[sanitizeKey(t.tag||"")]||sv[t.name]||emptyScoreRows();
-    });
-    var base=eventPath("eventGroups/MANAGE/sessions/"+sessionKey);
-    var updates={};
-    updates[base+"/teams"]=teamList;
-    updates[base+"/scores"]=cleanScores;
-    updates[base+"/date"]=date;
-    updates[base+"/sessionName"]=label||"Manage Score";
-    updates[base+"/exportedFrom"]="manage-score";
-    updates[base+"/exportedAt"]=Date.now();
-    updates[base+"/eventScope"]=currentEventScope();
-    updates[base+"/sourceMode"]=current.source||"main";
-    if(current.sessions) updates[base+"/sourceSessions"]=current.sessions;
-    return db.ref().update(updates).then(function(){return teamList.length;});
-  }).then(function(count){
-    if(count===null) return;
-    manageSessionStatus("Saved "+count+" teams to session "+sessionKey,true);
-    toast("Manage Score saved as night session",true);
-    loadOverallEventRankings();
-  }).catch(function(e){
-    manageSessionStatus(e.message||"Save failed",false);
-    toast("Session save failed",false);
-  });
-}
-function returnToMainManageScore(){
-  if(!isAdmin || !auth.currentUser){toast("Admin login required",false);return;}
-  manageSessionStatus("Returning to main Manage Score...");
-  db.ref(eventPath("activeSession")).remove().then(function(){
-    pubLoadMainScoreboard();
-    loadOverallEventRankings();
-    manageSessionStatus("Main Manage Score is active again.",true);
-    toast("Returned to main Manage Score",true);
-  }).catch(function(e){
-    manageSessionStatus(e.message||"Could not return to main Manage Score",false);
-    toast("Could not return to main Manage Score",false);
-  });
+function pubScoresForTeam(scores,t){
+  var name=String((t&&t.name)||"");
+  return pubScoreRows(scores[name] || scores[pubSan(name)] || scores[sanitizeKey(name)] || []);
 }
 function pubRankCls(r){if(!r&&r!==0)return"rb";return r<=3?"r1":r<=6?"r2":"rb";}
 function pubKillCls(k){var n=parseInt(k)||0;return n>=10?"kh":n>=5?"km":"kl";}
-function pubActiveSessions(active){
-  if(!active) return [];
-  if(Array.isArray(active.sessions)) return active.sessions.filter(function(s){return s&&s.group&&s.date;});
-  if(active.group&&active.date) return [{group:active.group,date:active.date}];
-  return [];
-}
-function pubLoadMainScoreboard(){
-  return db.ref(eventPath("teams")).once("value").then(function(s){
-    var v=s.val()||[];
-    pubTeamsGlobal=Array.isArray(v)?v:Object.values(v);
-    return db.ref(eventPath("matches")).once("value").then(function(s2){
-      pubScoresGlobal=s2.val()||{};
-      renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
-    });
-  });
-}
-function pubLoadSessionScoreboard(sessions){
-  var jobs=[];
-  sessions.forEach(function(s){
-    var base=eventPath("eventGroups")+"/"+s.group+"/sessions/"+s.date;
-    jobs.push(Promise.all([db.ref(base+"/teams").once("value"),db.ref(base+"/scores").once("value")]).then(function(snaps){
-      var tv=snaps[0].val()||[], sv=snaps[1].val()||{};
-      return {group:s.group,date:s.date,teams:Array.isArray(tv)?tv:Object.values(tv),scores:sv};
-    }));
-  });
-  return Promise.all(jobs).then(function(parts){
-    var combinedTeams=[], combinedScores={};
-    parts.forEach(function(part){
-      (part.teams||[]).forEach(function(t){
-        if(!combinedTeams.find(function(x){return pubTeamKey(x)===pubTeamKey(t);})) combinedTeams.push(t);
-      });
-      Object.keys(part.scores||{}).forEach(function(k){ if(k.charAt(0)!=="_") combinedScores[k]=part.scores[k]; });
-    });
-    if(!combinedTeams.length) return pubLoadMainScoreboard();
-    pubTeamsGlobal=combinedTeams;
-    pubScoresGlobal=combinedScores;
-    renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
-  });
-}
-function pubAddOverallMatch(total,m,slotKey){
-  var st=pubMatchStats(m);
-  if(!st) return false;
-  var max=parseInt(eventInfo.overallMaxMatches,10)||0;
-  if(max && total.matches>=max) return false;
-  total.matchSlots=total.matchSlots||{};
-  if(slotKey && total.matchSlots[slotKey]) return false;
-  if(slotKey) total.matchSlots[slotKey]=true;
-  var rp=st.placement;
-  var kp=st.kills;
-  total.kills+=kp;
-  total.placement+=rp;
-  total.total+=kp+rp;
-  total.matches++;
-  return true;
-}
-function loadOverallEventRankings(){
-  var tbody=document.getElementById("pub-overall-tbody");
-  var sub=document.getElementById("pub-overall-sub");
-  if(tbody) tbody.innerHTML='<tr><td colspan="8" style="color:#606878;padding:1rem;">Loading overall rankings...</td></tr>';
-  Promise.all([
-    db.ref(eventPath("eventGroups")).once("value"),
-    db.ref(eventPath("teams")).once("value"),
-    db.ref(eventPath("activeSession")).once("value"),
-    db.ref(eventPath("matches")).once("value")
-  ]).then(function(snaps){
-    var groups=snaps[0].val()||{};
-    var mainTeams=snaps[1].val()||[];
-    var active=snaps[2].val()||null;
-    var mainScores=snaps[3].val()||{};
-    mainTeams=Array.isArray(mainTeams)?mainTeams:Object.values(mainTeams);
-    var totals={}, nights={}, savedSessionKeys={}, hasSavedScores=false;
-    var overallStats={sessions:0,dateSkipped:0,eventSkipped:0,scoredSessions:0,teamsSeen:0};
-    function ensureTeam(t){
-      if(!t||!t.name) return null;
-      var key=pubTeamKey(t);
-      if(!totals[key]) totals[key]={name:t.name,tag:t.tag||"",logo:t.logo||"",kills:0,placement:0,total:0,matches:0,nights:0,matchSlots:{}};
-      if(t.logo&&!totals[key].logo) totals[key].logo=t.logo;
-      if(t.tag&&!totals[key].tag) totals[key].tag=t.tag;
-      return key;
-    }
-    function addScoreSet(teamList,scores,slotPrefix,nightDate){
-      var anyPlayed=false;
-      (teamList||[]).forEach(function(t){
-        var key=ensureTeam(t);
-        if(!key) return;
-        var md=pubScoreRowsForTeam(scores,t);
-        var played=false;
-        for(var i=0;i<10;i++) if(pubAddOverallMatch(totals[key],(md&&md[i])||null,slotPrefix+"|M"+(i+1))) played=true;
-        if(played&&nightDate){ nights[key]=nights[key]||{}; nights[key][nightDate]=true; }
-        if(played) anyPlayed=true;
-      });
-      return anyPlayed;
-    }
-    function savedAliasesForSession(gid,date,sess){
-      var aliases={};
-      aliases[gid+"|"+date]=true;
-      (sess.sourceSessions||[]).forEach(function(s){
-        if(s&&s.group&&s.date) aliases[s.group+"|"+s.date]=true;
-      });
-      return Object.keys(aliases);
-    }
-    mainTeams.forEach(ensureTeam);
-    Object.keys(groups).sort().forEach(function(gid){
-      var sessions=(groups[gid]&&groups[gid].sessions)||{};
-      Object.keys(sessions).sort().forEach(function(date){
-        overallStats.sessions++;
-        var sess=sessions[date]||{};
-        var sessionDate=pubCleanDate(sess.date||date);
-        if(!pubDateInOverallRange(sessionDate)){overallStats.dateSkipped++;return;}
-        if(!pubSessionBelongsToCurrentEvent(sess)){overallStats.eventSkipped++;return;}
-        var aliases=savedAliasesForSession(gid,date,sess);
-        if(aliases.some(function(k){return savedSessionKeys[k];})) return;
-        aliases.forEach(function(k){savedSessionKeys[k]=true;});
-        var teamList=sess.teams?(Array.isArray(sess.teams)?sess.teams:Object.values(sess.teams)):[];
-        overallStats.teamsSeen+=teamList.length;
-        if(addScoreSet(teamList,sess.scores||{},aliases[0],sessionDate)){ hasSavedScores=true; overallStats.scoredSessions++; }
-      });
-    });
-    var activeSessions=pubActiveSessions(active);
-    var liveJobs=[];
-    if(activeSessions.length){
-      activeSessions.forEach(function(a){
-        if(savedSessionKeys[a.group+"|"+a.date]) return;
-        var liveBase=eventPath("eventGroups")+"/"+a.group+"/sessions/"+a.date;
-        liveJobs.push(Promise.all([db.ref(liveBase+"/teams").once("value"),db.ref(liveBase+"/scores").once("value")]).then(function(ls){
-          var tv=ls[0].val()||[], sv=ls[1].val()||{};
-          var teamList=Array.isArray(tv)?tv:Object.values(tv);
-          addScoreSet(teamList,sv,"LIVE|"+a.group+"|"+a.date,pubCleanDate(a.date)||"LIVE");
-        }));
-      });
-    }else if(mainTeams.length&&!hasSavedScores){
-      addScoreSet(mainTeams,mainScores,"LIVE_MAIN",pubCleanDate(eventInfo.date||"")||"LIVE");
-    }
-    return Promise.all(liveJobs).then(function(){
-      var list=Object.keys(totals).map(function(k){ totals[k].nights=Object.keys(nights[k]||{}).length; delete totals[k].matchSlots; return totals[k]; });
-      list.sort(function(a,b){return b.total-a.total||b.placement-a.placement||b.kills-a.kills||String(a.name).localeCompare(String(b.name));});
-      renderOverallEventRankings(list);
-      if(sub) sub.textContent=list.length
-        ? (list.length+" teams · "+pubOverallRangeLabel()+" · saved sessions "+overallStats.scoredSessions+"/"+overallStats.sessions)
-        : ("No scoring rows found · saved sessions "+overallStats.scoredSessions+"/"+overallStats.sessions+" · date skipped "+overallStats.dateSkipped+" · event skipped "+overallStats.eventSkipped);
-    });
-  }).catch(function(e){
-    if(tbody) tbody.innerHTML='<tr><td colspan="8" style="color:#ff4444;padding:1rem;">Overall rankings failed to load.</td></tr>';
-  });
-}
-function renderOverallEventRankings(list){
-  var tbody=document.getElementById("pub-overall-tbody");
-  if(!tbody) return;
-  if(!list.length){ tbody.innerHTML='<tr><td colspan="8" style="color:#606878;padding:1rem;">No overall points saved yet.</td></tr>'; return; }
-  tbody.innerHTML="";
-  list.forEach(function(t,i){
-    var pos=i+1;
-    var pc=pos===1?"pub-p1":pos===2?"pub-p2":pos===3?"pub-p3":"pub-pX";
-    var rc=pos===1?"rk1":pos===2?"rk2":pos===3?"rk3":"";
-    var lc=t.logo?'<img class="pub-logo-cell" src="'+t.logo+'" alt="" onerror="this.style.opacity=0.1">':'';
-    var q=pos<=16?'<span class="pub-qual-arrow" title="Qualified to final">▲</span>':'';
-    var tr=document.createElement("tr");tr.className=rc;
-    tr.innerHTML='<td><span class="pub-rank-wrap"><span class="pub-pos '+pc+'">'+pos+'</span>'+q+'</span></td>'+
-      '<td>'+lc+'</td>'+
-      '<td class="left"><div class="pub-tname">'+t.name+'</div><div class="pub-tmeta">'+(t.tag?("["+t.tag+"] · "):"")+'All nights combined</div></td>'+
-      '<td><span class="pub-kv">'+t.nights+'</span></td>'+
-      '<td><span class="pub-kv">'+t.matches+'</span></td>'+
-      '<td><span class="pub-kv">'+t.kills+'</span></td>'+
-      '<td><span class="pub-kv">'+t.placement+'</span></td>'+
-      '<td><span class="pub-pv">'+t.total+'</span></td>';
-    tbody.appendChild(tr);
-  });
-}
 
 var pubSortMode = "pts";
 var pubTeamsGlobal = [], pubScoresGlobal = {};
+var pubScoreListenersAttached = false;
 
 function pubSortBy(mode){
   pubSortMode = mode;
@@ -3515,85 +2864,77 @@ function pubSortBy(mode){
     var b = document.getElementById("pub-btn-"+m);
     if(b) b.className = "ctrl-btn" + (m===mode?" active":"");
   });
-  if(pubTeamsGlobal.length) renderPubScoreboard(pubTeamsGlobal, pubScoresGlobal);
-}
-function showOverallRankings(){
-  showTab("scores");
-  var sec=document.getElementById("sec-scores");
-  if(sec) sec.className="section show overall-only";
-  updateOverallRangeControls();
-  var sb=document.getElementById("tab-scores"), ob=document.getElementById("tab-overall");
-  if(sb) sb.className="tab";
-  if(ob) ob.className="tab active";
-  if(!scoresLoaded) loadScoreboard();
-  setTimeout(function(){
-    var box=document.querySelector(".pub-overall");
-    if(box) box.scrollIntoView({behavior:"smooth",block:"start"});
-  },150);
+  renderPubScoreboard(pubTeamsGlobal, pubScoresGlobal);
 }
 
 function loadScoreboard(){
   scoresLoaded=true;
-  var manageDate=document.getElementById("manage-session-date");
-  if(manageDate&&!manageDate.value) manageDate.value=todayStr();
-  loadOverallEventRankings();
-  db.ref(eventPath("activeSession")).once("value").then(function(s){
-    var sessions=pubActiveSessions(s.val());
-    if(sessions.length) return pubLoadSessionScoreboard(sessions);
-    return pubLoadMainScoreboard();
-  }).catch(function(){ pubLoadMainScoreboard(); });
+  renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
+  if(pubScoreListenersAttached) return;
+  pubScoreListenersAttached=true;
+  db.ref(eventPath("teams")).on("value",function(s){
+    var v=s.val()||[];pubTeamsGlobal=Array.isArray(v)?v:Object.values(v);
+    renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
+  });
+  db.ref(eventPath("matches")).on("value",function(s2){
+    pubScoresGlobal=s2.val()||{};
+    renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
+  });
 }
 
 function renderPubScoreboard(pubTeams,pubScores){
+  var tbody=document.getElementById("pub-tbody");
+  var hero=document.getElementById("pub-hero-wrap");
+  var mini=document.getElementById("pub-mini-stats");
+  var sub=document.getElementById("pub-score-sub");
+  var live=document.getElementById("pub-score-live");
   if(!pubTeams.length){
-    document.getElementById("pub-hero-wrap").innerHTML='<div style="font-size:11px;color:#606878;padding:2rem;text-align:center;">No teams yet.</div>';
+    if(hero) hero.innerHTML="";
+    if(mini) mini.innerHTML="";
+    if(tbody) tbody.innerHTML='<tr><td colspan="16"><div class="empty">No teams yet.</div></td></tr>';
+    if(sub) sub.textContent="No active teams are loaded yet.";
     return;
   }
-  var calced=pubTeams.map(function(t){return pubCalc(t,pubScoreRowsForTeam(pubScores,t));});
+  var calced=pubTeams.map(function(t){return pubCalc(t,pubScoresForTeam(pubScores,t));});
   if(pubSortMode==="kills") calced.sort(function(a,b){return b.kills-a.kills;});
   else if(pubSortMode==="name") calced.sort(function(a,b){return a.name.localeCompare(b.name);});
   else calced.sort(function(a,b){return b.total-a.total||b.placement-a.placement||b.kills-a.kills;});
-  var leader=calced[0];
+  var ranked=calced.slice().sort(function(a,b){return b.total-a.total||b.placement-a.placement||b.kills-a.kills;});
+  var leader=ranked[0];
+  var totalKills=calced.reduce(function(sum,t){return sum+t.kills;},0);
+  var topKiller=calced.slice().sort(function(a,b){return b.kills-a.kills||b.total-a.total;})[0]||calced[0];
+  var playedMatches=Math.max.apply(null,[0].concat(calced.map(function(t){return t.played;})));
+  if(sub) sub.textContent=calced.length+" teams · "+playedMatches+" / 10 matches played · "+totalKills+" total kills";
+  if(live) live.textContent="● Live";
 
-  // Hero card
-  var lh=leader.logo?'<img class="pub-hero-logo" src="'+leader.logo+'" alt="" onerror="this.style.opacity=0.1">'
-    :'<div class="pub-hero-logo-ph">'+leader.name.substring(0,2)+'</div>';
-  document.getElementById("pub-hero-wrap").innerHTML=
-    '<div class="pub-hero">'+
-      '<div class="pub-hero-crown">🏆</div>'+lh+
-      '<div class="pub-hero-info">'+
-        '<div class="pub-hero-rank">#1 — Current Leader</div>'+
-        '<div class="pub-hero-name">'+leader.name+'</div>'+
-      '</div>'+
-      '<div class="pub-hero-stats">'+
-        '<div class="pub-hstat"><div class="pub-hstat-lbl">Place Pts</div><div class="pub-hstat-val plc">'+leader.placement+'</div></div>'+
-        '<div class="pub-hdiv"></div>'+
-        '<div class="pub-hstat"><div class="pub-hstat-lbl">Kills</div><div class="pub-hstat-val kls">'+leader.kills+'</div></div>'+
-        '<div class="pub-hdiv"></div>'+
-        '<div class="pub-hstat"><div class="pub-hstat-lbl">Total</div><div class="pub-hstat-val tot">'+leader.total+'</div></div>'+
-      '</div>'+
-    '</div>';
+  if(hero) hero.innerHTML="";
 
+  if(mini) mini.innerHTML=
+    '<div class="pub-mini-stat">Leader <span>'+escapeHtml(leader.name)+' ('+leader.total+')</span></div>'+
+    '<div class="pub-mini-stat">Teams <span>'+calced.length+'</span></div>'+
+    '<div class="pub-mini-stat">Matches <span>'+playedMatches+' / 10</span></div>'+
+    '<div class="pub-mini-stat">Top Fragger <span>'+escapeHtml(topKiller.name)+' ('+topKiller.kills+')</span></div>'+
+    '<div class="pub-mini-stat">Total Kills <span>'+totalKills+'</span></div>';
 
   // Table
-  var tbody=document.getElementById("pub-tbody");tbody.innerHTML="";
+  if(!tbody) return;
+  tbody.innerHTML="";
   calced.forEach(function(t,i){
-    if(i===0) return; // shown in hero
     var pos=i+1;
     var pc=pos===1?"pub-p1":pos===2?"pub-p2":pos===3?"pub-p3":"pub-pX";
     var rc=pos===1?"rk1":pos===2?"rk2":pos===3?"rk3":"";
     var cells=t.matches.map(function(m){
-      var st=pubMatchStats(m);
-      if(!st) return'<td><span style="color:#282c34;">—</span></td>';
-      var rs=st.rank!==null?'<span class="pub-mr '+pubRankCls(st.rank)+'">#'+st.rank+'</span>':'<span class="pub-mr rb">—</span>';
-      var ks='<span class="pub-mk '+pubKillCls(st.kills)+'">'+st.kills+'</span>';
+      if(!m||(m.rank===null&&m.kills===null)) return'<td><span style="color:#282c34;">—</span></td>';
+      var rs=m.rank!==null?'<span class="pub-mr '+pubRankCls(m.rank)+'">#'+m.rank+'</span>':'<span class="pub-mr rb">—</span>';
+      var ks=m.kills!==null?'<span class="pub-mk '+pubKillCls(m.kills)+'">'+m.kills+'</span>':'<span class="pub-mk kl">—</span>';
       return'<td><div class="pub-mc">'+rs+ks+'</div></td>';
     }).join("");
     var lc=t.logo?'<img class="pub-logo-cell" src="'+t.logo+'" alt="" onerror="this.style.opacity=0.1">':'';
     var tr=document.createElement("tr");tr.className=rc;
+    var scoreLine='<div class="pub-team-scoreline"><span class="pt-k">Kills <b>'+t.kills+'</b></span><span class="pt-p">Place <b>'+t.placement+'</b></span><span class="pt-t">Total <b>'+t.total+'</b></span></div>';
     tr.innerHTML='<td><span class="pub-pos '+pc+'">'+pos+'</span></td>'+
       '<td>'+lc+'</td>'+
-      '<td class="left"><div class="pub-tname">'+t.name+'</div><div class="pub-tmeta">'+t.played+' match'+(t.played!==1?"es":"")+'</div></td>'+
+      '<td class="left"><div class="pub-tname">'+escapeHtml(t.name)+'</div><div class="pub-tmeta">'+t.played+' match'+(t.played!==1?"es":"")+'</div>'+scoreLine+'</td>'+
       cells+
       '<td><span class="pub-kv">'+t.kills+'</span></td>'+
       '<td><span class="pub-kv">'+t.placement+'</span></td>'+
@@ -3627,12 +2968,11 @@ function loadPubArchive(){
       var card = document.createElement("div"); card.className="arch-card";
       var bodyId = "arch-body-"+idx;
       var togId = "arch-tog-"+idx;
-      var downloadBtn = isAdmin ? '<button class="btn" onclick="event.stopPropagation();downloadArchive('+idx+')" style="font-size:11px;padding:4px 12px;border-radius:20px;">⬇ Download</button>' : '';
       card.innerHTML =
         '<div class="arch-hdr" onclick="toggleArch(\''+bodyId+'\',\''+togId+'\')">'+
           '<div><div class="arch-name">🏆 '+ev.name+'</div><div class="arch-date">'+dateStr+'</div></div>'+
           '<div style="display:flex;align-items:center;gap:10px;">'+
-            downloadBtn+
+            '<button class="btn" onclick="event.stopPropagation();downloadArchive('+idx+')" style="font-size:11px;padding:4px 12px;border-radius:20px;">⬇ Download</button>'+
             '<span class="arch-toggle" id="'+togId+'">▼</span>'+
           '</div>'+
         '</div>'+
@@ -3660,7 +3000,6 @@ function toggleArch(bodyId, togId){
 }
 
 function downloadArchive(idx){
-  if(!isAdmin){toast("Admin login required",false);return;}
   var ev = pubArchiveList[idx];
   if(!ev) return;
   var RPTS=[10,6,5,4,3,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
@@ -3840,7 +3179,9 @@ document.getElementById("s-add-btn").onclick = function(){
     }).catch(function(e){btn.textContent="Add Streamer";btn.disabled=false;toast("Error: "+e.message,false);});
   }
   if(sPhotoFile){
-    uploadLogoFileWithFallback(sPhotoFile,name,"streamers").then(doSave).catch(function(e){btn.textContent="Add Streamer";btn.disabled=false;toast("Logo error: "+(e.message||e),false);});
+    var reader=new FileReader();
+    reader.onload=function(e){var img=new Image();img.onload=function(){var c=document.createElement("canvas");c.width=80;c.height=80;c.getContext("2d").drawImage(img,0,0,80,80);doSave(c.toDataURL("image/jpeg",0.8));};img.src=e.target.result;};
+    reader.readAsDataURL(sPhotoFile);
   } else { doSave(""); }
 };
 
@@ -4125,7 +3466,17 @@ document.getElementById("scrim-reg-btn").onclick = function() {
     }).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Error: "+e.message;msg.style.color="#ff4444";});
   }
   if(scrimLogoFile){
-    uploadLogoFileWithFallback(scrimLogoFile,name,"scrim-registration").then(doSave).catch(function(e){btn.textContent="Register";btn.disabled=false;msg.textContent="Logo error: "+(e.message||e);msg.style.color="#ff4444";});
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var img=new Image();
+      img.onload=function(){
+        var c=document.createElement("canvas");c.width=80;c.height=80;
+        c.getContext("2d").drawImage(img,0,0,80,80);
+        doSave(c.toDataURL("image/jpeg",0.7));
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(scrimLogoFile);
   }else{doSave(document.getElementById("scrim-reg-logo-prev").dataset.savedLogo || findSavedRegistrationLogo(name) || "");}
 };
 
@@ -4326,7 +3677,7 @@ var roadmapMode = "event";
 var roadmapData = null;
 var roadmapMapLibrary = {};
 var ROADMAP_DEFAULTS = {
-  eventTitle:"Grand Finals", eventCount:"1/12", ticker:"From the drop to the last one standing show!", countdownText:"04:00", nextLabel:"Next Match", timerStyle:"shadow", timerColor:"#ffffff", timerShadowColor:"#000000", timerOutlineColor:"#000000", timerGlowColor:"#e8b800", sideDesign:"red", sideImageUrl:"",
+  eventTitle:"Grand Finals", eventCount:"1/12", ticker:"From the drop to the last one standing show!", countdownText:"04:00", nextLabel:"Next Match", sideImageUrl:"",
   highlightUrl:"", highlightType:"auto", highlightTitle:"MATCH HIGHLIGHTS", highlightSub:"PMAF live highlights and daily roadmap",
   maps:[
     {name:"RONDO", sub:"MATCH 1", matchIndex:0, bg:"linear-gradient(135deg,#325331,#c9d7a6)", imageUrl:""},
@@ -4344,24 +3695,9 @@ function roadmapMapLibraryKey(v){ return normalizeRoadmapMapName(v).replace(/[.#
 function setRoadmapStatus(msg, ok){ var el=document.getElementById("roadmap-status"); if(el){el.textContent=msg||""; el.style.color=ok===false?"#ff4444":"#8a96a8";} }
 function setRoadmapMode(mode){ roadmapMode = mode || "event"; var e=document.getElementById("roadmap-mode-event"), s=document.getElementById("roadmap-mode-scrim"); if(e)e.className="roadmap-mode"+(roadmapMode==="event"?" active":""); if(s)s.className="roadmap-mode"+(roadmapMode==="scrim"?" active":""); loadRoadmapAdmin(); }
 function loadRoadmapAdmin(){ if(!isAdmin) return; setRoadmapStatus("Loading..."); Promise.all([db.ref(roadmapPath()).once("value"),db.ref(roadmapMapLibraryPath()).once("value").catch(function(){return {val:function(){return {};}};})]).then(function(snaps){ roadmapData = snaps[0].val() || JSON.parse(JSON.stringify(ROADMAP_DEFAULTS)); roadmapMapLibrary = Object.assign({}, roadmapData.mapLibrary||{}, snaps[1].val()||{}); fillRoadmapForm(); setRoadmapStatus("Loaded "+(roadmapMode==="event"?"PMAF Event":"Daily Scrim")); }).catch(function(e){ setRoadmapStatus(e.message||"Load failed",false); }); }
-function roadmapTimerUrl(){ var url=new URL("starting-soon-timer.html", window.location.href); url.searchParams.set("event", EVENT_ID); url.searchParams.set("mode", roadmapMode==="scrim"?"scrim":"event"); return url.href; }
-function fillRoadmapForm(){ var d=roadmapData || ROADMAP_DEFAULTS; function val(id,v){var el=document.getElementById(id); if(el) el.value=v||"";} val("roadmap-event-title",d.eventTitle); val("roadmap-event-count",d.eventCount); val("roadmap-ticker",d.ticker); val("roadmap-countdown",d.countdownText); val("roadmap-next-label",d.nextLabel); val("roadmap-timer-style",d.timerStyle||"shadow"); val("roadmap-timer-color",d.timerColor||"#ffffff"); val("roadmap-timer-shadow",d.timerShadowColor||"#000000"); val("roadmap-timer-outline",d.timerOutlineColor||"#000000"); val("roadmap-timer-glow",d.timerGlowColor||"#e8b800"); val("roadmap-timer-url",roadmapTimerUrl()); val("roadmap-side-design",d.sideDesign||"red"); val("roadmap-side-url",d.sideImageUrl); var sp=document.getElementById("roadmap-side-prev"); if(sp) sp.style.backgroundImage=cssRoadmapBg(d.sideImageUrl||""); val("roadmap-highlight-url",d.highlightUrl); val("roadmap-highlight-title",d.highlightTitle); val("roadmap-highlight-sub",d.highlightSub); renderRoadmapMapEditor(d.maps||[]); }
+function fillRoadmapForm(){ var d=roadmapData || ROADMAP_DEFAULTS; function val(id,v){var el=document.getElementById(id); if(el) el.value=v||"";} val("roadmap-event-title",d.eventTitle); val("roadmap-event-count",d.eventCount); val("roadmap-ticker",d.ticker); val("roadmap-countdown",d.countdownText); val("roadmap-next-label",d.nextLabel); val("roadmap-side-url",d.sideImageUrl); var sp=document.getElementById("roadmap-side-prev"); if(sp) sp.style.backgroundImage=cssRoadmapBg(d.sideImageUrl||""); val("roadmap-highlight-url",d.highlightUrl); val("roadmap-highlight-title",d.highlightTitle); val("roadmap-highlight-sub",d.highlightSub); renderRoadmapMapEditor(d.maps||[]); }
 function renderRoadmapMapEditor(maps){ var wrap=document.getElementById("roadmap-map-list"); if(!wrap) return; wrap.innerHTML=(maps||[]).map(function(m,i){ var bg=m.imageUrl||m.bg||"linear-gradient(135deg,#53625d,#c8c0a9)"; return '<div class="roadmap-map-card" data-rm-index="'+i+'"><div class="roadmap-map-card-title"><span>Map '+(i+1)+'</span><button class="btn btn-red" onclick="removeRoadmapMap('+i+')" style="padding:4px 10px;font-size:10px;">Remove</button></div><div class="roadmap-field"><label>Map Name</label><input id="rm-name-'+i+'" value="'+escapeHtml(m.name||'')+'" placeholder="ERANGEL" oninput="applyRoadmapMapLibrary('+i+')" onchange="applyRoadmapMapLibrary('+i+')" onblur="applyRoadmapMapLibrary('+i+')"></div><div class="roadmap-field"><label>Match Label</label><input id="rm-sub-'+i+'" value="'+escapeHtml(m.sub||('MATCH '+(i+1)))+'"></div><div class="roadmap-field"><label>Score Match Number</label><input id="rm-match-'+i+'" type="number" value="'+(Number.isFinite(parseInt(m.matchIndex))?parseInt(m.matchIndex)+1:i+1)+'" min="1"></div><div class="roadmap-field"><label>Upload Map Picture</label><input type="file" id="rm-file-'+i+'" accept="image/*" onchange="previewRoadmapMapFile('+i+')"></div><div class="roadmap-field"><label>Or Map Picture URL</label><input id="rm-img-'+i+'" value="'+escapeHtml(m.imageUrl||'')+'" data-map-name="'+escapeHtml(normalizeRoadmapMapName(m.name||''))+'" placeholder="https://..."></div><div class="roadmap-field"><label>Fallback Color / Gradient</label><input id="rm-bg-'+i+'" value="'+escapeHtml(m.bg||'')+'" placeholder="linear-gradient(...)"></div><div class="roadmap-preview" id="rm-prev-'+i+'" style="background-image:'+cssRoadmapBg(bg)+'"></div></div>'; }).join(''); }
 function cssRoadmapBg(v){ v=String(v||""); if(!v) return "linear-gradient(135deg,#53625d,#c8c0a9)"; if(/^https?:|^data:|^file:/i.test(v)) return "url('"+v.replace(/'/g,'%27')+"')"; return v; }
-function cleanRoadmapFallbackBg(bg,imageUrl){ bg=String(bg||"").trim(); imageUrl=String(imageUrl||"").trim(); if(imageUrl&&(/^https?:|^data:|^file:/i.test(bg)||/^url\(/i.test(bg))) return "linear-gradient(135deg,#53625d,#c8c0a9)"; return bg||"linear-gradient(135deg,#53625d,#c8c0a9)"; }
-function isFirebaseStorageRoadmapUrl(v){
-  v=String(v||"").trim();
-  return /^https:\/\/firebasestorage\.googleapis\.com\//i.test(v) || /^https:\/\/storage\.googleapis\.com\//i.test(v);
-}
-function isRoadmapPreviewData(v){ return /^data:image\//i.test(String(v||"").trim()); }
-function dataUrlToRoadmapBlob(dataUrl){
-  var parts=String(dataUrl||"").split(",");
-  var meta=parts[0]||"", b64=parts[1]||"";
-  var mime=(meta.match(/data:([^;]+)/)||[])[1]||"image/jpeg";
-  var bin=atob(b64), len=bin.length, arr=new Uint8Array(len);
-  for(var i=0;i<len;i++) arr[i]=bin.charCodeAt(i);
-  return new Blob([arr],{type:mime});
-}
 function findRoadmapImageByName(name, skipIndex){
   var key=roadmapMapLibraryKey(name);
   var count=document.querySelectorAll(".roadmap-map-card").length;
@@ -4404,7 +3740,7 @@ function buildRoadmapMapLibraryUpdates(d){
   });
   return updates;
 }
-function collectRoadmapData(){ var d={ eventTitle:document.getElementById("roadmap-event-title").value.trim(), eventCount:document.getElementById("roadmap-event-count").value.trim(), ticker:document.getElementById("roadmap-ticker").value.trim(), countdownText:document.getElementById("roadmap-countdown").value.trim(), nextLabel:document.getElementById("roadmap-next-label").value.trim(), timerStyle:(document.getElementById("roadmap-timer-style")||{}).value||"shadow", timerColor:(document.getElementById("roadmap-timer-color")||{}).value||"#ffffff", timerShadowColor:(document.getElementById("roadmap-timer-shadow")||{}).value||"#000000", timerOutlineColor:(document.getElementById("roadmap-timer-outline")||{}).value||"#000000", timerGlowColor:(document.getElementById("roadmap-timer-glow")||{}).value||"#e8b800", sideDesign:(document.getElementById("roadmap-side-design")||{}).value||"red", sideImageUrl:(document.getElementById("roadmap-side-url")||{}).value.trim(), highlightUrl:document.getElementById("roadmap-highlight-url").value.trim(), highlightType:"auto", highlightTitle:document.getElementById("roadmap-highlight-title").value.trim(), highlightSub:document.getElementById("roadmap-highlight-sub").value.trim(), updatedAt:firebase.database.ServerValue.TIMESTAMP, maps:[] }; var count=document.querySelectorAll(".roadmap-map-card").length; for(var i=0;i<count;i++){ applyRoadmapMapLibrary(i); rememberRoadmapImageFromField(i); d.maps.push({ name:(document.getElementById("rm-name-"+i)||{}).value||"", sub:(document.getElementById("rm-sub-"+i)||{}).value||("MATCH "+(i+1)), matchIndex:Math.max(0,parseInt((document.getElementById("rm-match-"+i)||{}).value||i+1)-1), imageUrl:(function(){ var nameEl=document.getElementById("rm-name-"+i), imgEl=document.getElementById("rm-img-"+i); var wanted=normalizeRoadmapMapName(nameEl&&nameEl.value); var owner=normalizeRoadmapMapName(imgEl&&imgEl.dataset&&imgEl.dataset.mapName); var found=findRoadmapImageByName(wanted,i); if(found && String(found).trim()!==String((imgEl||{}).value||"").trim()){ imgEl.value=found; imgEl.dataset.mapName=wanted; var prev=document.getElementById("rm-prev-"+i); if(prev) prev.style.backgroundImage=cssRoadmapBg(found); } return (imgEl||{}).value||""; })(), bg:cleanRoadmapFallbackBg((document.getElementById("rm-bg-"+i)||{}).value,(document.getElementById("rm-img-"+i)||{}).value) }); } return d; }
+function collectRoadmapData(){ var d={ eventTitle:document.getElementById("roadmap-event-title").value.trim(), eventCount:document.getElementById("roadmap-event-count").value.trim(), ticker:document.getElementById("roadmap-ticker").value.trim(), countdownText:document.getElementById("roadmap-countdown").value.trim(), nextLabel:document.getElementById("roadmap-next-label").value.trim(), sideImageUrl:(document.getElementById("roadmap-side-url")||{}).value.trim(), highlightUrl:document.getElementById("roadmap-highlight-url").value.trim(), highlightType:"auto", highlightTitle:document.getElementById("roadmap-highlight-title").value.trim(), highlightSub:document.getElementById("roadmap-highlight-sub").value.trim(), updatedAt:firebase.database.ServerValue.TIMESTAMP, maps:[] }; var count=document.querySelectorAll(".roadmap-map-card").length; for(var i=0;i<count;i++){ applyRoadmapMapLibrary(i); rememberRoadmapImageFromField(i); d.maps.push({ name:(document.getElementById("rm-name-"+i)||{}).value||"", sub:(document.getElementById("rm-sub-"+i)||{}).value||("MATCH "+(i+1)), matchIndex:Math.max(0,parseInt((document.getElementById("rm-match-"+i)||{}).value||i+1)-1), imageUrl:(function(){ var nameEl=document.getElementById("rm-name-"+i), imgEl=document.getElementById("rm-img-"+i); var wanted=normalizeRoadmapMapName(nameEl&&nameEl.value); var owner=normalizeRoadmapMapName(imgEl&&imgEl.dataset&&imgEl.dataset.mapName); var found=findRoadmapImageByName(wanted,i); if(found && String(found).trim()!==String((imgEl||{}).value||"").trim()){ imgEl.value=found; imgEl.dataset.mapName=wanted; var prev=document.getElementById("rm-prev-"+i); if(prev) prev.style.backgroundImage=cssRoadmapBg(found); } return (imgEl||{}).value||""; })(), bg:(document.getElementById("rm-bg-"+i)||{}).value||"linear-gradient(135deg,#53625d,#c8c0a9)" }); } return d; }
 function addRoadmapMap(){ var d=collectRoadmapData(); d.maps.push({name:"ERANGEL",sub:"MATCH "+(d.maps.length+1),matchIndex:d.maps.length,bg:"linear-gradient(135deg,#53625d,#c8c0a9)",imageUrl:""}); roadmapData=d; fillRoadmapForm(); }
 function removeRoadmapMap(i){ var d=collectRoadmapData(); d.maps.splice(i,1); roadmapData=d; fillRoadmapForm(); }
 function resetRoadmapDefaults(){ roadmapData=JSON.parse(JSON.stringify(ROADMAP_DEFAULTS)); fillRoadmapForm(); setRoadmapStatus("Defaults loaded. Press Save Roadmap to publish."); }
@@ -4436,7 +3772,7 @@ function previewRoadmapMapFile(i){
     if(input) input.value=u;
     rememberRoadmapImageFromField(i);
     if(prev) prev.style.backgroundImage=cssRoadmapBg(u);
-    setRoadmapStatus("Map picture preview ready. Press Save Roadmap to upload it to Firebase Storage.");
+    setRoadmapStatus("Map picture ready and remembered by map name. Press Save Roadmap to publish.");
   }).catch(function(e){ setRoadmapStatus(e.message||"Image preview failed",false); });
 }
 function previewRoadmapSideFile(){
@@ -4449,48 +3785,10 @@ function previewRoadmapSideFile(){
   }).catch(function(e){ setRoadmapStatus(e.message||"Image preview failed",false); });
 }
 function uploadRoadmapFile(file, folder){
-  if(!file) return Promise.reject(new Error("No file selected"));
-  var cleanName=String(file.name||"roadmap-image").replace(/[^a-zA-Z0-9_.-]/g,"_");
-  var path=folder+"/"+Date.now()+"_"+cleanName;
-  return storage.ref(path).put(file,{contentType:file.type||"application/octet-stream"}).then(function(s){return s.ref.getDownloadURL();});
+  if(file && /^image\//i.test(file.type||"")) return roadMapImageToDataUrl(file,1200,720,0.8);
+  return storage.ref(folder+"/"+Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9_.-]/g,"_")).put(file).then(function(s){return s.ref.getDownloadURL();});
 }
-function uploadRoadmapDataUrl(dataUrl, folder, name){
-  var blob=dataUrlToRoadmapBlob(dataUrl);
-  var cleanName=String(name||"roadmap-image.jpg").replace(/[^a-zA-Z0-9_.-]/g,"_");
-  var path=folder+"/"+Date.now()+"_"+cleanName;
-  return storage.ref(path).put(blob,{contentType:blob.type||"image/jpeg"}).then(function(s){return s.ref.getDownloadURL();});
-}
-function logoStorageFolder(kind, name){
-  return "pmac/team-logos/"+EVENT_ID+"/"+String(kind||"team")+"/"+sanitizeKey(logoKey(name)||"LOGO");
-}
-function ensureLogoStorageUrl(logo, name, kind){
-  if(!String(logo||"").startsWith("data:")) return Promise.resolve(logo||"");
-  return uploadRoadmapDataUrl(logo, logoStorageFolder(kind,name), cleanStorageLogoName(name)+".png").catch(function(){ return logo; });
-}
-function cleanStorageLogoName(name){
-  return String(name||"logo").replace(/[^a-zA-Z0-9_.-]/g,"_").slice(0,80);
-}
-function fileToLegacyLogoData(file, quality){
-  return new Promise(function(resolve,reject){
-    var reader=new FileReader();
-    reader.onerror=reject;
-    reader.onload=function(e){
-      if(isPngLogoFile(file,e.target.result)){ resolve(e.target.result); return; }
-      var img=new Image();
-      img.onload=function(){ var c=document.createElement("canvas"); c.width=80; c.height=80; c.getContext("2d").drawImage(img,0,0,80,80); resolve(c.toDataURL("image/jpeg",quality||0.7)); };
-      img.onerror=reject;
-      img.src=e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-function uploadLogoFileWithFallback(file, name, kind){
-  if(!file) return Promise.resolve("");
-  return uploadRoadmapFile(file, logoStorageFolder(kind,name)).catch(function(){
-    return fileToLegacyLogoData(file,0.7);
-  });
-}
-function saveRoadmapAdmin(){ if(!isAdmin){toast("Admin login required",false);return;} var d=collectRoadmapData(); setRoadmapStatus("Uploading roadmap pictures to Firebase Storage..."); var jobs=[]; var sf=document.getElementById("roadmap-side-file"); if(sf&&sf.files&&sf.files[0]) jobs.push(uploadRoadmapFile(sf.files[0],"pmac/roadmap/"+EVENT_ID+"/"+roadmapMode+"/side").then(function(u){d.sideImageUrl=u; var input=document.getElementById("roadmap-side-url"); if(input) input.value=u;})); else if(isRoadmapPreviewData(d.sideImageUrl)) jobs.push(uploadRoadmapDataUrl(d.sideImageUrl,"pmac/roadmap/"+EVENT_ID+"/"+roadmapMode+"/side","side.jpg").then(function(u){d.sideImageUrl=u; var input=document.getElementById("roadmap-side-url"); if(input) input.value=u;})); var hf=document.getElementById("roadmap-highlight-file"); if(hf&&hf.files&&hf.files[0]) jobs.push(uploadRoadmapFile(hf.files[0],"pmac/roadmap/"+EVENT_ID+"/"+roadmapMode+"/highlight").then(function(u){d.highlightUrl=u;})); else if(isRoadmapPreviewData(d.highlightUrl)) jobs.push(uploadRoadmapDataUrl(d.highlightUrl,"pmac/roadmap/"+EVENT_ID+"/"+roadmapMode+"/highlight","highlight.jpg").then(function(u){d.highlightUrl=u;})); d.maps.forEach(function(m,i){ var f=document.getElementById("rm-file-"+i), name=normalizeRoadmapMapName(m.name)||("MAP_"+(i+1)); if(f&&f.files&&f.files[0]) jobs.push(uploadRoadmapFile(f.files[0],"pmac/roadmap/"+EVENT_ID+"/map-library/"+roadmapMapLibraryKey(name)).then(function(u){m.imageUrl=u; var imgEl=document.getElementById("rm-img-"+i), prev=document.getElementById("rm-prev-"+i); if(imgEl){imgEl.value=u; imgEl.dataset.mapName=name;} if(prev) prev.style.backgroundImage=cssRoadmapBg(u); m.bg=cleanRoadmapFallbackBg(m.bg,u); var bgEl=document.getElementById("rm-bg-"+i); if(bgEl) bgEl.value=m.bg; roadmapMapLibrary[roadmapMapLibraryKey(name)]={name:name,imageUrl:u,updatedAt:Date.now()};})); else if(isRoadmapPreviewData(m.imageUrl)) jobs.push(uploadRoadmapDataUrl(m.imageUrl,"pmac/roadmap/"+EVENT_ID+"/map-library/"+roadmapMapLibraryKey(name),name+".jpg").then(function(u){m.imageUrl=u; var imgEl=document.getElementById("rm-img-"+i), prev=document.getElementById("rm-prev-"+i); if(imgEl){imgEl.value=u; imgEl.dataset.mapName=name;} if(prev) prev.style.backgroundImage=cssRoadmapBg(u); m.bg=cleanRoadmapFallbackBg(m.bg,u); var bgEl=document.getElementById("rm-bg-"+i); if(bgEl) bgEl.value=m.bg; roadmapMapLibrary[roadmapMapLibraryKey(name)]={name:name,imageUrl:u,updatedAt:Date.now()};})); else if(/^file:/i.test(String(m.imageUrl||""))) jobs.push(Promise.reject(new Error("Map "+(i+1)+" is a local file. Upload it so it can be saved to Firebase Storage."))); }); Promise.all(jobs).then(function(){ d.maps.forEach(function(m){ if(m.imageUrl && !isFirebaseStorageRoadmapUrl(m.imageUrl)){ if(/^https?:/i.test(m.imageUrl)) setRoadmapStatus("Warning: one map uses external URL, not Firebase Storage.",false); } }); var libraryUpdates=buildRoadmapMapLibraryUpdates(d); roadmapMapLibrary=Object.assign({},roadmapMapLibrary,libraryUpdates); d.mapLibrary=roadmapMapLibrary; return db.ref(roadmapPath()).set(d).then(function(){ if(Object.keys(libraryUpdates).length) db.ref(roadmapMapLibraryPath()).update(libraryUpdates).catch(function(){}); }); }).then(function(){ roadmapData=d; var sf=document.getElementById("roadmap-side-file"), hf=document.getElementById("roadmap-highlight-file"); if(sf) sf.value=""; if(hf) hf.value=""; for(var ci=0;ci<document.querySelectorAll(".roadmap-map-card").length;ci++){var cf=document.getElementById("rm-file-"+ci); if(cf) cf.value="";} fillRoadmapForm(); setRoadmapStatus("Saved. Map pictures are Firebase Storage URLs for remote OBS users."); toast("Roadmap saved",true); }).catch(function(e){ setRoadmapStatus(e.message||"Save failed",false); toast("Roadmap save failed",false); }); }
+function saveRoadmapAdmin(){ if(!isAdmin){toast("Admin login required",false);return;} var d=collectRoadmapData(); setRoadmapStatus("Uploading / saving..."); var jobs=[]; var sf=document.getElementById("roadmap-side-file"); if(sf&&sf.files&&sf.files[0]) jobs.push(uploadRoadmapFile(sf.files[0],"pmac/roadmap/"+roadmapMode+"/side").then(function(u){d.sideImageUrl=u;})); var hf=document.getElementById("roadmap-highlight-file"); if(hf&&hf.files&&hf.files[0]) jobs.push(uploadRoadmapFile(hf.files[0],"pmac/roadmap/"+roadmapMode+"/highlight").then(function(u){d.highlightUrl=u;})); d.maps.forEach(function(m,i){ var f=document.getElementById("rm-file-"+i); if(f&&f.files&&f.files[0]) jobs.push(uploadRoadmapFile(f.files[0],"pmac/roadmap/"+roadmapMode+"/maps").then(function(u){m.imageUrl=u;})); }); Promise.all(jobs).then(function(){ var libraryUpdates=buildRoadmapMapLibraryUpdates(d); roadmapMapLibrary=Object.assign({},roadmapMapLibrary,libraryUpdates); d.mapLibrary=roadmapMapLibrary; return db.ref(roadmapPath()).set(d).then(function(){ if(Object.keys(libraryUpdates).length) db.ref(roadmapMapLibraryPath()).update(libraryUpdates).catch(function(){}); }); }).then(function(){ roadmapData=d; fillRoadmapForm(); setRoadmapStatus("Saved. OBS overlay updates automatically. Map pictures remembered by name."); toast("Roadmap saved",true); }).catch(function(e){ setRoadmapStatus(e.message||"Save failed",false); toast("Roadmap save failed",false); }); }
 </script>
 </body>
 </html>
