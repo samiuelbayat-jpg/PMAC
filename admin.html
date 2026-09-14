@@ -246,8 +246,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="btn" onclick="openStandalone('promotions.html')">📢 Promotions</button>
     <button class="btn" onclick="openStandalone('scoreboard.html')">🏆 Scoreboard</button>
     <button class="btn" onclick="openStandalone('overlay.html')">🎥 OBS Overlay</button>
-    <button class="btn" onclick="openStandalone('highlights-roadmap-overlay.html')">🗺️ Roadmap Overlay</button>
-    <button class="btn" onclick="openStandalone('highlights-roadmap-overlay.html?mode=scrim')">🗺️ Scrim Roadmap</button>
+    <button class="btn" onclick="openDefaultStandalone('highlights-roadmap-overlay.html')">🗺️ Roadmap Overlay</button>
+    <button class="btn" onclick="openDefaultStandalone('highlights-roadmap-overlay.html?mode=scrim')">🗺️ Scrim Roadmap</button>
     <button class="btn" onclick="openStandalone('archive.html')">📦 Archive</button>
     <button class="btn" onclick="openStandalone('lobby.html')">🏅 Top Teams Lobby</button>
     <button class="btn" onclick="openStandalone('scoreboard-gfx.html')">✨ GFX Board</button>
@@ -295,7 +295,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div class="inp-wrap"><div class="inp-lbl">Streamer Logo</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><input type="file" id="ov-streamer-logo-file" accept="image/*" style="display:none" onchange="ovPreviewLogo(this)"><button class="logo-inp-btn" type="button" onclick="document.getElementById('ov-streamer-logo-file').click()">Upload Logo</button><img id="ov-logo-preview" class="ov-preview-logo"></div></div>
         <div class="inp-wrap"><div class="inp-lbl">Top 4 Helmet</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><input type="file" id="ov-top4-helmet-file" accept="image/*" style="display:none" onchange="ovPreviewTop4Helmet(this)"><button class="logo-inp-btn" type="button" onclick="document.getElementById('ov-top4-helmet-file').click()">Upload Helmet</button><img id="ov-top4-helmet-preview" class="ov-preview-logo"></div></div>
       </div>
-      <div class="ov-actions"><button class="btn btn-primary" onclick="saveOverlaySettings()">💾 Save / Send To OBS</button><button class="btn" onclick="clearOverlayLogo()">Clear Logo</button><button class="btn" onclick="clearTop4Helmet()">Clear Helmet</button><button class="btn" onclick="openStandalone('overlay.html')">Open Overlay</button></div>
+      <div class="ov-actions"><button class="btn btn-primary" onclick="saveOverlaySettings()">💾 Save / Send To OBS</button><button class="btn" onclick="clearOverlayLogo()">Clear Logo</button><button class="btn" onclick="clearTop4Helmet()">Clear Helmet</button><button class="btn" onclick="openStandalone('overlay.html')">Open Overlay</button><button class="btn" onclick="copyStandaloneLink('overlay.html','OBS overlay')">Copy OBS Link</button><button class="btn" onclick="copyDefaultStandaloneLink('highlights-roadmap-overlay.html','OBS highlights')">Copy Highlights Link</button></div>
       <div class="ov-hint">Color and design changes auto-save to Firebase and update overlay.html live. OBS should use overlay.html as the browser source.</div>
     </div>
   </div>
@@ -356,7 +356,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <button class="btn" onclick="addRoadmapMap()" style="padding:8px 16px;font-size:12px;">+ Add Map</button>
         <button class="btn" onclick="resetRoadmapDefaults()" style="padding:8px 16px;font-size:12px;">Load Defaults</button>
         <button class="btn btn-primary" onclick="saveRoadmapAdmin()" style="padding:8px 20px;font-size:12px;">Save Roadmap</button>
-        <button class="btn" onclick="openStandalone(roadmapMode==='scrim'?'highlights-roadmap-overlay.html?mode=scrim':'highlights-roadmap-overlay.html')" style="padding:8px 16px;font-size:12px;">Open OBS Roadmap</button>
+        <button class="btn" onclick="openDefaultStandalone(roadmapMode==='scrim'?'highlights-roadmap-overlay.html?mode=scrim':'highlights-roadmap-overlay.html')" style="padding:8px 16px;font-size:12px;">Open OBS Roadmap</button>
+        <button class="btn" onclick="copyDefaultStandaloneLink(roadmapMode==='scrim'?'highlights-roadmap-overlay.html?mode=scrim':'highlights-roadmap-overlay.html','OBS highlights')" style="padding:8px 16px;font-size:12px;">Copy OBS Roadmap Link</button>
         <span class="roadmap-status" id="roadmap-status"></span>
       </div>
     </div>
@@ -386,7 +387,9 @@ let dbTeamsRef, dbScoresRef, dbActiveSessionRef, dbEgRef, overlaySettingsRef, fo
 function cleanEventId(name){ return String(name||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40) || "event-"+Date.now(); }
 function eventBasePath(){ return activeEventId==="default" ? "pmac" : "pmac/events/"+activeEventId; }
 function eventPath(child){ return eventBasePath()+"/"+child; }
-function eventUrl(url){ const sep=url.indexOf("?")>-1?"&":"?"; return url+sep+"event="+encodeURIComponent(activeEventId); }
+function eventUrlFor(url,eventId){ const sep=url.indexOf("?")>-1?"&":"?"; return url+sep+"event="+encodeURIComponent(eventId||activeEventId); }
+function eventUrl(url){ return eventUrlFor(url,activeEventId); }
+function defaultEventUrl(url){ return eventUrlFor(url,"default"); }
 function eventStorageKey(key){ return key+"_"+activeEventId; }
 function resetEventRefs(){ dbTeamsRef=db.ref(eventPath("teams")); dbScoresRef=db.ref(eventPath("matches")); dbActiveSessionRef=db.ref(eventPath("activeSession")); dbEgRef=db.ref(eventPath("eventGroups")); overlaySettingsRef=db.ref(eventPath("overlaySettings")); forumRef=db.ref(eventPath("forum/messages")); localStorage.setItem("pmac_active_event", activeEventId); const lbl=document.getElementById("event-path-label"); if(lbl) lbl.textContent=eventBasePath(); }
 
@@ -1600,7 +1603,18 @@ function sendChatMessage(){ const nick=document.getElementById("chat-nick").valu
 function clearAllChat(){ if(confirm("Clear all chat messages?")) forumRef.remove().then(()=>{ const container=document.getElementById("chat-messages"); container.innerHTML='<div class="chat-empty">Chat cleared.</div>'; }); }
 function escapeHtml(str){ return String(str).replace(/[&<>]/g,function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
 function previewLogo(input){ const file=input.files[0]; if(file){ const reader=new FileReader(); reader.onload=e=>{ const prev=document.getElementById("logo-preview"); prev.src=e.target.result; prev.style.display="block"; prev.dataset.savedLogo=""; const btn=document.getElementById("use-saved-team-logo-btn"); if(btn) btn.style.display="none"; }; reader.readAsDataURL(file); } }
+function standaloneHref(url){ return new URL(eventUrl(url), location.href).href; }
+function defaultStandaloneHref(url){ return new URL(defaultEventUrl(url), location.href).href; }
+function copyStandaloneLink(url,label){
+  const href=standaloneHref(url);
+  navigator.clipboard.writeText(href).then(()=>showToast((label||"OBS")+" link copied", true)).catch(()=>{ prompt("Copy this OBS link:", href); });
+}
+function copyDefaultStandaloneLink(url,label){
+  const href=defaultStandaloneHref(url);
+  navigator.clipboard.writeText(href).then(()=>showToast((label||"OBS")+" default link copied", true)).catch(()=>{ prompt("Copy this OBS link:", href); });
+}
 function openStandalone(url){ if(!url || url==="") return; window.open(eventUrl(url), "_blank", "noopener"); }
+function openDefaultStandalone(url){ if(!url || url==="") return; window.open(defaultEventUrl(url), "_blank", "noopener"); }
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
     startAdminForUser(user);
