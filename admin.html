@@ -119,7 +119,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .toast-err{background:#ff4444;color:#fff;}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:none;align-items:center;justify-content:center;}
 .modal-bg.show{display:flex;}
-.modal{background:#0f1115;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:2rem;width:520px;max-width:95%;}
+.modal{position:relative;background:#0f1115;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:2rem;width:520px;max-width:95%;}
+.modal-close{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.14);background:#161a1f;color:#8a96a8;font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:900;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{border-color:#e8b800;color:#000;background:#e8b800;}
 .modal-title{font-weight:900;font-size:18px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;color:#e8b800;}
 .modal-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;letter-spacing:0.08em;margin-bottom:1.5rem;}
 .modal-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
@@ -132,6 +134,10 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .archive-edit-status{min-height:18px;margin-top:10px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.45;color:#8a96a8;}
 .archive-edit-status.ok{color:#00d084;}
 .archive-edit-status.err{color:#ff5a5a;}
+.archive-resume-panel{display:none;margin-bottom:12px;padding:12px 14px;border:1px solid rgba(232,184,0,.35);background:rgba(232,184,0,.08);border-radius:6px;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.archive-resume-title{font-weight:900;color:#e8b800;text-transform:uppercase;letter-spacing:.06em;font-size:15px;}
+.archive-resume-text{font-family:'Share Tech Mono',monospace;font-size:10px;color:#b8c0cf;line-height:1.45;margin-top:3px;}
+.archive-resume-actions{display:flex;gap:8px;flex-wrap:wrap;}
 .uploading-badge{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:0.08em;display:none;}
 #section-forum{position:fixed;right:18px;bottom:18px;z-index:260;width:min(380px,calc(100vw - 24px));display:block;transition:width .2s ease;}
 #section-forum.forum-collapsed{width:260px;}
@@ -229,7 +235,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <body>
 
 
-<div class="modal-bg" id="archive-modal"><div class="modal"><div class="modal-title">📦 Archive Tournament</div><div class="modal-sub">⚠️ Only when tournament is finished. This clears all current data.</div><div class="modal-label">Tournament Name</div><input class="modal-input" id="archive-name" placeholder="e.g. PMAC Cup — January 2025"><div class="modal-label">Date</div><input class="modal-input" type="date" id="archive-date"><div class="modal-warn">⚠️ WARNING: After clicking "Archive & Reset", ALL current teams and scores will be permanently cleared.</div><div class="modal-actions"><button class="btn" onclick="closeArchiveModal()">Cancel</button><button class="btn btn-primary" onclick="confirmArchive()">Archive & Reset</button></div><div class="archive-edit-box"><div class="modal-title" style="font-size:14px;margin-bottom:6px;">✏️ Edit Archived Points</div><div class="modal-sub" style="margin-bottom:.8rem;">Load an archived event only when Manage Teams and Enter Scores are empty.</div><div class="modal-label">Archived Event</div><select class="modal-input" id="archive-edit-select"><option value="">Loading archive...</option></select><div class="archive-edit-actions"><button class="btn" onclick="loadArchiveForEditing()">Load For Editing</button><button class="btn btn-primary" onclick="saveArchiveEditBack()">Save Back To Archive</button><button class="btn btn-danger" onclick="clearArchiveEditSession()">Clear Edit Session</button></div><div class="archive-edit-status" id="archive-edit-status"></div></div></div></div>
+<div class="modal-bg" id="archive-modal"><div class="modal"><button class="modal-close" type="button" onclick="closeArchiveModal()" aria-label="Close archive popup">×</button><div class="modal-title">📦 Archive Tournament</div><div class="modal-sub">⚠️ Only when tournament is finished. This clears all current data.</div><div class="modal-label">Tournament Name</div><input class="modal-input" id="archive-name" placeholder="e.g. PMAC Cup — January 2025"><div class="modal-label">Date</div><input class="modal-input" type="date" id="archive-date"><div class="modal-warn">⚠️ WARNING: After clicking "Archive & Reset", ALL current teams and scores will be permanently cleared.</div><div class="modal-actions"><button class="btn" onclick="closeArchiveModal()">Cancel</button><button class="btn btn-primary" onclick="confirmArchive()">Archive & Reset</button></div><div class="archive-edit-box"><div class="modal-title" style="font-size:14px;margin-bottom:6px;">✏️ Edit Archived Points</div><div class="modal-sub" style="margin-bottom:.8rem;">Load an archived event only when Manage Teams and Enter Scores are empty.</div><div class="modal-label">Archived Event</div><select class="modal-input" id="archive-edit-select"><option value="">Loading archive...</option></select><div class="archive-edit-actions"><button class="btn" onclick="loadArchiveForEditing()">Load For Editing</button><button class="btn btn-primary" onclick="saveArchiveEditBack()">Save Back To Archive</button><button class="btn btn-danger" onclick="clearArchiveEditSession()">Clear Edit Session</button></div><div class="archive-edit-status" id="archive-edit-status"></div></div></div></div>
 
 <div class="modal-bg" id="groq-modal"><div class="modal" style="width:540px;"><div class="modal-title">🤖 Groq Vision Score Reader (Batch)</div><div class="modal-sub">📸 Reads team names (ignores UIDs).</div><div class="modal-label">Groq API Key (get from console.groq.com)</div><input class="modal-input" type="password" id="groq-api-key" placeholder="gsk_..."><div class="modal-label">Screenshots (multiple allowed)</div><input type="file" id="groq-images" accept="image/jpeg,image/png" multiple style="margin-bottom:12px;"><div id="groq-progress" class="progress-text"></div><button class="btn btn-primary" id="analyze-groq-btn" onclick="analyzeBatchWithGroq()">📡 Extract Scores from All Images</button><div id="groq-result-area" style="margin-top:16px;font-size:12px;max-height:200px;overflow-y:auto;background:#161a1f;padding:8px;border-radius:4px;"></div><div class="modal-actions"><button class="btn" onclick="closeGroqModal()">Close</button></div></div></div>
 
@@ -266,7 +272,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
   <div id="section-teams"><div class="teams-mgmt"><div class="mgmt-title">Add Team</div><div class="add-team-row"><div class="inp-wrap"><div class="inp-lbl">Team Name</div><input class="text-inp" id="new-team-name" placeholder="e.g. BLACK ZONE" list="team-logo-suggest" oninput="updateManageSavedLogo()" onchange="updateManageSavedLogo()"><datalist id="team-logo-suggest"></datalist></div><div class="inp-wrap"><div class="inp-lbl">Team Tag</div><input class="text-inp" id="new-team-tag" placeholder="BZ" maxlength="8" style="min-width:90px;width:100px;"></div><div class="team-logo-field"><div class="inp-lbl">Team Logo</div><div class="team-logo-controls"><input type="file" id="new-team-logo" accept="image/*" style="display:none" onchange="previewLogo(this)"><button class="logo-inp-btn" onclick="document.getElementById('new-team-logo').click()">📷 Choose Logo</button><button class="logo-inp-btn" id="use-saved-team-logo-btn" style="display:none" onclick="useSavedTeamLogo()">Use Saved Logo</button><img id="logo-preview" class="logo-preview"><span id="logo-name" style="font-size:9px;"></span></div></div><button class="btn btn-primary" onclick="addTeam()">+ Add Team</button><span id="uploading-badge" class="uploading-badge">Uploading...</span></div><div class="csv-row"><div><div class="inp-lbl">Import CSV</div><div class="csv-note">One team name per line</div></div><input type="file" id="csv-file" accept=".csv,.txt" style="display:none" onchange="importCSV(this)"><button class="btn" onclick="document.getElementById('csv-file').click()">📄 Import CSV</button><button class="btn" onclick="fixAllLogos()" id="fix-logos-btn" style="background:linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.1));border-color:rgba(0,255,136,0.4);color:#00ff88;">🔧 Fix All Logos</button><span id="fix-logos-status" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;max-width:520px;line-height:1.35;"></span><button class="btn btn-primary" onclick="if(!isSuperAdmin){showToast('Super Admin required',false);return;}importFromRegistration()">📥 Import from Registration</button><button class="btn btn-danger" onclick="removeAllTeams()">Remove All Teams</button></div></div><div class="mgmt-title">Current Teams (<span id="team-count">0</span>)</div><div class="teams-list-mgmt" id="teams-list-mgmt"><div class="no-teams">No teams yet.</div></div></div>
 
-  <div id="section-scores" style="display:none;"><div class="pts-info"><span class="pts-lbl">Points system</span><span class="pts-pill hi">#1=10</span><span class="pts-pill hi">#2=6</span><span class="pts-pill hi">#3=5</span><span class="pts-pill hi">#4=4</span><span class="pts-pill hi">#5=3</span><span class="pts-pill hi">#6=2</span><span class="pts-pill hi">#7=1</span><span class="pts-pill hi">#8=1</span><span class="pts-pill">#9+=0</span><span class="pts-pill">+1/kill</span><button class="btn" style="padding:5px 10px;font-size:10px;background:rgba(0,201,122,.12);border-color:rgba(0,201,122,.35);color:#00c97a;" onclick="restoreLatestManageNight()">Restore Latest Saved Night</button></div><div class="match-tabs" id="match-tabs-scores"></div>
+  <div id="section-scores" style="display:none;"><div class="archive-resume-panel" id="archive-resume-panel"><div><div class="archive-resume-title">Edit Archived Points</div><div class="archive-resume-text" id="archive-resume-text">Archived event selected. Load it here to edit points.</div></div><div class="archive-resume-actions"><button class="btn btn-primary" onclick="restoreArchiveEditFromLink()">Load Archived Teams Now</button><button class="btn" onclick="openArchiveModal()">Open Archive Tools</button></div></div><div class="pts-info"><span class="pts-lbl">Points system</span><span class="pts-pill hi">#1=10</span><span class="pts-pill hi">#2=6</span><span class="pts-pill hi">#3=5</span><span class="pts-pill hi">#4=4</span><span class="pts-pill hi">#5=3</span><span class="pts-pill hi">#6=2</span><span class="pts-pill hi">#7=1</span><span class="pts-pill hi">#8=1</span><span class="pts-pill">#9+=0</span><span class="pts-pill">+1/kill</span><button class="btn" style="padding:5px 10px;font-size:10px;background:rgba(0,201,122,.12);border-color:rgba(0,201,122,.35);color:#00c97a;" onclick="restoreLatestManageNight()">Restore Latest Saved Night</button></div><div class="match-tabs" id="match-tabs-scores"></div>
     <div class="team-grid" id="team-grid"><div class="no-teams">Go to "Manage Teams" tab first.</div></div>
   </div>
 
@@ -472,6 +478,11 @@ function showMainPage(){
   const userLabel=document.getElementById("event-user-label");
   if(userLabel) userLabel.innerHTML=`UID: ${escapeHtml(currentAdminUid)} <button class="btn" style="font-size:10px;padding:3px 8px;margin-left:5px;" onclick="copyMyAdminUid()">Copy UID</button>`;
   resetEventRefs();
+  if(pendingArchiveEditKey){
+    egActiveSession=null;
+    localStorage.removeItem(eventStorageKey('eg_active_session'));
+    stopActiveRefs();
+  }
   loadTeamLogoLibrary();
   watchTeamLogoLibrary();
   loadEventList();
@@ -481,7 +492,8 @@ function showMainPage(){
   initForum();
   loadFirebaseData();
   if(pendingArchiveEditKey){
-    setTimeout(()=>autoLoadArchiveForEditing(pendingArchiveEditKey),350);
+    showSection("scores");
+    showArchiveEditResumePanel(pendingArchiveEditKey);
   }
 }
 function startAdminForUser(user){
@@ -1019,8 +1031,23 @@ function archiveEditBlockerFromValues(active,teamVal,scoreVal){
   return "";
 }
 function clearArchiveEditUrl(){
-  if(!history || !history.replaceState) return;
-  history.replaceState(null,"",location.pathname+"?event="+encodeURIComponent(activeEventId));
+  try{
+    if(!history || !history.replaceState) return;
+    history.replaceState(null,"",location.pathname+"?event="+encodeURIComponent(activeEventId));
+  }catch(e){
+    console.warn("Archive edit URL cleanup skipped", e);
+  }
+}
+function showArchiveEditResumePanel(key,msg){
+  const panel=document.getElementById("archive-resume-panel");
+  const text=document.getElementById("archive-resume-text");
+  if(!panel||!text) return;
+  panel.style.display=key?"flex":"none";
+  text.textContent=msg||`Archived event ${key} selected. This will load teams into Manage Teams and Enter Scores only if the current event is empty.`;
+}
+function hideArchiveEditResumePanel(){
+  const panel=document.getElementById("archive-resume-panel");
+  if(panel) panel.style.display="none";
 }
 function archiveEditRowsForCurrent(rows){
   const out=emptyScoreRows();
@@ -1063,6 +1090,9 @@ function loadArchiveForEditing(){
   const select=document.getElementById("archive-edit-select");
   const key=select&&select.value;
   if(!key){ showToast("Select archived event",false); return; }
+  egActiveSession=null;
+  localStorage.removeItem(eventStorageKey('eg_active_session'));
+  stopActiveRefs();
   const blocker=archiveEditBlocker();
   if(blocker){ setArchiveEditStatus(blocker,false); showToast(blocker,false); return; }
   db.ref(eventPath("archive")).child(key).once("value").then(snap=>{
@@ -1075,14 +1105,24 @@ function loadArchiveForEditing(){
     archiveEditTargetMeta=payload;
     return Promise.all([dbTeamsRef.set(edit.teams),dbScoresRef.set(edit.scores),dbActiveSessionRef.remove().catch(()=>{})]);
   }).then(()=>{
+    loadFirebaseData();
     setArchiveEditStatus("Archive loaded into Manage Teams and Enter Scores. Edit points, then Save Back To Archive.",true);
     showSection("scores");
     showToast("Archive loaded for editing",true);
   }).catch(e=>{ setArchiveEditStatus("Load failed: "+(e&&e.message?e.message:e),false); showToast("Load failed",false); });
 }
+function restoreArchiveEditFromLink(){
+  const key=pendingArchiveEditKey||archiveEditTargetKey;
+  if(!key){ showToast("No archived event selected",false); return; }
+  autoLoadArchiveForEditing(key);
+}
 function autoLoadArchiveForEditing(key){
   if(!key) return;
-  showToast("Checking archive edit...",true);
+  showToast("Loading archived event...",true);
+  showArchiveEditResumePanel(key,"Checking current event before loading archived teams...");
+  egActiveSession=null;
+  localStorage.removeItem(eventStorageKey('eg_active_session'));
+  stopActiveRefs();
   Promise.all([dbActiveSessionRef.once("value"),dbTeamsRef.once("value"),dbScoresRef.once("value")]).then(snaps=>{
     const blocker=archiveEditBlockerFromValues(snaps[0].val(),snaps[1].val(),snaps[2].val());
     if(blocker) throw new Error(blocker);
@@ -1095,17 +1135,18 @@ function autoLoadArchiveForEditing(key){
     archiveEditTargetKey=key;
     archiveEditTargetMeta=payload;
     pendingArchiveEditKey="";
-    clearArchiveEditUrl();
     return Promise.all([dbTeamsRef.set(edit.teams),dbScoresRef.set(edit.scores),dbActiveSessionRef.remove().catch(()=>{})]);
   }).then(()=>{
+    clearArchiveEditUrl();
+    loadFirebaseData();
     showSection("scores");
+    hideArchiveEditResumePanel();
     showToast("Archive loaded for editing",true);
   }).catch(e=>{
     const msg=e&&e.message?e.message:e;
-    pendingArchiveEditKey="";
-    clearArchiveEditUrl();
+    console.error("Archive edit load failed", e);
+    showArchiveEditResumePanel(key,"Cannot load archive: "+msg);
     showToast(msg,false);
-    alert("Cannot edit archive: "+msg);
   });
 }
 function saveArchiveEditBack(){
@@ -1127,7 +1168,11 @@ function clearArchiveEditSession(){
   if(!confirm("Clear current archive edit teams and scores from Manage Teams / Enter Scores?")) return;
   archiveEditTargetKey="";
   archiveEditTargetMeta=null;
+  egActiveSession=null;
+  localStorage.removeItem(eventStorageKey('eg_active_session'));
+  stopActiveRefs();
   Promise.all([dbTeamsRef.set([]),dbScoresRef.set({}),dbActiveSessionRef.remove().catch(()=>{})]).then(()=>{
+    loadFirebaseData();
     setArchiveEditStatus("Archive edit session cleared. Current event is empty again.",true);
     showToast("Archive edit cleared",true);
   }).catch(e=>{ setArchiveEditStatus("Clear failed: "+(e&&e.message?e.message:e),false); showToast("Clear failed",false); });
