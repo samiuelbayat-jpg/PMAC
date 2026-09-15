@@ -127,6 +127,11 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .modal-input:focus{border-color:#e8b800;}
 .modal-warn{font-family:'Share Tech Mono',monospace;font-size:10px;color:#f07830;background:rgba(240,120,48,0.1);border:1px solid rgba(240,120,48,0.2);border-radius:4px;padding:8px 12px;margin-bottom:1rem;line-height:1.5;}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.archive-edit-box{margin-top:1.2rem;padding-top:1.2rem;border-top:1px solid rgba(255,255,255,0.12);}
+.archive-edit-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:.25rem;}
+.archive-edit-status{min-height:18px;margin-top:10px;font-family:'Share Tech Mono',monospace;font-size:10px;line-height:1.45;color:#8a96a8;}
+.archive-edit-status.ok{color:#00d084;}
+.archive-edit-status.err{color:#ff5a5a;}
 .uploading-badge{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;letter-spacing:0.08em;display:none;}
 #section-forum{position:fixed;right:18px;bottom:18px;z-index:260;width:min(380px,calc(100vw - 24px));display:block;transition:width .2s ease;}
 #section-forum.forum-collapsed{width:260px;}
@@ -224,7 +229,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <body>
 
 
-<div class="modal-bg" id="archive-modal"><div class="modal"><div class="modal-title">📦 Archive Tournament</div><div class="modal-sub">⚠️ Only when tournament is finished. This clears all current data.</div><div class="modal-label">Tournament Name</div><input class="modal-input" id="archive-name" placeholder="e.g. PMAC Cup — January 2025"><div class="modal-label">Date</div><input class="modal-input" type="date" id="archive-date"><div class="modal-warn">⚠️ WARNING: After clicking "Archive & Reset", ALL current teams and scores will be permanently cleared.</div><div class="modal-actions"><button class="btn" onclick="closeArchiveModal()">Cancel</button><button class="btn btn-primary" onclick="confirmArchive()">Archive & Reset</button></div></div></div>
+<div class="modal-bg" id="archive-modal"><div class="modal"><div class="modal-title">📦 Archive Tournament</div><div class="modal-sub">⚠️ Only when tournament is finished. This clears all current data.</div><div class="modal-label">Tournament Name</div><input class="modal-input" id="archive-name" placeholder="e.g. PMAC Cup — January 2025"><div class="modal-label">Date</div><input class="modal-input" type="date" id="archive-date"><div class="modal-warn">⚠️ WARNING: After clicking "Archive & Reset", ALL current teams and scores will be permanently cleared.</div><div class="modal-actions"><button class="btn" onclick="closeArchiveModal()">Cancel</button><button class="btn btn-primary" onclick="confirmArchive()">Archive & Reset</button></div><div class="archive-edit-box"><div class="modal-title" style="font-size:14px;margin-bottom:6px;">✏️ Edit Archived Points</div><div class="modal-sub" style="margin-bottom:.8rem;">Load an archived event only when Manage Teams and Enter Scores are empty.</div><div class="modal-label">Archived Event</div><select class="modal-input" id="archive-edit-select"><option value="">Loading archive...</option></select><div class="archive-edit-actions"><button class="btn" onclick="loadArchiveForEditing()">Load For Editing</button><button class="btn btn-primary" onclick="saveArchiveEditBack()">Save Back To Archive</button><button class="btn btn-danger" onclick="clearArchiveEditSession()">Clear Edit Session</button></div><div class="archive-edit-status" id="archive-edit-status"></div></div></div></div>
 
 <div class="modal-bg" id="groq-modal"><div class="modal" style="width:540px;"><div class="modal-title">🤖 Groq Vision Score Reader (Batch)</div><div class="modal-sub">📸 Reads team names (ignores UIDs).</div><div class="modal-label">Groq API Key (get from console.groq.com)</div><input class="modal-input" type="password" id="groq-api-key" placeholder="gsk_..."><div class="modal-label">Screenshots (multiple allowed)</div><input type="file" id="groq-images" accept="image/jpeg,image/png" multiple style="margin-bottom:12px;"><div id="groq-progress" class="progress-text"></div><button class="btn btn-primary" id="analyze-groq-btn" onclick="analyzeBatchWithGroq()">📡 Extract Scores from All Images</button><div id="groq-result-area" style="margin-top:16px;font-size:12px;max-height:200px;overflow-y:auto;background:#161a1f;padding:8px;border-radius:4px;"></div><div class="modal-actions"><button class="btn" onclick="closeGroqModal()">Close</button></div></div></div>
 
@@ -246,7 +251,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="btn" onclick="openStandalone('promotions.html')">📢 Promotions</button>
     <button class="btn" onclick="openStandalone('scoreboard.html')">🏆 Scoreboard</button>
     <button class="btn" onclick="openStandalone('overlay.html')">🎥 OBS Overlay</button>
-    <button class="btn" onclick="openDefaultStandalone('team-match-points-overlay.html?mode=overall&limit=16')">📊 Team Match Overlay</button>
+    <button class="btn" onclick="openDefaultStandalone('team-match-points-overlay-v2.html?mode=overall&limit=16')">📊 Team Match Overlay</button>
     <button class="btn" onclick="openDefaultStandalone('highlights-roadmap-overlay.html')">🗺️ Roadmap Overlay</button>
     <button class="btn" onclick="openDefaultStandalone('highlights-roadmap-overlay.html?mode=scrim')">🗺️ Scrim Roadmap</button>
     <button class="btn" onclick="openStandalone('archive.html')">📦 Archive</button>
@@ -296,7 +301,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div class="inp-wrap"><div class="inp-lbl">Streamer Logo</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><input type="file" id="ov-streamer-logo-file" accept="image/*" style="display:none" onchange="ovPreviewLogo(this)"><button class="logo-inp-btn" type="button" onclick="document.getElementById('ov-streamer-logo-file').click()">Upload Logo</button><img id="ov-logo-preview" class="ov-preview-logo"></div></div>
         <div class="inp-wrap"><div class="inp-lbl">Top 4 Helmet</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><input type="file" id="ov-top4-helmet-file" accept="image/*" style="display:none" onchange="ovPreviewTop4Helmet(this)"><button class="logo-inp-btn" type="button" onclick="document.getElementById('ov-top4-helmet-file').click()">Upload Helmet</button><img id="ov-top4-helmet-preview" class="ov-preview-logo"></div></div>
       </div>
-      <div class="ov-actions"><button class="btn btn-primary" onclick="saveOverlaySettings()">💾 Save / Send To OBS</button><button class="btn" onclick="clearOverlayLogo()">Clear Logo</button><button class="btn" onclick="clearTop4Helmet()">Clear Helmet</button><button class="btn" onclick="openStandalone('overlay.html')">Open Overlay</button><button class="btn" onclick="copyStandaloneLink('overlay.html','OBS overlay')">Copy OBS Link</button><button class="btn" onclick="copyDefaultStandaloneLink('team-match-points-overlay.html?mode=overall&limit=16','Team match overlay')">Copy Team Match Link</button><button class="btn" onclick="copyDefaultStandaloneLink('highlights-roadmap-overlay.html','OBS highlights')">Copy Highlights Link</button></div>
+      <div class="ov-actions"><button class="btn btn-primary" onclick="saveOverlaySettings()">💾 Save / Send To OBS</button><button class="btn" onclick="clearOverlayLogo()">Clear Logo</button><button class="btn" onclick="clearTop4Helmet()">Clear Helmet</button><button class="btn" onclick="openStandalone('overlay.html')">Open Overlay</button><button class="btn" onclick="copyStandaloneLink('overlay.html','OBS overlay')">Copy OBS Link</button><button class="btn" onclick="copyDefaultStandaloneLink('team-match-points-overlay-v2.html?mode=overall&limit=16','Team match overlay')">Copy Team Match Link</button><button class="btn" onclick="copyDefaultStandaloneLink('highlights-roadmap-overlay.html','OBS highlights')">Copy Highlights Link</button></div>
       <div class="ov-hint">Color and design changes auto-save to Firebase and update overlay.html live. OBS should use overlay.html as the browser source.</div>
     </div>
   </div>
@@ -376,6 +381,7 @@ if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
 const db = firebase.database(), storage = firebase.storage(), auth = firebase.auth();
  
 let isSuperAdmin = false, currentMatch = 0, teams = [], scores = {};
+let archiveEditTargetKey = "", archiveEditTargetMeta = null;
 let scoreGridRenderTimer = null;
 let currentAdminUid = "";
 let teamLogoLibrary = {};
@@ -383,7 +389,9 @@ let killsSaveTimers = {};
 let playersSaveTimers = {};
 const TEAM_LOGO_LIBRARY_KEY = "pmac_team_logo_library_v1";
 let groqApiKey = localStorage.getItem("groq_api_key") || "";
-let activeEventId = new URLSearchParams(location.search).get("event") || localStorage.getItem("pmac_active_event") || "default";
+const initialParams = new URLSearchParams(location.search);
+let activeEventId = initialParams.get("event") || localStorage.getItem("pmac_active_event") || "default";
+let pendingArchiveEditKey = initialParams.get("archiveEdit") || "";
 let dbTeamsRef, dbScoresRef, dbActiveSessionRef, dbEgRef, overlaySettingsRef, forumRef;
 function cleanEventId(name){ return String(name||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40) || "event-"+Date.now(); }
 function eventBasePath(){ return activeEventId==="default" ? "pmac" : "pmac/events/"+activeEventId; }
@@ -472,6 +480,9 @@ function showMainPage(){
   loadOverlaySettings();
   initForum();
   loadFirebaseData();
+  if(pendingArchiveEditKey){
+    setTimeout(()=>autoLoadArchiveForEditing(pendingArchiveEditKey),350);
+  }
 }
 function startAdminForUser(user){
   currentAdminUid = user.uid;
@@ -929,7 +940,7 @@ function confirmReset(){
     showToast("Full reset completed, including Event Groups",true);
   }).catch(e=>showToast("Reset failed: "+(e&&e.message?e.message:e),false));
 }
-function openArchiveModal(){ document.getElementById("archive-date").valueAsDate=new Date(); document.getElementById("archive-name").value=""; document.getElementById("archive-modal").classList.add("show"); }
+function openArchiveModal(){ document.getElementById("archive-date").valueAsDate=new Date(); document.getElementById("archive-name").value=""; document.getElementById("archive-modal").classList.add("show"); loadArchiveEditOptions(); }
 function closeArchiveModal(){ document.getElementById("archive-modal").classList.remove("show"); }
 function archiveHasScore(m){ if(!m) return false; const noRank=(m.rank===null||m.rank===undefined||m.rank===""); const kills=(m.kills===null||m.kills===undefined||m.kills==="")?0:(parseInt(m.kills)||0); return !(noRank&&kills===0); }
 function archiveDateValue(date){ const d=date||new Date().toISOString().slice(0,10); return {text:d,ms:new Date(d+"T00:00:00").getTime()||Date.now()}; }
@@ -981,6 +992,146 @@ function buildArchivePayload(name,date){
   });
 }
 function confirmArchive(){ const name=document.getElementById("archive-name").value.trim(); const date=document.getElementById("archive-date").value||new Date().toISOString().slice(0,10); if(!name){ showToast("Enter tournament name",false); return; } buildArchivePayload(name,date).then(payload=>db.ref(eventPath("archive")).child("t_"+Date.now()).set(payload)).then(()=>{ return Promise.all([dbTeamsRef.set([]), dbScoresRef.set({}), dbActiveSessionRef.remove().catch(()=>{})]); }).then(()=>{ closeArchiveModal(); showToast("Archived & reset",true); }).catch(e=>showToast("Archive failed: "+(e&&e.message?e.message:e),false)); }
+
+function setArchiveEditStatus(msg,ok){
+  const el=document.getElementById("archive-edit-status");
+  if(!el) return;
+  el.textContent=msg||"";
+  el.className="archive-edit-status "+(ok?"ok":(msg?"err":""));
+}
+function archiveScoreRowsHaveData(rows){
+  return (Array.isArray(rows)?rows:Object.values(rows||{})).some(archiveHasScore);
+}
+function currentScoresHaveData(scoreMap){
+  return Object.keys(scoreMap||{}).filter(k=>k&&k[0]!=="_").some(k=>archiveScoreRowsHaveData(scoreMap[k]));
+}
+function archiveEditBlocker(){
+  if(egSessionsFromActive(egActiveSession).length) return "Deactivate the active Event Group session first.";
+  if((teams||[]).length) return "Current Manage Teams is not empty. Archive edit can start only when no current teams are added.";
+  if(currentScoresHaveData(scores)) return "Current Enter Scores is not empty. Clear current scores before editing an archive.";
+  return "";
+}
+function archiveEditBlockerFromValues(active,teamVal,scoreVal){
+  const teamList=teamVal ? (Array.isArray(teamVal)?teamVal:Object.values(teamVal)) : [];
+  if(egSessionsFromActive(active).length) return "Deactivate the active Event Group session first.";
+  if(teamList.length) return "Current Manage Teams is not empty. Archive edit can start only when no current teams are added.";
+  if(currentScoresHaveData(scoreVal||{})) return "Current Enter Scores is not empty. Clear current scores before editing an archive.";
+  return "";
+}
+function clearArchiveEditUrl(){
+  if(!history || !history.replaceState) return;
+  history.replaceState(null,"",location.pathname+"?event="+encodeURIComponent(activeEventId));
+}
+function archiveEditRowsForCurrent(rows){
+  const out=emptyScoreRows();
+  (Array.isArray(rows)?rows:Object.values(rows||{})).forEach((m,i)=>{
+    if(!m) return;
+    const rawMatch=parseInt(m.match,10);
+    const idx=Number.isFinite(rawMatch)&&rawMatch>0 ? Math.max(0,Math.min(9,rawMatch-1)) : Math.max(0,Math.min(9,i));
+    out[idx]={rank:(m.rank===null||m.rank===undefined||m.rank==="")?null:parseInt(m.rank)||null,kills:(m.kills===null||m.kills===undefined||m.kills==="")?null:parseInt(m.kills)||0,players:playerCount(m.players)};
+  });
+  return out;
+}
+function archiveDataForEditing(payload){
+  const source=(payload&&payload.data)||(payload&&payload.scores)||{};
+  const scoreMap={};
+  Object.keys(source||{}).forEach(name=>{ scoreMap[sanitizeKey(name)]=archiveEditRowsForCurrent(source[name]); });
+  const list=((payload&&payload.teams)?(Array.isArray(payload.teams)?payload.teams:Object.values(payload.teams)):Object.keys(source||{}).map(name=>({name}))).map(archiveTeamObj).filter(Boolean);
+  list.forEach(t=>{ const key=sanitizeKey(t.name); if(!scoreMap[key]) scoreMap[key]=archiveEditRowsForCurrent(source[t.name]||[]); });
+  return {teams:list,scores:scoreMap};
+}
+function loadArchiveEditOptions(){
+  const select=document.getElementById("archive-edit-select");
+  if(!select) return;
+  select.innerHTML='<option value="">Loading archive...</option>';
+  db.ref(eventPath("archive")).once("value").then(snap=>{
+    const archive=snap.val()||{};
+    const items=Object.keys(archive).map(key=>({key,data:archive[key]||{}})).sort((a,b)=>(b.data.date||b.data.archivedAt||0)-(a.data.date||a.data.archivedAt||0));
+    if(!items.length){ select.innerHTML='<option value="">No archived events found</option>'; setArchiveEditStatus("No archived events found yet.",false); return; }
+    select.innerHTML=items.map(item=>{
+      const data=item.data||{};
+      const count=(data.teams?(Array.isArray(data.teams)?data.teams.length:Object.keys(data.teams).length):Object.keys(data.data||data.scores||{}).length)||0;
+      const label=`${data.name||item.key} | ${data.dateText||""} | ${count} teams`;
+      return `<option value="${escapeHtml(item.key)}">${escapeHtml(label)}</option>`;
+    }).join("");
+    if(archiveEditTargetKey&&archive[archiveEditTargetKey]) select.value=archiveEditTargetKey;
+    else if(pendingArchiveEditKey&&archive[pendingArchiveEditKey]) select.value=pendingArchiveEditKey;
+    setArchiveEditStatus(archiveEditTargetKey?`Editing archive: ${archiveEditTargetKey}`:"Select an archive, then load it when current teams and scores are empty.",!!archiveEditTargetKey);
+  }).catch(e=>{ select.innerHTML='<option value="">Could not load archive</option>'; setArchiveEditStatus("Archive list failed: "+(e&&e.message?e.message:e),false); });
+}
+function loadArchiveForEditing(){
+  const select=document.getElementById("archive-edit-select");
+  const key=select&&select.value;
+  if(!key){ showToast("Select archived event",false); return; }
+  const blocker=archiveEditBlocker();
+  if(blocker){ setArchiveEditStatus(blocker,false); showToast(blocker,false); return; }
+  db.ref(eventPath("archive")).child(key).once("value").then(snap=>{
+    const payload=snap.val();
+    if(!payload) throw new Error("Archive not found");
+    const edit=archiveDataForEditing(payload);
+    if(!edit.teams.length) throw new Error("Archive has no teams");
+    archiveEditTargetKey=key;
+    pendingArchiveEditKey="";
+    archiveEditTargetMeta=payload;
+    return Promise.all([dbTeamsRef.set(edit.teams),dbScoresRef.set(edit.scores),dbActiveSessionRef.remove().catch(()=>{})]);
+  }).then(()=>{
+    setArchiveEditStatus("Archive loaded into Manage Teams and Enter Scores. Edit points, then Save Back To Archive.",true);
+    showSection("scores");
+    showToast("Archive loaded for editing",true);
+  }).catch(e=>{ setArchiveEditStatus("Load failed: "+(e&&e.message?e.message:e),false); showToast("Load failed",false); });
+}
+function autoLoadArchiveForEditing(key){
+  if(!key) return;
+  showToast("Checking archive edit...",true);
+  Promise.all([dbActiveSessionRef.once("value"),dbTeamsRef.once("value"),dbScoresRef.once("value")]).then(snaps=>{
+    const blocker=archiveEditBlockerFromValues(snaps[0].val(),snaps[1].val(),snaps[2].val());
+    if(blocker) throw new Error(blocker);
+    return db.ref(eventPath("archive")).child(key).once("value");
+  }).then(snap=>{
+    const payload=snap.val();
+    if(!payload) throw new Error("Archive not found");
+    const edit=archiveDataForEditing(payload);
+    if(!edit.teams.length) throw new Error("Archive has no teams");
+    archiveEditTargetKey=key;
+    archiveEditTargetMeta=payload;
+    pendingArchiveEditKey="";
+    clearArchiveEditUrl();
+    return Promise.all([dbTeamsRef.set(edit.teams),dbScoresRef.set(edit.scores),dbActiveSessionRef.remove().catch(()=>{})]);
+  }).then(()=>{
+    showSection("scores");
+    showToast("Archive loaded for editing",true);
+  }).catch(e=>{
+    const msg=e&&e.message?e.message:e;
+    pendingArchiveEditKey="";
+    clearArchiveEditUrl();
+    showToast(msg,false);
+    alert("Cannot edit archive: "+msg);
+  });
+}
+function saveArchiveEditBack(){
+  const select=document.getElementById("archive-edit-select");
+  const key=archiveEditTargetKey||(select&&select.value);
+  if(!key){ showToast("Select archived event first",false); return; }
+  if(!(teams||[]).length){ showToast("No edited teams to save",false); return; }
+  db.ref(eventPath("archive")).child(key).once("value").then(snap=>{
+    const old=snap.val()||archiveEditTargetMeta||{};
+    const payload=archivePayloadFromFlat(old.name||"Edited Archive",old.dateText||new Date().toISOString().slice(0,10),teams,scores);
+    payload.archivedAt=old.archivedAt||payload.archivedAt;
+    payload.editedAt=Date.now();
+    payload.editedBy=currentAdminUid||"";
+    payload.source=old.source||"admin-edited";
+    return db.ref(eventPath("archive")).child(key).set(Object.assign({},old,payload));
+  }).then(()=>{ archiveEditTargetKey=key; setArchiveEditStatus("Saved edited points back to archive.",true); showToast("Archive points saved",true); }).catch(e=>{ setArchiveEditStatus("Save failed: "+(e&&e.message?e.message:e),false); showToast("Save failed",false); });
+}
+function clearArchiveEditSession(){
+  if(!confirm("Clear current archive edit teams and scores from Manage Teams / Enter Scores?")) return;
+  archiveEditTargetKey="";
+  archiveEditTargetMeta=null;
+  Promise.all([dbTeamsRef.set([]),dbScoresRef.set({}),dbActiveSessionRef.remove().catch(()=>{})]).then(()=>{
+    setArchiveEditStatus("Archive edit session cleared. Current event is empty again.",true);
+    showToast("Archive edit cleared",true);
+  }).catch(e=>{ setArchiveEditStatus("Clear failed: "+(e&&e.message?e.message:e),false); showToast("Clear failed",false); });
+}
 
 // ========== GROQ BATCH ==========
 let groqAbort = false;
