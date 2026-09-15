@@ -5,8 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PMAC — Tournament Archive</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js">
+function showToast(msg, ok) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show " + (ok ? "toast-ok" : "toast-err");
+  setTimeout(function(){t.classList.remove("show");}, 3000);
+}
+
+</script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -69,6 +76,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .winner-logo{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid rgba(245,200,66,0.4);}
 .winner-name{font-weight:800;font-size:15px;color:#f5c842;text-transform:uppercase;}
 .tc-right{display:flex;align-items:center;gap:10px;}
+.tc-edit{font-family:'Share Tech Mono',monospace;font-size:10px;color:#e8b800;cursor:pointer;padding:4px 9px;border-radius:3px;border:1px solid rgba(232,184,0,0.28);background:rgba(232,184,0,0.08);white-space:nowrap;}
+.tc-edit:hover{background:#e8b800;color:#000;}
 .tc-del{font-family:'Share Tech Mono',monospace;font-size:10px;color:#606878;cursor:pointer;padding:3px 7px;border-radius:3px;border:1px solid transparent;}
 .tc-del:hover{color:#ff4444;border-color:rgba(255,68,68,0.3);}
 .tc-chevron{font-size:16px;color:#606878;transition:transform 0.2s;}
@@ -133,45 +142,22 @@ firebase.initializeApp({
   appId: "1:279105805502:web:8def653069d0b3d73bd2ef"
 });
 const db = firebase.database();
-const auth = firebase.auth();
-const EVENT_ID = new URLSearchParams(location.search).get("event") || "default";
-function eventBasePath(){ return EVENT_ID==="default" ? "pmac" : "pmac/events/"+EVENT_ID; }
-function eventPath(child){ return eventBasePath()+"/"+child; }
-localStorage.setItem("pmac_active_event", EVENT_ID);
 
 var rowCount = 0;
-var archiveCanEdit = false;
-var archiveUserUid = "";
+var activeEventId = new URLSearchParams(location.search).get("event") || localStorage.getItem("pmac_active_event") || "default";
 
+function eventBasePath(){ return activeEventId === "default" ? "pmac" : "pmac/events/" + activeEventId; }
+function eventPath(child){ return eventBasePath() + "/" + child; }
+function eventUrl(url){
+  var sep = url.indexOf("?") > -1 ? "&" : "?";
+  return url + sep + "event=" + encodeURIComponent(activeEventId);
+}
 function showToast(msg, ok) {
   var t = document.getElementById("toast");
   t.textContent = msg;
   t.className = "toast show " + (ok ? "toast-ok" : "toast-err");
-  setTimeout(function(){t.classList.remove("show");}, 3000);
+  setTimeout(function(){ t.classList.remove("show"); }, 3000);
 }
-
-function canEditArchive(meta, isSuperAdmin) {
-  if (isSuperAdmin) return true;
-  if (!meta || !archiveUserUid) return false;
-  return meta.ownerUid === archiveUserUid || (meta.admins && meta.admins[archiveUserUid] === true);
-}
-
-function refreshArchiveAdmin(user) {
-  archiveUserUid = user ? user.uid : "";
-  archiveCanEdit = false;
-  if (!archiveUserUid) return;
-  Promise.all([
-    db.ref("pmac/superAdmins/" + archiveUserUid).once("value").then(function(s){ return s.val() === true; }).catch(function(){ return false; }),
-    db.ref("pmac/eventsMeta/" + EVENT_ID).once("value").then(function(s){ return s.val() || null; }).catch(function(){ return null; })
-  ]).then(function(res) {
-    archiveCanEdit = canEditArchive(res[1], !!res[0]);
-    document.querySelectorAll(".tc-del").forEach(function(btn){
-      btn.style.display = archiveCanEdit ? "inline-flex" : "none";
-    });
-  });
-}
-
-auth.onAuthStateChanged(refreshArchiveAdmin);
 
 function placementPts(rank) {
   if (rank === null || rank === undefined || rank === '') return 0;
@@ -191,12 +177,6 @@ function toArray(val) {
   if (Array.isArray(val)) return val;
   return Object.values(val);
 }
-function safeKey(n){ return String(n||"").replace(/[\.\#\$\/\[\]]/g, "_"); }
-function rowsForTeam(data, team){
-  var name = team && team.name ? team.name : String(team||"");
-  var tag = team && team.tag ? team.tag : "";
-  return data[name] || data[safeKey(name)] || (tag ? (data[tag] || data[safeKey(tag)]) : null) || [];
-}
 
 function processTeams(t) {
   var teams = [];
@@ -211,13 +191,13 @@ function processTeams(t) {
 
   // Case 2: Saved from admin (has teams + data)
   var teamsArr = toArray(t.teams);
-  var data = t.data || t.scores || {};
+  var data = t.data || {};
 
   if (teamsArr.length > 0) {
     teams = teamsArr.map(function(team) {
       var name = team.name || team;
       var logo = team.logo || '';
-      var matches = toArray(rowsForTeam(data, team));
+      var matches = toArray(data[name]);
       var kills = 0, placement = 0, played = 0;
       for (var i = 0; i < matches.length; i++) {
         var m = matches[i];
@@ -230,7 +210,7 @@ function processTeams(t) {
         placement += placementPts(r);
       }
       return { name: name, logo: logo, kills: kills, placement: placement, totalPts: kills + placement, played: played };
-    }).sort(function(a,b){ return b.totalPts - a.totalPts || b.placement - a.placement || b.kills - a.kills; });
+    }).sort(function(a,b){ return b.totalPts - a.totalPts; });
   } else if (Object.keys(data).length > 0) {
     // No teams array but has data — build from data keys
     teams = Object.keys(data).map(function(name) {
@@ -247,7 +227,7 @@ function processTeams(t) {
         placement += placementPts(r);
       }
       return { name: name, logo: '', kills: kills, placement: placement, totalPts: kills + placement, played: played };
-    }).sort(function(a,b){ return b.totalPts - a.totalPts || b.placement - a.placement || b.kills - a.kills; });
+    }).sort(function(a,b){ return b.totalPts - a.totalPts; });
   }
 
   return teams;
@@ -274,9 +254,8 @@ db.ref(eventPath("archive")).on("value", function(snap) {
 
     // Count matches played
     var matchesPlayed = t.matchesPlayed || 0;
-    var scoreData = t.data || t.scores || {};
-    if (!matchesPlayed && scoreData) {
-      Object.values(scoreData).forEach(function(ms) {
+    if (!matchesPlayed && t.data) {
+      Object.values(t.data).forEach(function(ms) {
         var arr = toArray(ms);
         var cnt = arr.filter(function(m){ return m && m.rank !== null && m.rank !== undefined && m.rank !== ''; }).length;
         if (cnt > matchesPlayed) matchesPlayed = cnt;
@@ -321,7 +300,8 @@ db.ref(eventPath("archive")).on("value", function(snap) {
           '</div>' +
         '</div>' +
         '<div class="tc-right">' +
-          '<span class="tc-del" style="'+(archiveCanEdit?'':'display:none')+'" onclick="event.stopPropagation();deleteTournament(\'' + key + '\')">&#10005;</span>' +
+          '<span class="tc-edit" onclick="event.stopPropagation();editArchivePoints(\'' + key + '\')">Edit Points</span>' +
+          '<span class="tc-del" onclick="event.stopPropagation();deleteTournament(\'' + key + '\')">&#10005;</span>' +
           '<div class="tc-chevron">&#9660;</div>' +
         '</div>' +
       '</div>' +
@@ -346,11 +326,14 @@ db.ref(eventPath("archive")).on("value", function(snap) {
 function toggleCard(key) { document.getElementById("tc_"+key).classList.toggle("expanded"); }
 
 function deleteTournament(key) {
-  if (!archiveCanEdit) { showToast("Admin access required", false); return; }
   if (!confirm("Delete this tournament from the archive?")) return;
   db.ref(eventPath("archive")+"/"+key).remove()
     .then(function(){showToast("Deleted",true);})
     .catch(function(e){showToast("Error: "+e.message,false);});
+}
+
+function editArchivePoints(key) {
+  location.href = eventUrl("admin.html") + "&archiveEdit=" + encodeURIComponent(key);
 }
 
 </script>
