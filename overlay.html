@@ -534,6 +534,10 @@ function logoProxyCandidates(src){
     "https://wsrv.nl/?url="+encodeURIComponent(noProtocol)+"&output=png"
   ];
 }
+const overlayLogoCache = {};
+function overlayLogoCacheKey(src){
+  return String(src||"").trim();
+}
 function overlayLogoFallback(img){
   const fb=document.createElement("div");
   fb.className="t-logo t-logo-fallback logo-normalized";
@@ -581,9 +585,12 @@ function cropOverlayLogoFromImage(target,source){
     if(cropW>=cropH){ drawW=out-pad*2; drawH=drawW*(cropH/cropW); dx=pad; dy=(out-drawH)/2; }
     else{ drawH=out-pad*2; drawW=drawH*(cropW/cropH); dy=pad; dx=(out-drawW)/2; }
     outCtx.drawImage(source,minX,minY,cropW,cropH,dx,dy,drawW,drawH);
+    const dataUrl=outCanvas.toDataURL("image/png");
+    const key=overlayLogoCacheKey(target.getAttribute("data-logo-src")||target.src||"");
+    if(key) overlayLogoCache[key]=dataUrl;
     target.classList.add("logo-normalized");
     target.style.setProperty("--logo-scale",ratio<.72?1.06:1);
-    target.src=outCanvas.toDataURL("image/png");
+    target.src=dataUrl;
     return true;
   }catch(e){}
   return false;
@@ -606,6 +613,13 @@ function normalizeOverlayLogoViaProxy(img){
 function fitOverlayLogo(img){
   if(img.dataset.logoFitted==="1") return;
   img.dataset.logoFitted="1";
+  const key=overlayLogoCacheKey(img.getAttribute("data-logo-src")||img.src||"");
+  if(key && overlayLogoCache[key]){
+    img.classList.add("logo-normalized");
+    img.style.setProperty("--logo-scale",1);
+    if(img.src!==overlayLogoCache[key]) img.src=overlayLogoCache[key];
+    return;
+  }
   img.classList.remove("logo-normalized");
   img.style.setProperty("--logo-scale",1);
   if(cropOverlayLogoFromImage(img,img)) return;
@@ -706,9 +720,13 @@ function render() {
     row.dataset.teamKey = teamKey(team);
     
     // Logo handling
-    const logoSrc = team.logo ? escapeAttr(team.logo) : "";
+    const rawLogoSrc = team.logo ? String(team.logo) : "";
+    const cachedLogoSrc = rawLogoSrc && overlayLogoCache[overlayLogoCacheKey(rawLogoSrc)] ? overlayLogoCache[overlayLogoCacheKey(rawLogoSrc)] : "";
+    const logoSrc = rawLogoSrc ? escapeAttr(rawLogoSrc) : "";
+    const renderLogoSrc = cachedLogoSrc ? escapeAttr(cachedLogoSrc) : logoSrc;
+    const logoClass = cachedLogoSrc ? "t-logo logo-normalized" : "t-logo";
     const logoHtml = team.logo ? 
-      '<span class="t-logo-wrap"><img class="t-logo" src="' + logoSrc + '" alt="" data-logo-src="' + logoSrc + '" onload="fitOverlayLogo(this)" onerror="retryOverlayLogoProxy(this)"></span>' : 
+      '<span class="t-logo-wrap"><img class="' + logoClass + '" src="' + renderLogoSrc + '" alt="" data-logo-src="' + logoSrc + '" onload="fitOverlayLogo(this)" onerror="retryOverlayLogoProxy(this)"></span>' : 
       '<span class="t-logo-wrap"><div class="t-logo t-logo-fallback logo-normalized">?</div></span>';
     
     if(activeDesign==="pmgo"){
