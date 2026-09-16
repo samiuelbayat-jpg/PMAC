@@ -25,7 +25,11 @@ html,body{width:1920px;height:1080px;min-width:1920px;min-height:1080px;overflow
 .team-row{align-items:center;padding:2px 6px;min-height:37px;border-bottom:1px solid rgba(255,255,255,0.04);border-left:3px solid transparent;}.team-row.rank-slide{position:relative;z-index:3;will-change:transform;transition:transform .62s cubic-bezier(.18,.84,.22,1);}
 .team-row.gold{background:transparent;border-left-color:var(--ov-accent);}.team-row.silver{background:transparent;border-left-color:#a8b8c8;}.team-row.bronze{background:transparent;border-left-color:#d4835a;}.team-row.eliminated-team{filter:grayscale(.45);box-shadow:inset 0 0 18px rgba(120,126,132,.28),0 0 9px rgba(120,126,132,.20);opacity:.82;}.team-row.eliminated-team .t-name,.team-row.eliminated-team .t-kills,.team-row.eliminated-team .t-place,.team-row.eliminated-team .t-pts,.team-row.eliminated-team .pos{color:#8f969c!important;text-shadow:none;}
 .pos{font-weight:900;font-size:12px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:0.9;min-height:22px;}.pos.g{color:var(--ov-accent);}.pos.s{color:#a8b8c8;}.pos.b{color:#d4835a;}.pos.x{color:#8a96a8;font-size:10px;}.rank-move{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:900;margin-top:2px;letter-spacing:0;}.rank-move.up{color:#00ff88;text-shadow:0 0 5px rgba(0,255,136,.65);}.rank-move.down{color:#ff9d00;text-shadow:0 0 5px rgba(255,157,0,.55);}.rank-move.bigdown{color:#ff3535;text-shadow:0 0 5px rgba(255,53,53,.70);}.rank-move.kill{color:#e8d02b;text-shadow:0 0 5px rgba(232,208,43,.65);}
-.t-logo{width:35px;height:35px;border-radius:50%;object-fit:contain;border:0;background:transparent;box-shadow:none;}
+.t-logo{width:35px;height:35px;border-radius:50%;object-fit:contain;border:0;background:transparent;box-shadow:none;transform:scale(var(--logo-scale,1));transform-origin:center center;}
+.t-logo-wrap{width:35px;height:35px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 35px;border-radius:50%;background:transparent;}
+.t-logo-wrap .t-logo{width:52px!important;height:52px!important;max-width:none;max-height:none;border-radius:0;object-fit:contain;transform:scale(var(--logo-scale,1));transform-origin:center center;}
+.t-logo-wrap .t-logo.logo-normalized{width:35px!important;height:35px!important;}
+.t-logo-fallback{background:transparent!important;border:0!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:10px!important;color:var(--ov-accent)!important;}
 .t-info{min-width:0;width:100%;overflow:visible;}.t-line{display:grid;grid-template-columns:minmax(0,1fr) 42px;align-items:center;gap:2px;min-width:0;overflow:visible;}.t-name{font-weight:900;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;color:var(--ov-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.t-played{font-family:'Share Tech Mono',monospace;font-size:7px;color:#8a96a8;margin-top:1px;}
 .player-strips{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;width:56px;margin-top:3px;margin-left:auto;margin-right:-10px;}
 .pstrip{height:6px;background:var(--alive-color);border-radius:2px;box-shadow:0 0 5px color-mix(in srgb,var(--alive-color) 70%,transparent);}
@@ -75,6 +79,7 @@ body.design-pmgo .team-row.eliminated-team{background:#5f625d!important;box-shad
 body.design-pmgo .team-row.gold:not(.eliminated-team),body.design-pmgo .team-row.silver:not(.eliminated-team),body.design-pmgo .team-row.bronze:not(.eliminated-team){border-left:0;background:#f3f3ee;}
 body.design-pmgo .pos{font-size:18px;color:#111!important;text-shadow:none;min-height:24px;line-height:1;font-weight:800;}body.design-pmgo .rank-move{display:none;}
 body.design-pmgo .t-logo{width:35px;height:35px;border-radius:0;border:0;background:transparent;object-fit:contain;flex:0 0 35px;box-shadow:none;}body.design-pmgo .team-row.eliminated-team .t-logo{filter:grayscale(.45) opacity(.9);}
+body.design-pmgo .t-logo-wrap{border-radius:0;}
 body.design-pmgo .pmgo-team-cell{display:flex;align-items:center;gap:8px;min-width:0;}body.design-pmgo .t-info{min-width:0;}
 body.design-pmgo .t-line{display:contents;}body.design-pmgo .t-name{font-size:18px;color:#111;letter-spacing:.02em;font-weight:800;line-height:1;text-transform:uppercase;text-overflow:clip;}body.design-pmgo .t-played{display:none;}
 body.design-pmgo .pmgo-alive{display:flex;justify-content:center;align-items:center;}body.design-pmgo .player-strips{width:42px;margin:0;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;align-self:center;}body.design-pmgo .pstrip{height:23px;border-radius:0;background:var(--alive-color);box-shadow:none;}body.design-pmgo .pstrip.dead{background:var(--dead-color);border:0;opacity:1;}
@@ -515,6 +520,97 @@ function movementFor(team, position){
   }
   return { html:"", rowClass:"" };
 }
+function escapeAttr(str){
+  return escapeHtml(str).replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+function logoProxyCandidates(src){
+  src=String(src||"");
+  const clean=src.split("?")[0].replace(/^https?:\/\//,"");
+  const noProtocol=src.replace(/^https?:\/\//,"");
+  return [
+    "https://images.weserv.nl/?url="+encodeURIComponent(noProtocol)+"&output=png",
+    "https://images.weserv.nl/?url=ssl:"+encodeURIComponent(noProtocol)+"&output=png",
+    "https://images.weserv.nl/?url="+encodeURIComponent(clean)+"&output=png",
+    "https://wsrv.nl/?url="+encodeURIComponent(noProtocol)+"&output=png"
+  ];
+}
+function overlayLogoFallback(img){
+  const fb=document.createElement("div");
+  fb.className="t-logo t-logo-fallback logo-normalized";
+  fb.textContent="?";
+  if(img.parentElement) img.parentElement.replaceChild(fb,img);
+}
+function retryOverlayLogoProxy(img){
+  const src=img.getAttribute("data-logo-src")||"";
+  const attempt=parseInt(img.getAttribute("data-logo-attempt")||"0",10);
+  const candidates=logoProxyCandidates(src);
+  if(attempt>=candidates.length){ overlayLogoFallback(img); return; }
+  img.setAttribute("data-logo-attempt",String(attempt+1));
+  img.dataset.logoFitted="";
+  img.src=candidates[attempt];
+}
+function cropOverlayLogoFromImage(target,source){
+  try{
+    const w=source.naturalWidth||0,h=source.naturalHeight||0;
+    if(!w||!h) return false;
+    const c=document.createElement("canvas");
+    c.width=w;c.height=h;
+    const ctx=c.getContext("2d",{willReadFrequently:true});
+    ctx.drawImage(source,0,0,w,h);
+    const data=ctx.getImageData(0,0,w,h).data;
+    let minX=w,minY=h,maxX=0,maxY=0,found=false;
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        if(data[(y*w+x)*4+3]>18){
+          if(x<minX) minX=x;
+          if(y<minY) minY=y;
+          if(x>maxX) maxX=x;
+          if(y>maxY) maxY=y;
+          found=true;
+        }
+      }
+    }
+    if(!found) return false;
+    const cropW=maxX-minX+1,cropH=maxY-minY+1;
+    const visual=Math.max(cropW,cropH);
+    const ratio=visual/Math.max(w,h);
+    const out=180,pad=12,outCanvas=document.createElement("canvas");
+    outCanvas.width=out;outCanvas.height=out;
+    const outCtx=outCanvas.getContext("2d");
+    let drawW,drawH,dx,dy;
+    if(cropW>=cropH){ drawW=out-pad*2; drawH=drawW*(cropH/cropW); dx=pad; dy=(out-drawH)/2; }
+    else{ drawH=out-pad*2; drawW=drawH*(cropW/cropH); dy=pad; dx=(out-drawW)/2; }
+    outCtx.drawImage(source,minX,minY,cropW,cropH,dx,dy,drawW,drawH);
+    target.classList.add("logo-normalized");
+    target.style.setProperty("--logo-scale",ratio<.72?1.06:1);
+    target.src=outCanvas.toDataURL("image/png");
+    return true;
+  }catch(e){}
+  return false;
+}
+function normalizeOverlayLogoViaProxy(img){
+  if(img.dataset.logoProxyFit==="1") return;
+  img.dataset.logoProxyFit="1";
+  const candidates=logoProxyCandidates(img.getAttribute("data-logo-src")||img.src||"");
+  let i=0;
+  function next(){
+    if(i>=candidates.length) return;
+    const proxy=new Image();
+    proxy.crossOrigin="anonymous";
+    proxy.onload=function(){ if(!cropOverlayLogoFromImage(img,proxy)) next(); };
+    proxy.onerror=next;
+    proxy.src=candidates[i++];
+  }
+  next();
+}
+function fitOverlayLogo(img){
+  if(img.dataset.logoFitted==="1") return;
+  img.dataset.logoFitted="1";
+  img.classList.remove("logo-normalized");
+  img.style.setProperty("--logo-scale",1);
+  if(cropOverlayLogoFromImage(img,img)) return;
+  normalizeOverlayLogoViaProxy(img);
+}
 function captureRowTops(list){
   const tops = {};
   if(!list) return tops;
@@ -610,9 +706,10 @@ function render() {
     row.dataset.teamKey = teamKey(team);
     
     // Logo handling
+    const logoSrc = team.logo ? escapeAttr(team.logo) : "";
     const logoHtml = team.logo ? 
-      '<img class="t-logo" src="' + team.logo + '" alt="" onerror="this.style.display=\'none\'; this.parentElement.innerHTML += \'<div class=\\\'t-logo\\\' style=\\\'background:transparent; border:0; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--ov-accent);\\\'>?</div>\'; this.remove()">' : 
-      '<div class="t-logo" style="background:transparent; border:0; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--ov-accent);">?</div>';
+      '<span class="t-logo-wrap"><img class="t-logo" src="' + logoSrc + '" alt="" data-logo-src="' + logoSrc + '" onload="fitOverlayLogo(this)" onerror="retryOverlayLogoProxy(this)"></span>' : 
+      '<span class="t-logo-wrap"><div class="t-logo t-logo-fallback logo-normalized">?</div></span>';
     
     if(activeDesign==="pmgo"){
       row.innerHTML =

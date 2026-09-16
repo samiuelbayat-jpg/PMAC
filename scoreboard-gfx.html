@@ -423,9 +423,42 @@ function drawRoundRect(ctx,x,y,w,h,r){
   ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
 }
 
+function logoVisualBounds(img){
+  if(!img||!img.naturalWidth||!img.naturalHeight) return null;
+  if(img._pmacLogoBounds!==undefined) return img._pmacLogoBounds;
+  try{
+    var c=document.createElement("canvas"),w=img.naturalWidth,h=img.naturalHeight;
+    c.width=w;c.height=h;
+    var cx=c.getContext("2d",{willReadFrequently:true});
+    cx.drawImage(img,0,0,w,h);
+    var data=cx.getImageData(0,0,w,h).data,minX=w,minY=h,maxX=0,maxY=0,found=false;
+    for(var yy=0;yy<h;yy++){
+      for(var xx=0;xx<w;xx++){
+        if(data[(yy*w+xx)*4+3]>18){
+          if(xx<minX) minX=xx;
+          if(yy<minY) minY=yy;
+          if(xx>maxX) maxX=xx;
+          if(yy>maxY) maxY=yy;
+          found=true;
+        }
+      }
+    }
+    img._pmacLogoBounds=found?{x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1}:null;
+  }catch(e){
+    img._pmacLogoBounds=null;
+  }
+  return img._pmacLogoBounds;
+}
 function drawCircleImage(ctx,img,x,y,r){
   ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.clip();
-  ctx.drawImage(img,x-r,y-r,r*2,r*2);ctx.restore();
+  var b=logoVisualBounds(img),pad=2,box=(r-pad)*2;
+  if(b){
+    var scale=Math.min(box/b.w,box/b.h),dw=b.w*scale,dh=b.h*scale;
+    ctx.drawImage(img,b.x,b.y,b.w,b.h,x-dw/2,y-dh/2,dw,dh);
+  }else{
+    ctx.drawImage(img,x-r,y-r,r*2,r*2);
+  }
+  ctx.restore();
 }
 function drawCoverImage(ctx,img,x,y,w,h){
   var scale=Math.max(w/img.naturalWidth,h/img.naturalHeight);
@@ -543,7 +576,7 @@ function drawPMGO2026OverallCanvas(ctx,st,logos,title,sub,bg,ac,today,bgBright,b
   var parts=main.split(" ");
   var last=parts.pop()||"RANKINGS";
   var first=parts.join(" ")||"OVERALL";
-  ctx.font=titleFontSpec(900,92);ctx.textAlign="left";ctx.shadowColor="rgba(0,0,0,0.82)";ctx.shadowBlur=8;
+  ctx.font="900 92px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.shadowColor="rgba(0,0,0,0.82)";ctx.shadowBlur=8;
   var tx=118,ty=224;
   ctx.fillStyle="#f1e4d2";ctx.fillText(first,tx,ty,680);
   var firstW=Math.min(ctx.measureText(first+" ").width,680);
@@ -552,7 +585,7 @@ function drawPMGO2026OverallCanvas(ctx,st,logos,title,sub,bg,ac,today,bgBright,b
   ctx.fillStyle=orangeGrad;ctx.fillText(last,tx+firstW+10,ty,520);
   ctx.shadowBlur=0;
   var tag=(title||eventInfo.name||"PMAC EVENT").toUpperCase();
-  ctx.fillStyle=ac;drawSkewRect(ctx,840,182,650,50,18);ctx.fill();ctx.fillStyle=contrastText(ac);ctx.font="900 38px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(tag,1165,220,600);
+  ctx.fillStyle=ac;drawSkewRect(ctx,840,244,650,48,18);ctx.fill();ctx.fillStyle=contrastText(ac);ctx.font="900 34px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(tag,1165,278,600);
 
   function drawHeader(x,y,w){
     var head=ctx.createLinearGradient(x,y,x+w,y);
