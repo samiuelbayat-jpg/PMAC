@@ -405,7 +405,7 @@ function renderHead(){
   var head=document.getElementById("head"),html="";
   var title=esc(TITLE);
   if(/^overall rankings$/i.test(TITLE)) title='OVERALL <span>RANKINGS</span>';
-  var sub=SUBTITLE || matchInfo.eventInfo || eventInfo.name || eventInfo.title || (EVENT_ID==="default"?"PMAF":EVENT_ID).replace(/[-_]/g," ");
+  var sub=matchInfo.eventInfo || SUBTITLE || eventInfo.name || eventInfo.title || (EVENT_ID==="default"?"PMAF":EVENT_ID).replace(/[-_]/g," ");
   html+='<div class="titlebar"><div class="title">'+title+'</div><div class="sub">'+esc(sub)+'</div></div>';
   head.innerHTML=html;
   var foot=document.getElementById("footer-date");
