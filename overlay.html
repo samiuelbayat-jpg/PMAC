@@ -408,8 +408,8 @@ function renderTop4WinPanel(teams){
   const mode=String((overlaySettings&&overlaySettings.top4Mode)||"auto").toLowerCase();
   if(mode==="off"){ hideTop4WinPanel(); return; }
   const aliveTeams=(teams||[]).map(t=>Object.assign({},t,{alivePlayers:playerCount(t.players)})).filter(t=>!t.missed && t.alivePlayers>0);
+  if(aliveTeams.length<=1){ hideTop4WinPanel(); return; }
   if(mode==="auto" && aliveTeams.length>4){ hideTop4WinPanel(); return; }
-  if(!aliveTeams.length){ hideTop4WinPanel(); return; }
   const totalAlive=aliveTeams.reduce((sum,t)=>sum+t.alivePlayers,0)||1;
   panel.innerHTML=aliveTeams
     .sort((a,b)=>(b.alivePlayers-a.alivePlayers)||(b.total-a.total)||(b.kills-a.kills))

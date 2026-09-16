@@ -237,6 +237,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 <div class="modal-bg" id="archive-modal"><div class="modal"><button class="modal-close" type="button" onclick="closeArchiveModal()" aria-label="Close archive popup">×</button><div class="modal-title">📦 Archive Tournament</div><div class="modal-sub">⚠️ Only when tournament is finished. This clears all current data.</div><div class="modal-label">Tournament Name</div><input class="modal-input" id="archive-name" placeholder="e.g. PMAC Cup — January 2025"><div class="modal-label">Date</div><input class="modal-input" type="date" id="archive-date"><div class="modal-warn">⚠️ WARNING: After clicking "Archive & Reset", ALL current teams and scores will be permanently cleared.</div><div class="modal-actions"><button class="btn" onclick="closeArchiveModal()">Cancel</button><button class="btn btn-primary" onclick="confirmArchive()">Archive & Reset</button></div><div class="archive-edit-box"><div class="modal-title" style="font-size:14px;margin-bottom:6px;">✏️ Edit Archived Points</div><div class="modal-sub" style="margin-bottom:.8rem;">Load an archived event only when Manage Teams and Enter Scores are empty.</div><div class="modal-label">Archived Event</div><select class="modal-input" id="archive-edit-select"><option value="">Loading archive...</option></select><div class="archive-edit-actions"><button class="btn" onclick="loadArchiveForEditing()">Load For Editing</button><button class="btn btn-primary" onclick="saveArchiveEditBack()">Save Back To Archive</button><button class="btn btn-danger" onclick="clearArchiveEditSession()">Clear Edit Session</button></div><div class="archive-edit-status" id="archive-edit-status"></div></div></div></div>
 
+<div class="modal-bg" id="replace-team-modal"><div class="modal" style="width:520px;"><button class="modal-close" type="button" onclick="closeReplaceTeamModal()" aria-label="Close replace team popup">×</button><div class="modal-title">Replace Team</div><div class="modal-sub" id="replace-team-current">Select a team to replace.</div><div class="modal-label">Team Name</div><input class="modal-input" id="replace-team-name" placeholder="New team name" list="team-logo-suggest" oninput="updateReplaceSavedLogo()" onchange="updateReplaceSavedLogo()"><div class="modal-label">Team Tag</div><input class="modal-input" id="replace-team-tag" placeholder="TAG" maxlength="8"><div class="modal-label">Team Logo</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;"><input type="file" id="replace-team-logo" accept="image/*" style="display:none" onchange="previewReplaceTeamLogo(this)"><button class="logo-inp-btn" type="button" onclick="document.getElementById('replace-team-logo').click()">Choose Logo</button><button class="logo-inp-btn" type="button" id="replace-use-saved-logo-btn" style="display:none" onclick="useReplaceSavedLogo()">Use Saved Logo</button><img id="replace-logo-preview" class="logo-preview"></div><div id="replace-team-status" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;margin-bottom:10px;"></div><div class="modal-actions"><button class="btn" onclick="closeReplaceTeamModal()">Cancel</button><button class="btn btn-primary" onclick="confirmReplaceTeam()">Add Replacement</button></div></div></div>
+
 <div class="modal-bg" id="groq-modal"><div class="modal" style="width:540px;"><div class="modal-title">🤖 Groq Vision Score Reader (Batch)</div><div class="modal-sub">📸 Reads team names (ignores UIDs).</div><div class="modal-label">Groq API Key (get from console.groq.com)</div><input class="modal-input" type="password" id="groq-api-key" placeholder="gsk_..."><div class="modal-label">Screenshots (multiple allowed)</div><input type="file" id="groq-images" accept="image/jpeg,image/png" multiple style="margin-bottom:12px;"><div id="groq-progress" class="progress-text"></div><button class="btn btn-primary" id="analyze-groq-btn" onclick="analyzeBatchWithGroq()">📡 Extract Scores from All Images</button><div id="groq-result-area" style="margin-top:16px;font-size:12px;max-height:200px;overflow-y:auto;background:#161a1f;padding:8px;border-radius:4px;"></div><div class="modal-actions"><button class="btn" onclick="closeGroqModal()">Close</button></div></div></div>
 
 <div class="page" id="main-page" style="display:none;">
@@ -643,7 +645,94 @@ function dataUrlToBlob(dataUrl){ const parts=String(dataUrl||"").split(","); con
 function uploadLogoFileToStorage(file, owner, kind){ if(!file) return Promise.resolve(""); const safeOwner=sanitizeKey(owner||"logo"); const clean=cleanStorageName(file.name||"logo.png"); const path=`pmac-assets/${activeEventId}/logos/${kind||"team"}/${safeOwner}/${Date.now()}_${clean}`; return storage.ref(path).put(file,{contentType:file.type||"image/png"}).then(s=>s.ref.getDownloadURL()); }
 function uploadLogoDataUrlToStorage(dataUrl, owner, kind){ if(!String(dataUrl||"").startsWith("data:")) return Promise.resolve(dataUrl||""); const blob=dataUrlToBlob(dataUrl); const ext=(blob.type||"image/png").includes("jpeg")?"jpg":"png"; const safeOwner=sanitizeKey(owner||"logo"); const path=`pmac-assets/${activeEventId}/logos/${kind||"team"}/${safeOwner}/${Date.now()}_migrated.${ext}`; return storage.ref(path).put(blob,{contentType:blob.type||"image/png"}).then(s=>s.ref.getDownloadURL()); }
 function addTeam(){ const name=document.getElementById("new-team-name").value.trim().toUpperCase(); const tag=(document.getElementById("new-team-tag")?.value||"").trim().toUpperCase() || compactTeamTag(name); if(!name) return showToast("Enter team name",false); if(teams.find(t=>t.name===name)) return showToast("Team exists",false); const file=document.getElementById("new-team-logo").files[0]; const savedLogo=document.getElementById("logo-preview")?.dataset?.savedLogo || ""; if(file){ document.getElementById("uploading-badge").style.display="inline"; uploadLogoFileToStorage(file,name,"team").then(url=>pushTeamToDb(name,url,tag)).catch(e=>{ document.getElementById("uploading-badge").style.display="none"; showToast("Logo upload failed: "+(e.message||e),false); }); } else pushTeamToDb(name,savedLogo,tag); }
-function pushTeamToDb(name,logo,tag){ if(logo) rememberTeamLogo(name,logo); const newTeam = { name, tag:(tag||compactTeamTag(name)), logo, playerUIDs: [] }; const newTeams = [...teams, newTeam]; _teamsRef().set(newTeams).then(()=>{ const safe=sanitizeKey(name); if(!scores[safe]){ scores[safe]=emptyScoreRows(); _scoresRef().set(scores); } showToast("Team added",true); document.getElementById("new-team-name").value=""; document.getElementById("new-team-tag").value=""; document.getElementById("new-team-logo").value=""; document.getElementById("logo-preview").style.display="none"; document.getElementById("logo-preview").dataset.savedLogo=""; const btn=document.getElementById("use-saved-team-logo-btn"); if(btn) btn.style.display="none"; document.getElementById("uploading-badge").style.display="none"; refreshManageTeamSuggestions(); }).catch(e=>showToast(e.message,false)); }
+function clearAddTeamForm(){ document.getElementById("new-team-name").value=""; document.getElementById("new-team-tag").value=""; document.getElementById("new-team-logo").value=""; const prev=document.getElementById("logo-preview"); if(prev){ prev.style.display="none"; prev.src=""; prev.dataset.savedLogo=""; } const btn=document.getElementById("use-saved-team-logo-btn"); if(btn) btn.style.display="none"; document.getElementById("uploading-badge").style.display="none"; }
+function pushTeamToDb(name,logo,tag){ if(logo) rememberTeamLogo(name,logo); const newTeam = { name, tag:(tag||compactTeamTag(name)), logo, playerUIDs: [] }; const newTeams = [...teams, newTeam]; _teamsRef().set(newTeams).then(()=>{ const safe=sanitizeKey(name); if(!scores[safe]){ scores[safe]=emptyScoreRows(); _scoresRef().set(scores); } showToast("Team added",true); clearAddTeamForm(); refreshManageTeamSuggestions(); }).catch(e=>showToast(e.message,false)); }
+let replaceTeamTargetName="";
+function replaceTeam(oldName){
+  const idx=teams.findIndex(t=>t.name===oldName);
+  if(idx<0) return showToast("Team to replace was not found",false);
+  replaceTeamTargetName=oldName;
+  const oldTeam=teams[idx]||{};
+  const modal=document.getElementById("replace-team-modal");
+  const current=document.getElementById("replace-team-current");
+  if(current) current.textContent=`Replacing: ${oldTeam.name} — the new team keeps this exact spot.`;
+  document.getElementById("replace-team-name").value="";
+  document.getElementById("replace-team-tag").value="";
+  document.getElementById("replace-team-logo").value="";
+  const prev=document.getElementById("replace-logo-preview");
+  if(prev){ prev.src=""; prev.style.display="none"; prev.dataset.savedLogo=""; }
+  const savedBtn=document.getElementById("replace-use-saved-logo-btn");
+  if(savedBtn) savedBtn.style.display="none";
+  const status=document.getElementById("replace-team-status");
+  if(status) status.textContent="";
+  if(modal) modal.style.display="flex";
+  setTimeout(()=>document.getElementById("replace-team-name")?.focus(),50);
+}
+function closeReplaceTeamModal(){
+  const modal=document.getElementById("replace-team-modal");
+  if(modal) modal.style.display="none";
+  replaceTeamTargetName="";
+}
+function previewReplaceTeamLogo(input){
+  const file=input&&input.files?input.files[0]:null;
+  if(!file) return;
+  const prev=document.getElementById("replace-logo-preview");
+  const reader=new FileReader();
+  reader.onload=e=>{ if(prev){ prev.src=e.target.result; prev.style.display="block"; prev.dataset.savedLogo=""; } const btn=document.getElementById("replace-use-saved-logo-btn"); if(btn) btn.style.display="none"; };
+  reader.readAsDataURL(file);
+}
+function updateReplaceSavedLogo(){
+  const fileEl=document.getElementById("replace-team-logo");
+  if(fileEl && fileEl.files && fileEl.files.length) return;
+  const name=document.getElementById("replace-team-name")?.value||"";
+  const logo=findSavedLogo(name);
+  const btn=document.getElementById("replace-use-saved-logo-btn");
+  if(btn) btn.style.display=logo?"inline-block":"none";
+}
+function useReplaceSavedLogo(){
+  const name=document.getElementById("replace-team-name")?.value||"";
+  const logo=findSavedLogo(name);
+  if(!logo){ showToast("No saved logo found for this team",false); return; }
+  const fileEl=document.getElementById("replace-team-logo");
+  if(fileEl) fileEl.value="";
+  const prev=document.getElementById("replace-logo-preview");
+  if(prev){ prev.src=logo; prev.style.display="block"; prev.dataset.savedLogo=logo; }
+  showToast("Saved logo selected",true);
+}
+function confirmReplaceTeam(){
+  const idx=teams.findIndex(t=>t.name===replaceTeamTargetName);
+  if(idx<0) return showToast("Team to replace was not found",false);
+  const oldTeam=teams[idx];
+  const name=document.getElementById("replace-team-name").value.trim().toUpperCase();
+  const tag=(document.getElementById("replace-team-tag")?.value||"").trim().toUpperCase() || compactTeamTag(name);
+  if(!name) return showToast("Enter replacement team name",false);
+  if(teams.some((t,i)=>i!==idx && t.name===name)) return showToast("Replacement team already exists",false);
+  const file=document.getElementById("replace-team-logo").files[0];
+  const savedLogo=document.getElementById("replace-logo-preview")?.dataset?.savedLogo || findSavedLogo(name) || "";
+  const status=document.getElementById("replace-team-status");
+  if(status) status.textContent="Replacing team...";
+  const finish=(logo)=>replaceTeamInSlot(idx,oldTeam,name,logo,tag);
+  if(file){
+    if(status) status.textContent="Uploading logo...";
+    uploadLogoFileToStorage(file,name,"team").then(finish).catch(e=>{ if(status) status.textContent="Logo upload failed."; showToast("Logo upload failed: "+(e.message||e),false); });
+  } else finish(savedLogo);
+}
+function replaceTeamInSlot(idx,oldTeam,name,logo,tag){
+  if(logo) rememberTeamLogo(name,logo);
+  const oldSafe=sanitizeKey(oldTeam.name);
+  const newSafe=sanitizeKey(name);
+  teams[idx]={name,tag:(tag||compactTeamTag(name)),logo:logo||"",playerUIDs:[]};
+  if(oldSafe!==newSafe) delete scores[oldSafe];
+  scores[newSafe]=emptyScoreRows();
+  return _teamsRef().set(teams).then(()=>_scoresRef().set(scores)).then(()=>{
+    showToast(`Replaced "${oldTeam.name}" with "${name}" in the same spot`,true);
+    closeReplaceTeamModal();
+    clearAddTeamForm();
+    refreshManageTeamSuggestions();
+    renderTeamsMgmt();
+    renderScoreGrid();
+  }).catch(e=>showToast(e.message,false));
+}
 function removeTeam(name){ if(!confirm(`Remove team "${name}"? This will also delete all their scores.`)) return; const newTeams=teams.filter(t=>t.name!==name); _teamsRef().set(newTeams).then(()=>{ delete scores[sanitizeKey(name)]; return _scoresRef().set(scores); }).then(()=>{ showToast(`Team "${name}" removed.`, true); }).catch(e=>showToast(e.message, false)); }
 function updateTeamTag(name,value){ const idx=teams.findIndex(t=>t.name===name); if(idx<0) return; teams[idx].tag=String(value||"").trim().toUpperCase().slice(0,8)||compactTeamTag(name); _teamsRef().set(teams).then(()=>showToast("Team tag saved",true)).catch(e=>showToast(e.message,false)); }
 function removeAllTeams(){ if(!teams.length){ showToast("No teams to remove", false); return; } if(!confirm(`Remove ALL ${teams.length} teams and clear their scores for the current session?`)) return; const meta={_activeMatch:activeMatchPayload()}; _teamsRef().set([]).then(()=>_scoresRef().set(meta)).then(()=>{ teams=[]; scores=meta; renderTeamsMgmt(); renderScoreGrid(); showToast("All teams removed", true); }).catch(e=>showToast(e.message, false)); }
@@ -697,6 +786,8 @@ function renderTeamsMgmt(){
     if (!teams.length) { container.innerHTML = '<div class="no-teams">No teams yet.</div>'; return; } 
     const html = [];
     teams.forEach(t => { 
+        const call = t.name.replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+        const safeName = sanitizeKey(t.name);
         const uids = t.playerUIDs || []; 
         const uidInputs = uids.map((uid, idx) => `
             <div class="player-row">
@@ -712,9 +803,10 @@ function renderTeamsMgmt(){
                     <img class="team-mgmt-logo" src="${t.logo||''}" onerror="this.style.opacity=0.2">
                     <div class="team-mgmt-name">${t.name}</div>
                     <input class="eg-inp eg-inp-tag" value="${escapeHtml(t.tag||compactTeamTag(t.name))}" maxlength="8" title="Team tag shown in OBS overlay" onchange="updateTeamTag('${t.name.replace(/'/g,"\\'")}',this.value)">
-                    <input type="file" id="replace-logo-${sanitizeKey(t.name)}" accept="image/png,image/*" style="display:none" onchange="updateTeamLogoFile('${t.name.replace(/'/g,"\'")}',this)">
+                    <input type="file" id="replace-logo-${safeName}" accept="image/png,image/*" style="display:none" onchange="updateTeamLogoFile('${t.name.replace(/'/g,"\'")}',this)">
 
-                    <button class="btn" style="font-size:10px;padding:2px 8px;" onclick="document.getElementById('replace-logo-${sanitizeKey(t.name)}').click()">Replace Logo</button>
+                    <button class="btn" style="font-size:10px;padding:2px 8px;" onclick="document.getElementById('replace-logo-${safeName}').click()">Replace Logo</button>
+                    <button class="btn" style="font-size:10px;padding:2px 8px;background:rgba(0,201,122,.12);border-color:rgba(0,201,122,.35);color:#00c97a;" onclick="replaceTeam('${call}')">Replace Team</button>
 
                     <span class="team-mgmt-del" onclick="removeTeam('${t.name.replace(/'/g,"\'")}')">🗑️ Remove Team</span>
                 </div>
