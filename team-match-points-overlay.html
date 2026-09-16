@@ -99,7 +99,7 @@ var TITLE=qs.get("title")||"OVERALL RANKINGS";
 var SUBTITLE=qs.get("subtitle")||"";
 var MODE=qs.get("mode")||qs.get("scope")||"event";
 var OVERALL_MODE=/^(overall|all|history)$/i.test(MODE);
-var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null;
+var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},matchInfo={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,matchInfoRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null;
 var THEME_KEY="pmac_match_points_theme_"+EVENT_ID;
 var THEME_DEFAULTS={titleColor:"#f4eadc",team:"#d95b06",accent:"#f47a19",text:"#080808",total1:"#f2eee6",total2:"#ddd8cf",total3:"#c9c2b7"};
 var THEME_VARS={titleColor:"--title-color",team:"--team-b",accent:"--sub-accent",text:"--row-text",total1:"--total-a",total2:"--total-b",total3:"--total-c"};
@@ -196,6 +196,14 @@ function watchTheme(){
   themeRef.on("value",function(s){
     var theme=Object.assign({},THEME_DEFAULTS,s.val()||{});
     applyTheme(theme,true);
+  });
+}
+function watchMatchInfo(){
+  if(matchInfoRef) matchInfoRef.off();
+  matchInfoRef=db.ref(eventPath("matchPointsOverlay/info"));
+  matchInfoRef.on("value",function(s){
+    matchInfo=s.val()||{};
+    renderHead();
   });
 }
 function sanitizeKey(n){return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_");}
@@ -397,7 +405,7 @@ function renderHead(){
   var head=document.getElementById("head"),html="";
   var title=esc(TITLE);
   if(/^overall rankings$/i.test(TITLE)) title='OVERALL <span>RANKINGS</span>';
-  var sub=SUBTITLE || eventInfo.name || eventInfo.title || (EVENT_ID==="default"?"PMAF":EVENT_ID).replace(/[-_]/g," ");
+  var sub=SUBTITLE || matchInfo.eventInfo || eventInfo.name || eventInfo.title || (EVENT_ID==="default"?"PMAF":EVENT_ID).replace(/[-_]/g," ");
   html+='<div class="titlebar"><div class="title">'+title+'</div><div class="sub">'+esc(sub)+'</div></div>';
   head.innerHTML=html;
   var foot=document.getElementById("footer-date");
@@ -480,6 +488,7 @@ function render(){
 }
 
 watchTheme();
+watchMatchInfo();
 if(OVERALL_MODE) watchOverall(); else watchActive();
 </script>
 </body>
