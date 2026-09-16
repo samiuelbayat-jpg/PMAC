@@ -507,8 +507,8 @@ function renderColumn(list,startIdx){
 }
 function render(){
   renderHead();
-  var list=(teams||[]).filter(function(t){return t&&t.name;}).map(function(t){return Object.assign({},t,{total:teamTotal(t)});});
-  list.sort(function(a,b){return b.total-a.total||norm(a.name).localeCompare(norm(b.name));});
+  var list=(teams||[]).filter(function(t){return t&&t.name;}).map(function(t){var stats=teamStats(t);return Object.assign({},t,{total:stats.total,rankPts:stats.rankPts,kills:stats.kills});});
+  list.sort(function(a,b){return b.total-a.total||b.rankPts-a.rankPts||b.kills-a.kills||norm(a.name).localeCompare(norm(b.name));});
   list=list.slice(0,LIMIT);
   fitRows(list.length);
   var rows=document.getElementById("rows");

@@ -417,7 +417,7 @@ function renderTop4WinPanel(teams){
   if(mode==="auto" && aliveTeams.length>4){ hideTop4WinPanel(); return; }
   const totalAlive=aliveTeams.reduce((sum,t)=>sum+t.alivePlayers,0)||1;
   panel.innerHTML=aliveTeams
-    .sort((a,b)=>(b.alivePlayers-a.alivePlayers)||(b.total-a.total)||(b.kills-a.kills))
+    .sort((a,b)=>(b.alivePlayers-a.alivePlayers)||(b.total-a.total)||((b.placePoints||0)-(a.placePoints||0))||(b.kills-a.kills))
     .slice(0,4)
     .map(team=>{
       const pct=((team.alivePlayers/totalAlive)*100).toFixed(1);
