@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PMAC GFX Generator</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&display=block" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
@@ -145,6 +145,17 @@ function resolveTeamLogo(team){
 }
 var GFX_SETUP_KEY = "pmac_gfx_generator_setup_v2";
 var gfxRestoringSetup = false;
+var gfxFontsReady = !document.fonts;
+var gfxPendingBuild = false;
+if(document.fonts){
+  document.fonts.ready.then(function(){
+    gfxFontsReady = true;
+    if(gfxPendingBuild){
+      gfxPendingBuild = false;
+      build();
+    }
+  });
+}
 function gfxInputIds(){return ["inp-title","inp-title-size","inp-title-font","inp-sub","inp-design","inp-slot-label","inp-team-size","inp-bg","inp-accent","inp-light","inp-secondary","inp-stage","inp-qualify","inp-group","inp-date","inp-time","inp-matches","inp-bg-bright","inp-bg-contrast","inp-bg-blur","inp-bg-tint","inp-panel-alpha"];}
 function saveGfxSetup(){
   if(gfxRestoringSetup) return;
@@ -784,6 +795,12 @@ function loadImage(url){
 
 function build(){
   saveGfxSetup();
+  if(!gfxFontsReady){
+    gfxPendingBuild = true;
+    var statusEl=document.getElementById("status");
+    if(statusEl) statusEl.textContent="Loading GFX font...";
+    return;
+  }
   if(!teamsReady||!scoresReady) return;
   var st=getStandings();
   if(!st.length){document.getElementById("status").textContent="No teams.";return;}
