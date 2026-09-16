@@ -1781,7 +1781,7 @@ function saveOverlaySettings(opts){
     const nextTop4Helmet = autoOnly ? (overlaySettings.top4HelmetUrl||"") : (top4HelmetDraft!==null?helmetUrl:(overlaySettings.top4HelmetUrl||""));
     const matchEventInfo=(document.getElementById("ov-match-event-info")?.value||"").trim();
     const data={ design:document.getElementById("ov-design").value, accent:sharedColor, bg:document.getElementById("ov-bg").value, text:document.getElementById("ov-text").value, aliveStyle:document.getElementById("ov-alive-style").value, aliveColor:document.getElementById("ov-alive-color").value, deadColor:document.getElementById("ov-dead-color").value, top4Mode:document.getElementById("ov-top4").value, top4Color:sharedColor, elimStyle:document.getElementById("ov-elim-style").value, elimBgColor:document.getElementById("ov-elim-bg").value, elimTextColor:document.getElementById("ov-elim-text").value, elimAccentColor:document.getElementById("ov-elim-accent").value, elimShowLogo:document.getElementById("ov-elim-logo").value, matchEventInfo, streamerName:document.getElementById("ov-streamer-name").value.trim(), streamerLogo:nextStreamerLogo, top4HelmetUrl:nextTop4Helmet, updatedAt:Date.now() };
-    const writes=[overlaySettingsRef.update(data), db.ref(eventPath("matchPointsOverlay/info")).update({eventInfo:matchEventInfo,updatedAt:Date.now()})];
+    const writes=[overlaySettingsRef.update(data)];
     if(activeEventId!=="default") writes.push(db.ref("pmac/overlaySettings").update(data).catch(()=>null));
     localStorage.setItem("pmac_overlay_settings_latest", JSON.stringify(data));
     return Promise.all(writes);
