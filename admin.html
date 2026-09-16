@@ -70,6 +70,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .team-mgmt-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
 .team-mgmt-logo{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid rgba(232,184,0,0.3);background:#0f1115;}
 .team-mgmt-name{font-weight:800;font-size:15px;text-transform:uppercase;flex:1;}
+.team-name-edit{min-width:180px;max-width:260px;flex:1;}
 .team-mgmt-del{font-family:'Share Tech Mono',monospace;font-size:10px;color:#ff8888;cursor:pointer;padding:2px 8px;border-radius:3px;border:1px solid rgba(255,68,68,0.3);background:rgba(255,68,68,0.1);}
 .players-section{margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);}
 .player-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
@@ -734,6 +735,33 @@ function replaceTeamInSlot(idx,oldTeam,name,logo,tag){
   }).catch(e=>showToast(e.message,false));
 }
 function removeTeam(name){ if(!confirm(`Remove team "${name}"? This will also delete all their scores.`)) return; const newTeams=teams.filter(t=>t.name!==name); _teamsRef().set(newTeams).then(()=>{ delete scores[sanitizeKey(name)]; return _scoresRef().set(scores); }).then(()=>{ showToast(`Team "${name}" removed.`, true); }).catch(e=>showToast(e.message, false)); }
+function updateTeamName(oldName,value){
+  const idx=teams.findIndex(t=>t.name===oldName);
+  if(idx<0) return showToast("Team not found",false);
+  const newName=String(value||"").trim().toUpperCase();
+  if(!newName){ renderTeamsMgmt(); return showToast("Team name cannot be empty",false); }
+  if(newName===oldName) return;
+  if(teams.some((t,i)=>i!==idx && t.name===newName)){ renderTeamsMgmt(); return showToast("Team name already exists",false); }
+  const oldSafe=sanitizeKey(oldName), newSafe=sanitizeKey(newName);
+  const updated=teams.slice();
+  updated[idx]=Object.assign({},updated[idx],{name:newName,tag:updated[idx].tag||compactTeamTag(newName)});
+  const nextScores=Object.assign({},scores||{});
+  if(oldSafe!==newSafe){
+    const oldRows=nextScores[oldSafe]||nextScores[oldName]||nextScores[sanitizeKey(updated[idx].tag||"")];
+    if(oldRows && !nextScores[newSafe]) nextScores[newSafe]=oldRows;
+    delete nextScores[oldSafe];
+    delete nextScores[oldName];
+  }
+  teams=updated;
+  scores=nextScores;
+  if(updated[idx].logo) rememberTeamLogo(newName,updated[idx].logo);
+  _teamsRef().set(updated).then(()=>_scoresRef().set(nextScores)).then(()=>{
+    showToast("Team name saved",true);
+    refreshManageTeamSuggestions();
+    renderTeamsMgmt();
+    renderScoreGrid();
+  }).catch(e=>showToast(e.message,false));
+}
 function updateTeamTag(name,value){ const idx=teams.findIndex(t=>t.name===name); if(idx<0) return; teams[idx].tag=String(value||"").trim().toUpperCase().slice(0,8)||compactTeamTag(name); _teamsRef().set(teams).then(()=>showToast("Team tag saved",true)).catch(e=>showToast(e.message,false)); }
 function removeAllTeams(){ if(!teams.length){ showToast("No teams to remove", false); return; } if(!confirm(`Remove ALL ${teams.length} teams and clear their scores for the current session?`)) return; const meta={_activeMatch:activeMatchPayload()}; _teamsRef().set([]).then(()=>_scoresRef().set(meta)).then(()=>{ teams=[]; scores=meta; renderTeamsMgmt(); renderScoreGrid(); showToast("All teams removed", true); }).catch(e=>showToast(e.message, false)); }
 function addPlayerUidSlot(teamName) { 
@@ -801,7 +829,7 @@ function renderTeamsMgmt(){
             <div class="team-mgmt-card">
                 <div class="team-mgmt-header">
                     <img class="team-mgmt-logo" src="${t.logo||''}" onerror="this.style.opacity=0.2">
-                    <div class="team-mgmt-name">${t.name}</div>
+                    <input class="eg-inp team-name-edit" value="${escapeHtml(t.name)}" title="Team name shown everywhere" onchange="updateTeamName('${call}',this.value)">
                     <input class="eg-inp eg-inp-tag" value="${escapeHtml(t.tag||compactTeamTag(t.name))}" maxlength="8" title="Team tag shown in OBS overlay" onchange="updateTeamTag('${t.name.replace(/'/g,"\\'")}',this.value)">
                     <input type="file" id="replace-logo-${safeName}" accept="image/png,image/*" style="display:none" onchange="updateTeamLogoFile('${t.name.replace(/'/g,"\'")}',this)">
 
