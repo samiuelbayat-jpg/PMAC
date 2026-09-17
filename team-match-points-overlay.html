@@ -390,9 +390,12 @@ function scoreRowsFromSet(scoreSet,t){
 }
 function detachOverallRefs(){
   [eventInfoRef,eventGroupsRef,mainTeamsRef,mainScoresRef].forEach(function(r){if(r)r.off();});
+  if(activeRef) activeRef.off();
 }
 function renderOverallFromSnapshots(){
   var groups=window.__overallGroups||{}, mainTeams=window.__overallMainTeams||[], mainScores=window.__overallMainScores||{};
+  var activeSessions=window.__overallActiveSessions||[], activeSlots={};
+  activeSessions.forEach(function(a){ if(a&&a.group&&a.date) activeSlots[a.group+"|"+a.date]=true; });
   var totals={};
   mainTeams=toList(mainTeams);
   mainTeams.forEach(function(t){ if(t&&t.name&&!totals[teamKey(t)]) totals[teamKey(t)]={name:t.name,tag:t.tag||"",logo:t.logo||"",matchRows:[],totalOverall:0,playedOverall:0,matchSlots:{}}; });
@@ -401,8 +404,9 @@ function renderOverallFromSnapshots(){
     Object.keys(sessions).sort().forEach(function(date){
       var sess=sessions[date]||{};
       var d=cleanDate(sess.date||date);
-      if(!inOverallRange(d)) return;
-      addOverallScores(totals,sess.teams||[],sess.scores||{},d||date);
+      var activeSlot=activeSlots[gid+"|"+date]||activeSlots[gid+"|"+(sess.date||date)];
+      if(!inOverallRange(d) && !activeSlot) return;
+      addOverallScores(totals,sess.teams||[],sess.scores||{},gid+"|"+(d||date));
     });
   });
   if(!Object.keys(totals).some(function(k){return totals[k].playedOverall>0;})){
@@ -418,10 +422,12 @@ function watchOverall(){
   eventGroupsRef=db.ref(eventPath("eventGroups"));
   mainTeamsRef=db.ref(eventPath("teams"));
   mainScoresRef=db.ref(eventPath("matches"));
+  activeRef=db.ref(eventPath("activeSession"));
   eventInfoRef.on("value",function(s){eventInfo=s.val()||{};renderOverallFromSnapshots();});
   eventGroupsRef.on("value",function(s){window.__overallGroups=s.val()||{};renderOverallFromSnapshots();});
   mainTeamsRef.on("value",function(s){window.__overallMainTeams=s.val()||[];renderOverallFromSnapshots();});
   mainScoresRef.on("value",function(s){window.__overallMainScores=s.val()||{};renderOverallFromSnapshots();});
+  activeRef.on("value",function(s){window.__overallActiveSessions=activeSessionList(s.val());renderOverallFromSnapshots();},function(){window.__overallActiveSessions=[];renderOverallFromSnapshots();});
 }
 function renderHead(){
   var head=document.getElementById("head"),html="";
