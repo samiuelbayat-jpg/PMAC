@@ -148,13 +148,33 @@ var gfxRestoringSetup = false;
 var gfxFontsReady = !document.fonts;
 var gfxPendingBuild = false;
 if(document.fonts){
-  document.fonts.ready.then(function(){
+  gfxFontsReady = false;
+  Promise.all([
+    document.fonts.load("900 92px 'Barlow Condensed'"),
+    document.fonts.load("800 28px 'Barlow Condensed'"),
+    document.fonts.ready
+  ]).then(function(){
+    gfxFontsReady = true;
+    if(gfxPendingBuild){
+      gfxPendingBuild = false;
+      build();
+    }
+  }).catch(function(){
     gfxFontsReady = true;
     if(gfxPendingBuild){
       gfxPendingBuild = false;
       build();
     }
   });
+  setTimeout(function(){
+    if(!gfxFontsReady){
+      gfxFontsReady = true;
+      if(gfxPendingBuild){
+        gfxPendingBuild = false;
+        build();
+      }
+    }
+  },2500);
 }
 function gfxInputIds(){return ["inp-title","inp-title-size","inp-title-font","inp-sub","inp-design","inp-slot-label","inp-team-size","inp-bg","inp-accent","inp-light","inp-secondary","inp-stage","inp-qualify","inp-group","inp-date","inp-time","inp-matches","inp-bg-bright","inp-bg-contrast","inp-bg-blur","inp-bg-tint","inp-panel-alpha"];}
 function saveGfxSetup(){
@@ -178,6 +198,7 @@ function restoreGfxSetup(){
   try{saved=JSON.parse(raw);}catch(e){return;}
   gfxRestoringSetup=true;
   Object.keys(saved.fields||{}).forEach(function(id){var el=document.getElementById(id); if(el) el.value=saved.fields[id];});
+  forceBroadcastFontForPreset();
   EVENT_LOGO_DATA=saved.eventLogoData||""; EVENT_LOGO_NAME=saved.eventLogoName||"";
   BG_IMAGE_DATA=saved.bgImageData||""; BG_IMAGE_NAME=saved.bgImageName||"";
   if(EVENT_LOGO_DATA){document.getElementById("event-logo-name").textContent=EVENT_LOGO_NAME||"Saved logo";document.getElementById("event-logo-clear").style.display="inline-block";imageFromDataUrl(EVENT_LOGO_DATA,function(img){EVENT_LOGO=img;build();});}
@@ -411,11 +432,16 @@ function titleFontFamily(){
 function titleFontSpec(weight,size){return weight+" "+Math.round(size*titleScale())+"px "+titleFontFamily();}
 function getPreset(){return GFX_PRESETS[document.getElementById("inp-design").value]||GFX_PRESETS.neon;}
 function setVal(id,val){document.getElementById(id).value=val;}
+function forceBroadcastFontForPreset(){
+  var p=getPreset();
+  if(p.layout==="pmgo2026"||p.layout==="battle"||p.layout==="bluecompact"||p.layout==="wwcd") setVal("inp-title-font","barlow");
+}
 function applyPreset(id){
   var p=GFX_PRESETS[id]||GFX_PRESETS.neon;
   setVal("inp-bg",p.bg);setVal("inp-accent",p.accent);
   setVal("inp-bg-bright",p.bright);setVal("inp-bg-contrast",p.contrast);setVal("inp-bg-blur",p.blur);
   setVal("inp-bg-tint",p.tint);setVal("inp-panel-alpha",p.panel);
+  forceBroadcastFontForPreset();
   updateRangeLabels();build();toast(p.label+" design applied",true);
 }
 function updateRangeLabels(){
@@ -587,8 +613,8 @@ function drawPMGO2026OverallCanvas(ctx,st,logos,title,sub,bg,ac,today,bgBright,b
   var parts=main.split(" ");
   var last=parts.pop()||"RANKINGS";
   var first=parts.join(" ")||"OVERALL";
-  ctx.font="900 92px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.shadowColor="rgba(0,0,0,0.82)";ctx.shadowBlur=8;
-  var tx=118,ty=224;
+  ctx.font="900 82px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.shadowColor="rgba(0,0,0,0.82)";ctx.shadowBlur=8;
+  var tx=118,ty=205;
   ctx.fillStyle="#f1e4d2";ctx.fillText(first,tx,ty,680);
   var firstW=Math.min(ctx.measureText(first+" ").width,680);
   var orangeGrad=ctx.createLinearGradient(tx+firstW,ty-82,tx+firstW+360,ty);
@@ -596,7 +622,7 @@ function drawPMGO2026OverallCanvas(ctx,st,logos,title,sub,bg,ac,today,bgBright,b
   ctx.fillStyle=orangeGrad;ctx.fillText(last,tx+firstW+10,ty,520);
   ctx.shadowBlur=0;
   var tag=(title||eventInfo.name||"PMAC EVENT").toUpperCase();
-  ctx.fillStyle=ac;drawSkewRect(ctx,840,244,650,48,18);ctx.fill();ctx.fillStyle=contrastText(ac);ctx.font="900 34px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(tag,1165,278,600);
+  ctx.fillStyle=ac;drawSkewRect(ctx,760,232,760,48,18);ctx.fill();ctx.fillStyle=contrastText(ac);ctx.font="900 32px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(tag,1140,266,700);
 
   function drawHeader(x,y,w){
     var head=ctx.createLinearGradient(x,y,x+w,y);
@@ -604,8 +630,8 @@ function drawPMGO2026OverallCanvas(ctx,st,logos,title,sub,bg,ac,today,bgBright,b
     ctx.fillStyle=head;ctx.fillRect(x,y,w,56);
     ctx.strokeStyle="rgba(255,210,156,0.72)";ctx.lineWidth=1;ctx.strokeRect(x,y,w,56);
     ctx.fillStyle="#fff8ec";ctx.font="900 24px 'Barlow Condensed',sans-serif";ctx.textAlign="left";
-    ctx.fillText("RANK",x+22,y+37);ctx.fillText("TEAM",x+168,y+37);
-    ctx.textAlign="center";ctx.font="900 21px 'Barlow Condensed',sans-serif";ctx.fillText("ELIMS",x+w-250,y+37);ctx.fillText("RANK PTS",x+w-150,y+37);ctx.fillText("TOTAL PTS",x+w-58,y+37);
+    ctx.fillText("RANK",x+18,y+37);ctx.fillText("TEAM",x+160,y+37);
+    ctx.textAlign="center";ctx.font="900 20px 'Barlow Condensed',sans-serif";ctx.fillText("ELIMS",x+w-220,y+37);ctx.fillText("RANK PTS",x+w-126,y+37);ctx.fillText("TOTAL PTS",x+w-44,y+37);
   }
   function drawRow(x,y,w,t,pos,i,logo){
     var rowH=58,ry=y+i*70;
@@ -613,18 +639,18 @@ function drawPMGO2026OverallCanvas(ctx,st,logos,title,sub,bg,ac,today,bgBright,b
     ctx.fillRect(x,ry,w,rowH);
     ctx.strokeStyle="rgba(190,118,42,0.82)";ctx.lineWidth=2;ctx.strokeRect(x,ry,w,rowH);
     ctx.fillStyle="rgba(255,255,255,0.28)";ctx.fillRect(x+2,ry+2,w-4,4);
-    ctx.fillStyle="#060606";ctx.font="900 28px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText("#"+pos,x+66,ry+39);
-    ctx.strokeStyle="rgba(0,0,0,0.30)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+112,ry+12);ctx.lineTo(x+112,ry+46);ctx.stroke();
+    ctx.fillStyle="#060606";ctx.font="900 28px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText("#"+pos,x+54,ry+39);
+    ctx.strokeStyle="rgba(0,0,0,0.30)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+100,ry+12);ctx.lineTo(x+100,ry+46);ctx.stroke();
     if(logo&&logo.complete){
-      drawCircleImage(ctx,logo,x+142,ry+29,19);
+      drawCircleImage(ctx,logo,x+130,ry+29,19);
     } else {
-      ctx.fillStyle="rgba(0,0,0,0.14)";ctx.beginPath();ctx.arc(x+142,ry+29,19,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle=ac;ctx.font="900 15px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(pmgoTeamLabel(t).slice(0,2),x+142,ry+34);
+      ctx.fillStyle="rgba(0,0,0,0.14)";ctx.beginPath();ctx.arc(x+130,ry+29,19,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=ac;ctx.font="900 15px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(pmgoTeamLabel(t).slice(0,2),x+130,ry+34);
     }
-    ctx.fillStyle="#101010";ctx.font="900 "+teamSize+"px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText(pmgoTeamLabel(t),x+174,ry+39,w-482);
-    ctx.textAlign="center";ctx.font="900 30px 'Barlow Condensed',sans-serif";ctx.fillText(t.kills,x+w-250,ry+39);ctx.fillText(t.plc,x+w-150,ry+39);ctx.fillText(t.pts,x+w-58,ry+39);
+    ctx.fillStyle="#101010";ctx.font="900 "+teamSize+"px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText(pmgoTeamLabel(t),x+164,ry+39,w-408);
+    ctx.textAlign="center";ctx.font="900 30px 'Barlow Condensed',sans-serif";ctx.fillText(t.kills,x+w-220,ry+39);ctx.fillText(t.plc,x+w-126,ry+39);ctx.fillText(t.pts,x+w-44,ry+39);
   }
-  var left=st.slice(0,8),right=st.slice(8,16),x1=122,x2=980,y=318,w=818;
+  var left=st.slice(0,8),right=st.slice(8,16),x1=104,x2=988,y=328,w=828;
   drawHeader(x1,y,w);drawHeader(x2,y,w);
   for(var li=0;li<left.length;li++) drawRow(x1,y+72,w,left[li],li+1,li,logos[li]);
   for(var ri=0;ri<right.length;ri++) drawRow(x2,y+72,w,right[ri],ri+9,ri,logos[ri+8]);
