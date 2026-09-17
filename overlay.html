@@ -84,7 +84,11 @@ body.design-pmgo .pmgo-team-cell{display:flex;align-items:center;gap:8px;min-wid
 body.design-pmgo .t-line{display:contents;}body.design-pmgo .t-name{font-size:18px;color:#111;letter-spacing:.02em;font-weight:800;line-height:1;text-transform:uppercase;text-overflow:clip;}body.design-pmgo .t-played{display:none;}
 body.design-pmgo .pmgo-alive{display:flex;justify-content:center;align-items:center;}body.design-pmgo .player-strips{width:42px;margin:0;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;align-self:center;}body.design-pmgo .pstrip{height:23px;border-radius:0;background:var(--alive-color);box-shadow:none;}body.design-pmgo .pstrip.dead{background:var(--dead-color);border:0;opacity:1;}
 body.design-pmgo .player-pipes,body.design-pmgo .player-dots{grid-column:2;width:42px;transform:none;justify-content:center;}body.design-pmgo .player-pipes .pmark{font-size:22px;color:var(--alive-color);}body.design-pmgo .player-pipes .pmark.dead{color:var(--dead-color);}body.design-pmgo .player-dots .pmark{width:9px;height:22px;border-radius:0;background:var(--alive-color);}body.design-pmgo .player-dots .pmark.dead{background:var(--dead-color);border:0;}
-body.design-pmgo .t-place{display:none;}body.design-pmgo .t-pts{display:block;color:#111;background:transparent;border-radius:0;font-size:18px;font-weight:800;text-align:center;padding:0;box-shadow:none;}body.design-pmgo .t-kills{display:block;color:#111;font-size:18px;font-weight:800;text-align:center;}
+body.design-pmgo .t-place{display:none;}body.design-pmgo .t-pts{display:block;color:#111;background:transparent;border-radius:0;font-size:18px;font-weight:800;text-align:center;padding:0;box-shadow:none;}body.design-pmgo .t-kills{position:relative;display:flex;align-items:center;justify-content:center;color:#111;text-align:center;line-height:1;min-height:32px;padding:0;}
+body.design-pmgo .pmgo-elim-plus{position:absolute;right:-4px;top:3px;display:block;font-size:13px;font-weight:900;color:var(--alive-color);text-shadow:0 1px 0 rgba(0,0,0,.28);}
+body.design-pmgo .pmgo-prev-points{display:block;font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:900;color:#111;letter-spacing:-.04em;}
+body.design-pmgo .team-row.eliminated-team .pmgo-elim-plus,body.design-pmgo .team-row.missed-current .pmgo-elim-plus{color:#d3d6d2;text-shadow:none;}
+body.design-pmgo .team-row.eliminated-team .pmgo-prev-points,body.design-pmgo .team-row.missed-current .pmgo-prev-points{color:#b9bdb8;}
 body.design-pmgo .ticker{right:292px;height:38px;background:#3f423e;border-top:3px solid var(--top4-color);}body.design-pmgo .ticker-label{background:var(--top4-color);color:#fff;letter-spacing:.08em;}body.design-pmgo .ti-name{color:#fff;}body.design-pmgo .ti-val{color:#d7ded5;}body.design-pmgo .ti-pts,body.design-pmgo .ti-pos{color:#fff;}
 body.design-pmgo .panel{background:var(--ov-bg);}
 body.design-pmgo .col-headers{background:#151719;border-bottom:2px solid var(--ov-accent);}
@@ -463,8 +467,11 @@ function calculateTeamStats(team, matches) {
   const matchesList = Array.isArray(matches) ? matches : Object.values(matches || {});
   const activeRow = matchesList[activeMatchIndex] || {};
   const missedActive = activeRow && activeRow.missed === true;
+  let activeKills = 0;
+  let activePlacementPoints = 0;
   
-  for (const match of matchesList) {
+  for (let matchIndex = 0; matchIndex < matchesList.length; matchIndex++) {
+    const match = matchesList[matchIndex];
     if (!match) continue;
     if(match.missed === true) continue;
     const rankEmpty = match.rank === null || match.rank === undefined || match.rank === "";
@@ -475,16 +482,27 @@ function calculateTeamStats(team, matches) {
     const kills = (match.kills !== null && match.kills !== undefined) ? parseInt(match.kills) : 0;
     const rank = (match.rank !== null && match.rank !== undefined && match.rank !== '') ? parseInt(match.rank) : null;
     totalKills += kills;
-    totalPlacementPoints += placementPts(rank);
+    const placement = placementPts(rank);
+    totalPlacementPoints += placement;
+    if(matchIndex === activeMatchIndex){
+      activeKills = kills;
+      activePlacementPoints = placement;
+    }
   }
   
   const totalPoints = totalKills + totalPlacementPoints;
+  const activePoints = activeKills + activePlacementPoints;
   
   return {
     ...team,
     kills: totalKills,
     placePoints: totalPlacementPoints,
     total: totalPoints,
+    activeKills: activeKills,
+    activePlacePoints: activePlacementPoints,
+    activePoints: activePoints,
+    previousKills: Math.max(0,totalKills-activeKills),
+    previousPoints: Math.max(0,totalPoints-activePoints),
     played: matchesPlayed,
     players: playerCountForActiveMatch(matches),
     missed: missedActive
@@ -730,11 +748,16 @@ function render() {
       '<span class="t-logo-wrap"><div class="t-logo t-logo-fallback logo-normalized">?</div></span>';
     
     if(activeDesign==="pmgo"){
+      const activeElimPoints = Math.max(0, parseInt(team.activeKills,10) || 0);
+      const prevElims = Math.max(0, parseInt(team.previousKills,10) || 0);
+      const elimCell = team.missed
+        ? '<span class="pmgo-prev-points">0</span>'
+        : '<span class="pmgo-prev-points">' + escapeHtml(prevElims) + '</span>' + (activeElimPoints > 0 ? '<span class="pmgo-elim-plus">+' + escapeHtml(activeElimPoints) + '</span>' : '');
       row.innerHTML =
         '<div class="pos ' + posColorClass + '">' + position + '</div>' +
         '<div class="pmgo-team-cell">' + logoHtml + '<div class="t-name">' + escapeHtml(teamTag(team)) + '</div></div>' +
         '<div class="pmgo-alive">' + playerIndicator(team.players) + '</div>' +
-        '<div class="t-kills">' + (team.missed ? '-' : team.kills) + '</div>' +
+        '<div class="t-kills">' + elimCell + '</div>' +
         '<div class="t-pts">' + (team.missed ? '0' : team.total) + '</div>';
     }else{
       row.innerHTML =
