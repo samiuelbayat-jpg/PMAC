@@ -143,10 +143,11 @@ function resolveTeamLogo(team){
   var name=team?logoKey(team.name):"", tag=team?logoKey(team.tag):"";
   return (name&&teamLogoLibrary[name]) || (tag&&teamLogoLibrary[tag]) || "";
 }
-var GFX_SETUP_KEY = "pmac_gfx_generator_setup_v2";
+var GFX_SETUP_KEY = "pmac_gfx_generator_setup_v3";
 var gfxRestoringSetup = false;
 var gfxFontsReady = !document.fonts;
 var gfxPendingBuild = false;
+var gfxBuildSerial = 0;
 if(document.fonts){
   gfxFontsReady = false;
   Promise.all([
@@ -388,20 +389,47 @@ document.getElementById("dl-btn").onclick = function(){
 };
 document.getElementById("slot-gfx-btn").onclick = exportApprovedSlotGfx;
 
-function san(n){return n.replace(/[.#$\/\[\]]/g,"_");}
+function san(n){return String(n||"").replace(/[.#$\/\[\]]/g,"_");}
+function normName(n){return String(n||"").trim().toUpperCase().replace(/\s+/g," ");}
+function rowsList(v){
+  if(Array.isArray(v)) return v;
+  if(!v || typeof v!=="object") return [];
+  return Object.keys(v).sort(function(a,b){
+    var na=parseInt(a,10), nb=parseInt(b,10);
+    if(Number.isFinite(na)&&Number.isFinite(nb)) return na-nb;
+    return String(a).localeCompare(String(b));
+  }).map(function(k){return v[k];});
+}
+function scoreRowsForTeam(team){
+  var raw=[team&&team.name,team&&team.tag,normName(team&&team.name),normName(team&&team.tag)].filter(Boolean);
+  var keys=[];
+  raw.forEach(function(k){
+    [k,san(k),normName(k),san(normName(k))].forEach(function(v){if(v&&keys.indexOf(v)<0)keys.push(v);});
+  });
+  for(var i=0;i<keys.length;i++) if(scores&&scores[keys[i]]) return rowsList(scores[keys[i]]);
+  var targetName=normName(team&&team.name), targetTag=normName(team&&team.tag);
+  var found=Object.keys(scores||{}).find(function(k){
+    var nk=normName(k), sk=normName(san(k));
+    return nk===targetName||nk===targetTag||sk===targetName||sk===targetTag;
+  });
+  return found?rowsList(scores[found]):[];
+}
 
 function getStandings(){
   return teams.map(function(t){
-    var key=san(t.name),md=scores[key]||[],tk=0,tp=0,wins=0;
-    for(var i=0;i<10;i++){
+    var md=scoreRowsForTeam(t),tk=0,tp=0,plc=0,wins=0,best=0;
+    for(var i=0;i<Math.max(10,md.length);i++){
       var m=md[i]||{rank:null,kills:null};
-      var rp=(m.rank&&m.rank>=1&&m.rank<=25)?RANK_PTS[m.rank-1]:0;
-      var kp=m.kills?parseInt(m.kills)||0:0;
-      if(m.rank!=null||m.kills!=null){tp+=rp+kp;tk+=kp;}
-      if(m.rank==1) wins++;
+      var rank=parseInt(m.rank,10), kills=parseInt(m.kills,10);
+      var kp=Number.isFinite(kills)?Math.max(0,kills):0;
+      var explicit=parseInt(m.rankPts!==undefined?m.rankPts:(m.placePoints!==undefined?m.placePoints:m.placementPoints),10);
+      var rp=Number.isFinite(explicit)?Math.max(0,explicit):((Number.isFinite(rank)&&rank>=1&&rank<=25)?RANK_PTS[rank-1]:0);
+      var total=(m.total!==undefined&&m.total!==null&&m.total!=="")?(parseInt(m.total,10)||0):rp+kp;
+      if((Number.isFinite(rank)&&rank>0)||kp>0||total>0){tp+=total;tk+=kp;plc+=Math.max(0,total-kp);best=Math.max(best,total);}
+      if(rank===1) wins++;
     }
-    return {name:t.name,tag:t.tag||"",logo:resolveTeamLogo(t),kills:tk,pts:tp,plc:tp-tk,wins:wins};
-  }).sort(function(a,b){return b.pts-a.pts||b.plc-a.plc||b.kills-a.kills;});
+    return {name:t.name,tag:t.tag||"",logo:resolveTeamLogo(t),kills:tk,pts:tp,plc:plc,wins:wins,best:best};
+  }).filter(function(t){return t&&t.name;}).sort(function(a,b){return b.pts-a.pts||b.plc-a.plc||b.kills-a.kills||b.best-a.best||normName(a.name).localeCompare(normName(b.name));});
 }
 
 function hexToRgb(hex){
@@ -559,7 +587,19 @@ function drawDesignRowFrame(ctx,p,startX,rowY,colW,rowH,pos,ac,panelAlpha){
 
 function metaVal(id,fallback){var el=document.getElementById(id);return (el&&el.value?el.value:fallback);}
 function drawSkewRect(ctx,x,y,w,h,skew){ctx.beginPath();ctx.moveTo(x+skew,y);ctx.lineTo(x+w,y);ctx.lineTo(x+w-skew,y+h);ctx.lineTo(x,y+h);ctx.closePath();}
+function resetCanvasText(ctx){
+  if(!ctx) return;
+  ctx.letterSpacing="0px";
+  ctx.fontKerning="normal";
+  ctx.textRendering="optimizeLegibility";
+}
+function normalText(ctx){
+  if(!ctx) return;
+  ctx.letterSpacing="0px";
+  ctx.fontKerning="normal";
+}
 function drawBaseCanvasBg(ctx,W,H,bg,ac,bgBright,bgContrast,bgBlur,bgTint){
+  resetCanvasText(ctx);
   ctx.clearRect(0,0,W,H);
   if(BG_IMAGE&&BG_IMAGE.complete&&BG_IMAGE.naturalWidth>0){
     ctx.save();
@@ -595,6 +635,7 @@ function drawBlueCompactCanvas(ctx,st,logos,title,sub,bg,ac,today,maxTeams,bgBri
 }
 
 function drawPMGO2026OverallCanvas(ctx,st,logos,title,sub,bg,ac,today,bgBright,bgContrast,bgBlur,bgTint,panelAlpha){
+  normalText(ctx);
   var W=1920,H=1080,count=Math.min(st.length,16),light=colorVal("inp-light","#e8e1d6"),line=colorVal("inp-secondary","#8a3a05");
   var teamMode=(document.getElementById("inp-slot-label")||{}).value||"name";
   var teamSize=parseInt((document.getElementById("inp-team-size")||{}).value,10)||31;
@@ -606,6 +647,7 @@ function drawPMGO2026OverallCanvas(ctx,st,logos,title,sub,bg,ac,today,bgBright,b
     var val=teamMode==="tag"?(t.tag||t.name):t.name;
     return String(val||"TEAM").toUpperCase();
   }
+  normalText(ctx);
   ctx.strokeStyle="rgba(255,255,255,0.86)";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(116,78);ctx.lineTo(372,78);ctx.stroke();
   ctx.fillStyle="#ffffff";ctx.font="900 26px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText("*",40,90);ctx.fillText("o",84,89);
   var main=(sub||"OVERALL RANKINGS").toUpperCase();
@@ -613,7 +655,7 @@ function drawPMGO2026OverallCanvas(ctx,st,logos,title,sub,bg,ac,today,bgBright,b
   var parts=main.split(" ");
   var last=parts.pop()||"RANKINGS";
   var first=parts.join(" ")||"OVERALL";
-  ctx.font="900 82px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.shadowColor="rgba(0,0,0,0.82)";ctx.shadowBlur=8;
+  normalText(ctx);ctx.font="900 82px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.shadowColor="rgba(0,0,0,0.82)";ctx.shadowBlur=8;
   var tx=118,ty=205;
   ctx.fillStyle="#f1e4d2";ctx.fillText(first,tx,ty,680);
   var firstW=Math.min(ctx.measureText(first+" ").width,680);
@@ -622,18 +664,20 @@ function drawPMGO2026OverallCanvas(ctx,st,logos,title,sub,bg,ac,today,bgBright,b
   ctx.fillStyle=orangeGrad;ctx.fillText(last,tx+firstW+10,ty,520);
   ctx.shadowBlur=0;
   var tag=(title||eventInfo.name||"PMAC EVENT").toUpperCase();
-  ctx.fillStyle=ac;drawSkewRect(ctx,760,232,760,48,18);ctx.fill();ctx.fillStyle=contrastText(ac);ctx.font="900 32px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(tag,1140,266,700);
+  normalText(ctx);ctx.fillStyle=ac;drawSkewRect(ctx,760,232,760,48,18);ctx.fill();ctx.fillStyle=contrastText(ac);ctx.font="900 32px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(tag,1140,266,700);
 
   function drawHeader(x,y,w){
+    normalText(ctx);
     var head=ctx.createLinearGradient(x,y,x+w,y);
     head.addColorStop(0,hexAlpha(ac,0.88));head.addColorStop(0.62,hexAlpha(ac,0.72));head.addColorStop(1,hexAlpha(line,0.92));
     ctx.fillStyle=head;ctx.fillRect(x,y,w,56);
     ctx.strokeStyle="rgba(255,210,156,0.72)";ctx.lineWidth=1;ctx.strokeRect(x,y,w,56);
     ctx.fillStyle="#fff8ec";ctx.font="900 24px 'Barlow Condensed',sans-serif";ctx.textAlign="left";
     ctx.fillText("RANK",x+18,y+37);ctx.fillText("TEAM",x+160,y+37);
-    ctx.textAlign="center";ctx.font="900 20px 'Barlow Condensed',sans-serif";ctx.fillText("ELIMS",x+w-220,y+37);ctx.fillText("RANK PTS",x+w-126,y+37);ctx.fillText("TOTAL PTS",x+w-44,y+37);
+    ctx.textAlign="center";ctx.font="900 19px 'Barlow Condensed',sans-serif";ctx.fillText("ELIMS",x+w-245,y+37);ctx.fillText("RANK PTS",x+w-135,y+37);ctx.fillText("TOTAL PTS",x+w-45,y+37);
   }
   function drawRow(x,y,w,t,pos,i,logo){
+    normalText(ctx);
     var rowH=58,ry=y+i*70;
     ctx.fillStyle=i%2?"rgba(230,224,214,0.94)":"rgba(247,243,235,0.96)";
     ctx.fillRect(x,ry,w,rowH);
@@ -647,8 +691,8 @@ function drawPMGO2026OverallCanvas(ctx,st,logos,title,sub,bg,ac,today,bgBright,b
       ctx.fillStyle="rgba(0,0,0,0.14)";ctx.beginPath();ctx.arc(x+130,ry+29,19,0,Math.PI*2);ctx.fill();
       ctx.fillStyle=ac;ctx.font="900 15px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(pmgoTeamLabel(t).slice(0,2),x+130,ry+34);
     }
-    ctx.fillStyle="#101010";ctx.font="900 "+teamSize+"px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText(pmgoTeamLabel(t),x+164,ry+39,w-408);
-    ctx.textAlign="center";ctx.font="900 30px 'Barlow Condensed',sans-serif";ctx.fillText(t.kills,x+w-220,ry+39);ctx.fillText(t.plc,x+w-126,ry+39);ctx.fillText(t.pts,x+w-44,ry+39);
+    normalText(ctx);ctx.fillStyle="#101010";ctx.font="900 "+teamSize+"px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText(pmgoTeamLabel(t),x+164,ry+39,w-432);
+    ctx.textAlign="center";ctx.font="900 30px 'Barlow Condensed',sans-serif";ctx.fillText(t.kills,x+w-245,ry+39);ctx.fillText(t.plc,x+w-135,ry+39);ctx.fillText(t.pts,x+w-45,ry+39);
   }
   var left=st.slice(0,8),right=st.slice(8,16),x1=104,x2=988,y=328,w=828;
   drawHeader(x1,y,w);drawHeader(x2,y,w);
@@ -656,8 +700,8 @@ function drawPMGO2026OverallCanvas(ctx,st,logos,title,sub,bg,ac,today,bgBright,b
   for(var ri=0;ri<right.length;ri++) drawRow(x2,y+72,w,right[ri],ri+9,ri,logos[ri+8]);
   ctx.strokeStyle="rgba(255,255,255,0.82)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(36,520);ctx.lineTo(36,554);ctx.moveTo(28,520);ctx.lineTo(44,520);ctx.moveTo(28,554);ctx.lineTo(44,554);ctx.stroke();
   ctx.beginPath();ctx.moveTo(W-36,520);ctx.lineTo(W-36,554);ctx.moveTo(W-44,520);ctx.lineTo(W-28,520);ctx.moveTo(W-44,554);ctx.lineTo(W-28,554);ctx.stroke();
-  ctx.fillStyle="#ffffff";ctx.font="900 18px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText("2026",38,1032);
-  ctx.textAlign="center";ctx.letterSpacing="0.32em";ctx.fillText((metaVal("inp-stage","PMAC OVERALL RANKINGS")).toUpperCase(),W/2,1032,620);ctx.letterSpacing="0";
+  normalText(ctx);ctx.fillStyle="#ffffff";ctx.font="900 18px 'Barlow Condensed',sans-serif";ctx.textAlign="left";ctx.fillText("2026",38,1032);
+  ctx.textAlign="center";ctx.letterSpacing="0.32em";ctx.fillText((metaVal("inp-stage","PMAC OVERALL RANKINGS")).toUpperCase(),W/2,1032,620);ctx.letterSpacing="0px";
   ctx.textAlign="right";ctx.fillText(metaVal("inp-date",today),W-38,1032);
   if(count<16){
     ctx.fillStyle="rgba(255,255,255,0.72)";ctx.font="800 20px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText("SHOWING "+count+" TEAMS",W/2,986);
@@ -705,7 +749,7 @@ function drawMiniLeagueSlotCanvas(ctx,slotTeams,logos){
   for(var r=280;r<1400;r+=210){ctx.beginPath();ctx.arc(W/2,500,r,0,Math.PI*2);ctx.stroke();}
   ctx.fillStyle="rgba(0,0,0,0.55)";ctx.beginPath();ctx.moveTo(0,950);for(var x=0;x<=W;x+=145){ctx.lineTo(x,900+(x%290?55:0));ctx.lineTo(x+70,940);}ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
 
-  ctx.textAlign="center";ctx.fillStyle="#d9a67a";ctx.font="900 28px 'Barlow Condensed',sans-serif";ctx.letterSpacing="0.3em";ctx.fillText(stage,W/2,66,1180);ctx.letterSpacing="0";
+  ctx.textAlign="center";ctx.fillStyle="#d9a67a";ctx.font="900 28px 'Barlow Condensed',sans-serif";ctx.letterSpacing="0.3em";ctx.fillText(stage,W/2,66,1180);ctx.letterSpacing="0px";
   var tg=ctx.createLinearGradient(0,92,0,180);tg.addColorStop(0,"#fff4dc");tg.addColorStop(0.55,"#ffb065");tg.addColorStop(1,ac);ctx.fillStyle=tg;ctx.shadowColor="rgba(255,90,22,0.65)";ctx.shadowBlur=16;ctx.font=titleFontSpec(900,104);ctx.fillText(title,W/2,158,1080);ctx.shadowBlur=0;
   function capsule(x,y,w,text){ctx.fillStyle="rgba(13,20,27,0.94)";drawSkewRect(ctx,x,y,w,70,28);ctx.fill();ctx.strokeStyle=ac;ctx.lineWidth=4;drawSkewRect(ctx,x,y,w,70,28);ctx.stroke();ctx.fillStyle="#fff";ctx.font="900 31px 'Barlow Condensed',sans-serif";ctx.textAlign="center";ctx.fillText(text,x+w/2,y+46,w-38);}
   capsule(352,188,380,metaVal("inp-group","GROUP").toUpperCase());
@@ -821,6 +865,7 @@ function loadImage(url){
 
 function build(){
   saveGfxSetup();
+  var buildId = ++gfxBuildSerial;
   if(!gfxFontsReady){
     gfxPendingBuild = true;
     var statusEl=document.getElementById("status");
@@ -834,6 +879,7 @@ function build(){
   var sub=document.getElementById("inp-sub").value||"Overall Rankings";
   var bg=document.getElementById("inp-bg").value||"#1a1a2e";
   var ac=document.getElementById("inp-accent").value||"#00ff88";
+  var designId=document.getElementById("inp-design").value;
   var today=new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
   var maxTeams=Math.min(st.length,20);
   document.getElementById("status").textContent="Loading logos for "+maxTeams+" teams...";
@@ -841,19 +887,21 @@ function build(){
   // Load all logos in parallel
   var logoPromises=st.slice(0,maxTeams).map(function(t){return loadImage(t.logo);});
   Promise.all(logoPromises).then(function(logos){
-    drawCanvas(st,logos,title,sub,bg,ac,today,maxTeams);
+    if(buildId!==gfxBuildSerial) return;
+    drawCanvas(st,logos,title,sub,bg,ac,today,maxTeams,designId);
     document.getElementById("status").textContent=maxTeams+" teams | "+new Date().toLocaleTimeString();
     scaleCanvas();
   });
 }
 
-function drawCanvas(st,logos,title,sub,bg,ac,today,maxTeams){
+function drawCanvas(st,logos,title,sub,bg,ac,today,maxTeams,designId){
   var canvas=document.getElementById("gfx");
   var ctx=canvas.getContext("2d");
+  resetCanvasText(ctx);
   var W=1920,H=1080;
   var half=Math.ceil(maxTeams/2);
   var rowH=Math.floor(870/Math.max(half,1));
-  var preset=getPreset();
+  var preset=GFX_PRESETS[designId]||getPreset();
   var acRgb=hexToRgb(ac);
   var bgBright=rangeVal("inp-bg-bright"), bgContrast=rangeVal("inp-bg-contrast"), bgBlur=rangeVal("inp-bg-blur");
   var bgTint=rangeVal("inp-bg-tint")/100, panelAlpha=rangeVal("inp-panel-alpha")/100;
@@ -883,7 +931,7 @@ function drawCanvas(st,logos,title,sub,bg,ac,today,maxTeams){
   ctx.shadowColor=ac;ctx.shadowBlur=20;
   ctx.fillText(title.toUpperCase(),W/2,55,W-420);ctx.shadowBlur=0;
   ctx.fillStyle=ac;ctx.font="700 18px 'Barlow Condensed',sans-serif";
-  ctx.letterSpacing="0.3em";ctx.fillText(sub.toUpperCase(),W/2,85);
+  ctx.letterSpacing="0.3em";ctx.fillText(sub.toUpperCase(),W/2,85);ctx.letterSpacing="0px";
 
   // Header divider
   var hg=ctx.createLinearGradient(0,0,W,0);
