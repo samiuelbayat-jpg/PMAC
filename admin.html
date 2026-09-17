@@ -66,6 +66,13 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .csv-row{display:flex;gap:8px;align-items:center;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;}
 .csv-note{font-family:'Share Tech Mono',monospace;font-size:9px;color:#606878;letter-spacing:0.06em;}
 .teams-list-mgmt{display:flex;flex-direction:column;gap:12px;max-height:500px;overflow-y:auto;}
+.master-archive-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px;margin-top:12px;}
+.master-archive-card{background:#161a1f;border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:12px;display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:flex-start;}
+.master-archive-card.selected{border-color:rgba(232,184,0,0.55);background:rgba(232,184,0,0.07);}
+.master-archive-card input{margin-top:4px;accent-color:#e8b800;}
+.master-archive-title{font-weight:900;color:#eef0f5;text-transform:uppercase;font-size:15px;letter-spacing:.03em;}
+.master-archive-meta{font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;line-height:1.55;margin-top:4px;}
+.master-preview{font-family:'Share Tech Mono',monospace;font-size:10px;color:#00c97a;letter-spacing:.04em;margin-top:10px;}
 .team-mgmt-card{background:#161a1f;border-radius:8px;padding:12px;border:1px solid rgba(255,255,255,0.08);}
 .team-mgmt-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
 .team-mgmt-logo{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid rgba(232,184,0,0.3);background:#0f1115;}
@@ -261,6 +268,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="btn" onclick="openStandalone('scoreboard.html')">🏆 Scoreboard</button>
     <button class="btn" onclick="openStandalone('overlay.html')">🎥 OBS Overlay</button>
     <button class="btn" onclick="openDefaultStandalone('team-match-points-overlay-v2.html?mode=overall&limit=16')">📊 Team Match Overlay</button>
+    <button class="btn" onclick="openDefaultStandalone('master-leaderboard-overlay.html')">🏅 Master Leaderboard</button>
     <button class="btn" onclick="openDefaultStandalone('highlights-roadmap-overlay.html')">🗺️ Roadmap Overlay</button>
     <button class="btn" onclick="openDefaultStandalone('highlights-roadmap-overlay.html?mode=scrim')">🗺️ Scrim Roadmap</button>
     <button class="btn" onclick="openStandalone('archive.html')">📦 Archive</button>
@@ -271,7 +279,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <button class="btn" onclick="showSection('forum')" style="background:linear-gradient(135deg,rgba(232,184,0,0.18),rgba(232,184,0,0.08));border-color:rgba(232,184,0,0.4);color:#e8b800;">💬 Forum</button>
   </div>
 
-  <div class="section-tabs"><button class="stab active" onclick="showSection('teams')">🏢 Manage Teams</button><button class="stab" onclick="showSection('scores')">🎯 Enter Scores</button><button class="stab" onclick="showSection('eventgroup')">🏆 Event Group</button><button class="stab" onclick="showSection('overlay')">🎥 Overlay Settings</button><button class="stab" onclick="showSection('gfx')">✨ PMAC GFX</button><button class="stab" onclick="showSection('roadmap')">🗺️ Roadmap OBS</button><button class="stab" onclick="showSection('forum')">💬 Forum</button></div>
+  <div class="section-tabs"><button class="stab active" onclick="showSection('teams')">🏢 Manage Teams</button><button class="stab" onclick="showSection('scores')">🎯 Enter Scores</button><button class="stab" onclick="showSection('eventgroup')">🏆 Event Group</button><button class="stab" onclick="showSection('master')">🏅 Master Leaderboard</button><button class="stab" onclick="showSection('overlay')">🎥 Overlay Settings</button><button class="stab" onclick="showSection('gfx')">✨ PMAC GFX</button><button class="stab" onclick="showSection('roadmap')">🗺️ Roadmap OBS</button><button class="stab" onclick="showSection('forum')">💬 Forum</button></div>
 
   <div id="section-teams"><div class="teams-mgmt"><div class="mgmt-title">Add Team</div><div class="add-team-row"><div class="inp-wrap"><div class="inp-lbl">Team Name</div><input class="text-inp" id="new-team-name" placeholder="e.g. BLACK ZONE" list="team-logo-suggest" oninput="updateManageSavedLogo()" onchange="updateManageSavedLogo()"><datalist id="team-logo-suggest"></datalist></div><div class="inp-wrap"><div class="inp-lbl">Team Tag</div><input class="text-inp" id="new-team-tag" placeholder="BZ" maxlength="8" style="min-width:90px;width:100px;"></div><div class="team-logo-field"><div class="inp-lbl">Team Logo</div><div class="team-logo-controls"><input type="file" id="new-team-logo" accept="image/*" style="display:none" onchange="previewLogo(this)"><button class="logo-inp-btn" onclick="document.getElementById('new-team-logo').click()">📷 Choose Logo</button><button class="logo-inp-btn" id="use-saved-team-logo-btn" style="display:none" onclick="useSavedTeamLogo()">Use Saved Logo</button><img id="logo-preview" class="logo-preview"><span id="logo-name" style="font-size:9px;"></span></div></div><button class="btn btn-primary" onclick="addTeam()">+ Add Team</button><span id="uploading-badge" class="uploading-badge">Uploading...</span></div><div class="csv-row"><div><div class="inp-lbl">Import CSV</div><div class="csv-note">One team name per line</div></div><input type="file" id="csv-file" accept=".csv,.txt" style="display:none" onchange="importCSV(this)"><button class="btn" onclick="document.getElementById('csv-file').click()">📄 Import CSV</button><button class="btn" onclick="fixAllLogos()" id="fix-logos-btn" style="background:linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.1));border-color:rgba(0,255,136,0.4);color:#00ff88;">🔧 Fix All Logos</button><span id="fix-logos-status" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;max-width:520px;line-height:1.35;"></span><button class="btn btn-primary" onclick="if(!isSuperAdmin){showToast('Super Admin required',false);return;}importFromRegistration()">📥 Import from Registration</button><button class="btn btn-danger" onclick="removeAllTeams()">Remove All Teams</button></div></div><div class="mgmt-title">Current Teams (<span id="team-count">0</span>)</div><div class="teams-list-mgmt" id="teams-list-mgmt"><div class="no-teams">No teams yet.</div></div></div>
 
@@ -287,6 +295,26 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <span class="eg-active-clear" onclick="egClearActive()">✖ Deactivate</span>
     </div>
     <div class="eg-wrap" id="eg-wrap"></div>
+  </div>
+
+  <div id="section-master" style="display:none;">
+    <div class="teams-mgmt">
+      <div class="mgmt-title">Event Group Master Leaderboard</div>
+      <div class="no-teams" style="text-align:left;line-height:1.7;padding:0 0 1rem;">
+        Select the archived Event Group nights that should count for the master table. The OBS page combines only the selected archives, applies the tie-breakers, and rotates 16 teams per page.
+      </div>
+      <div class="add-team-row">
+        <div class="inp-wrap"><div class="inp-lbl">OBS Title</div><input class="text-inp" id="master-title" value="MASTER LEADERBOARD" placeholder="MASTER LEADERBOARD"></div>
+        <div class="inp-wrap"><div class="inp-lbl">Event Info</div><input class="text-inp" id="master-event-info" value="GROUP STAGE" placeholder="GROUP STAGE"></div>
+        <div class="inp-wrap"><div class="inp-lbl">Page Seconds</div><input class="text-inp" id="master-page-seconds" type="number" min="5" max="120" value="30" style="min-width:110px;width:120px;"></div>
+        <button class="btn" onclick="loadMasterLeaderboard(true)">Refresh Archives</button>
+        <button class="btn btn-primary" onclick="saveMasterLeaderboard()">Save Selection</button>
+        <button class="btn" onclick="openDefaultStandalone('master-leaderboard-overlay.html')">Open OBS Master</button>
+        <button class="btn" onclick="copyDefaultStandaloneLink('master-leaderboard-overlay.html','Master leaderboard')">Copy OBS Link</button>
+      </div>
+      <div class="master-preview" id="master-summary">No master archives selected yet.</div>
+      <div class="master-archive-list" id="master-archive-list"></div>
+    </div>
   </div>
 
   <div id="section-overlay" style="display:none;">
@@ -403,6 +431,9 @@ const initialParams = new URLSearchParams(location.search);
 let activeEventId = initialParams.get("event") || localStorage.getItem("pmac_active_event") || "default";
 let pendingArchiveEditKey = initialParams.get("archiveEdit") || "";
 let dbTeamsRef, dbScoresRef, dbActiveSessionRef, dbEgRef, overlaySettingsRef, forumRef;
+let masterConfig = {title:"MASTER LEADERBOARD", eventInfo:"GROUP STAGE", pageSeconds:30, selectedArchives:{}};
+let masterArchiveCache = {};
+let masterArchiveRef = null, masterConfigRef = null;
 function cleanEventId(name){ return String(name||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40) || "event-"+Date.now(); }
 function eventBasePath(){ return activeEventId==="default" ? "pmac" : "pmac/events/"+activeEventId; }
 function eventPath(child){ return eventBasePath()+"/"+child; }
@@ -435,7 +466,7 @@ function showAccessDenied(){
   if(sel) sel.innerHTML=`<option>${escapeHtml(activeEventId)}</option>`;
   const userLabel=document.getElementById("event-user-label");
   if(userLabel) userLabel.innerHTML=`UID: ${escapeHtml(currentAdminUid)} <button class="btn" style="font-size:10px;padding:3px 8px;margin-left:5px;" onclick="copyMyAdminUid()">Copy UID</button>`;
-  const sections=document.querySelectorAll("#section-teams,#section-scores,#section-eventgroup,#section-overlay,#section-gfx,#section-roadmap,#section-forum");
+  const sections=document.querySelectorAll("#section-teams,#section-scores,#section-eventgroup,#section-master,#section-overlay,#section-gfx,#section-roadmap,#section-forum");
   sections.forEach(s=>s.style.display="none");
   const tabs=document.querySelector(".section-tabs");
   if(tabs) tabs.style.display="none";
@@ -493,6 +524,7 @@ function showMainPage(){
   loadEventGroups();
   watchActiveSession();
   loadOverlaySettings();
+  loadMasterLeaderboard();
   initForum();
   loadFirebaseData();
   if(pendingArchiveEditKey){
@@ -571,7 +603,7 @@ function toggleForumPanel(forceOpen){
   if(btn) btn.textContent = open ? "▾" : "▴";
   if(open) setTimeout(()=>{ const msgs=document.getElementById("chat-messages"); if(msgs) msgs.scrollTop=msgs.scrollHeight; },100);
 }
-function showSection(sec){ if(sec==="forum"){ toggleForumPanel(true); return; } document.getElementById("section-teams").style.display = sec==="teams"?"block":"none"; document.getElementById("section-scores").style.display = sec==="scores"?"block":"none"; document.getElementById("section-eventgroup").style.display = sec==="eventgroup"?"block":"none"; document.getElementById("section-overlay").style.display = sec==="overlay"?"block":"none"; document.getElementById("section-gfx").style.display = sec==="gfx"?"block":"none"; document.getElementById("section-roadmap").style.display = sec==="roadmap"?"block":"none"; const order=["teams","scores","eventgroup","overlay","gfx","roadmap","forum"]; document.querySelectorAll(".stab").forEach((b,i)=>{ b.classList.toggle("active", order[i]===sec); }); if(sec==="scores"){ requestAnimationFrame(()=>{ publishActiveMatch(); renderScoreGrid(); }); } if(sec==="eventgroup"){ renderEventGroups(); updateActiveBanner(); } if(sec==="overlay") fillOverlaySettingsForm(); if(sec==="roadmap") loadRoadmapAdmin(); }
+function showSection(sec){ if(sec==="forum"){ toggleForumPanel(true); return; } document.getElementById("section-teams").style.display = sec==="teams"?"block":"none"; document.getElementById("section-scores").style.display = sec==="scores"?"block":"none"; document.getElementById("section-eventgroup").style.display = sec==="eventgroup"?"block":"none"; document.getElementById("section-master").style.display = sec==="master"?"block":"none"; document.getElementById("section-overlay").style.display = sec==="overlay"?"block":"none"; document.getElementById("section-gfx").style.display = sec==="gfx"?"block":"none"; document.getElementById("section-roadmap").style.display = sec==="roadmap"?"block":"none"; const order=["teams","scores","eventgroup","master","overlay","gfx","roadmap","forum"]; document.querySelectorAll(".stab").forEach((b,i)=>{ b.classList.toggle("active", order[i]===sec); }); if(sec==="scores"){ requestAnimationFrame(()=>{ publishActiveMatch(); renderScoreGrid(); }); } if(sec==="eventgroup"){ renderEventGroups(); updateActiveBanner(); } if(sec==="master") renderMasterArchiveList(); if(sec==="overlay") fillOverlaySettingsForm(); if(sec==="roadmap") loadRoadmapAdmin(); }
 function logoKey(name){ return String(name||"").trim().toUpperCase(); }
 function teamLogoDbKey(name){ return sanitizeKey(logoKey(name)); }
 function loadTeamLogoLibrary(){ try{ teamLogoLibrary = JSON.parse(localStorage.getItem(eventStorageKey(TEAM_LOGO_LIBRARY_KEY))||"{}") || {}; }catch(e){ teamLogoLibrary={}; } }
@@ -1125,6 +1157,108 @@ function buildArchivePayload(name,date){
   });
 }
 function confirmArchive(){ const name=document.getElementById("archive-name").value.trim(); const date=document.getElementById("archive-date").value||new Date().toISOString().slice(0,10); if(!name){ showToast("Enter tournament name",false); return; } buildArchivePayload(name,date).then(payload=>db.ref(eventPath("archive")).child("t_"+Date.now()).set(payload)).then(()=>{ return Promise.all([dbTeamsRef.set([]), dbScoresRef.set({}), dbActiveSessionRef.remove().catch(()=>{})]); }).then(()=>{ closeArchiveModal(); showToast("Archived & reset",true); }).catch(e=>showToast("Archive failed: "+(e&&e.message?e.message:e),false)); }
+
+function masterSettingsPath(){
+  return eventPath("overlaySettings/masterLeaderboard");
+}
+function loadMasterLeaderboard(forceToast){
+  if(masterConfigRef) masterConfigRef.off();
+  if(masterArchiveRef) masterArchiveRef.off();
+  masterConfigRef=db.ref(masterSettingsPath());
+  masterArchiveRef=db.ref(eventPath("archive"));
+  masterConfigRef.on("value", snap=>{
+    masterConfig=Object.assign({title:"MASTER LEADERBOARD",eventInfo:"GROUP STAGE",pageSeconds:30,selectedArchives:{}}, snap.val()||{});
+    fillMasterControls();
+    renderMasterArchiveList();
+  });
+  masterArchiveRef.on("value", snap=>{
+    masterArchiveCache=snap.val()||{};
+    renderMasterArchiveList();
+    if(forceToast) showToast("Master archive list refreshed",true);
+  }, e=>showToast("Master archives blocked: "+(e&&e.message?e.message:e),false));
+}
+function fillMasterControls(){
+  const set=(id,val)=>{ const el=document.getElementById(id); if(el && document.activeElement!==el) el.value=val||""; };
+  set("master-title", masterConfig.title || "MASTER LEADERBOARD");
+  set("master-event-info", masterConfig.eventInfo || "GROUP STAGE");
+  set("master-page-seconds", parseInt(masterConfig.pageSeconds,10)||30);
+}
+function masterArchiveCount(a){
+  if(!a) return 0;
+  if(a.teams) return Array.isArray(a.teams)?a.teams.length:Object.keys(a.teams).length;
+  return Object.keys(a.data||a.scores||{}).length;
+}
+function isMasterEventGroupArchive(a){
+  if(!a) return false;
+  if(a.source==="admin-overall-rankings") return true;
+  if(a.groupsArchived || a.overallStartDate || a.overallEndDate) return true;
+  return Object.values(a.data||a.scores||{}).some(rows=>(Array.isArray(rows)?rows:Object.values(rows||{})).some(r=>r&&(r.group||r.date)));
+}
+function masterArchiveLabel(a,key){
+  const name=a.name||key;
+  const date=a.dateText||archiveCleanDate(a.date)||"";
+  const groups={};
+  Object.values(a.data||a.scores||{}).forEach(rows=>{
+    (Array.isArray(rows)?rows:Object.values(rows||{})).forEach(r=>{ if(r&&r.group) groups[r.group]=true; });
+  });
+  const groupText=Object.keys(groups).sort().join(" + ") || (a.groupsArchived?`${a.groupsArchived} groups`:"Event Group");
+  return {name,date,groupText,count:masterArchiveCount(a)};
+}
+function renderMasterArchiveList(){
+  const wrap=document.getElementById("master-archive-list");
+  if(!wrap) return;
+  fillMasterControls();
+  const selected=masterConfig.selectedArchives||{};
+  const items=Object.keys(masterArchiveCache||{}).map(key=>({key,data:masterArchiveCache[key]||{}}))
+    .filter(item=>isMasterEventGroupArchive(item.data))
+    .sort((a,b)=>(b.data.date||b.data.archivedAt||0)-(a.data.date||a.data.archivedAt||0));
+  const selectedCount=Object.keys(selected).filter(k=>selected[k]&&masterArchiveCache[k]).length;
+  const totalTeams=selectedCount ? previewMasterTeamCount() : 0;
+  const summary=document.getElementById("master-summary");
+  if(summary) summary.textContent=selectedCount ? `${selectedCount} archived Event Group nights selected | ${totalTeams} teams in master table` : "No Event Group archives selected yet.";
+  if(!items.length){
+    wrap.innerHTML='<div class="no-teams">No Event Group archives found yet. Archive Event Group nights first, then refresh here.</div>';
+    return;
+  }
+  wrap.innerHTML=items.map(item=>{
+    const info=masterArchiveLabel(item.data,item.key);
+    const checked=selected[item.key]===true;
+    return `<label class="master-archive-card ${checked?"selected":""}"><input type="checkbox" class="master-archive-check" value="${escapeHtml(item.key)}" ${checked?"checked":""} onchange="this.closest('.master-archive-card').classList.toggle('selected',this.checked);updateMasterPreviewFromChecks();"><div><div class="master-archive-title">${escapeHtml(info.name)}</div><div class="master-archive-meta">Date: ${escapeHtml(info.date||"No date")}<br>Groups: ${escapeHtml(info.groupText)}<br>Teams: ${info.count}<br>ID: ${escapeHtml(item.key)}</div></div></label>`;
+  }).join("");
+}
+function previewMasterTeamCount(){
+  const selected=masterConfig.selectedArchives||{};
+  const map={};
+  Object.keys(selected).forEach(key=>{
+    if(!selected[key]) return;
+    const a=masterArchiveCache[key]||{};
+    const list=a.teams?(Array.isArray(a.teams)?a.teams:Object.values(a.teams)):Object.keys(a.data||a.scores||{}).map(name=>({name}));
+    list.forEach(t=>{ const tm=archiveTeamObj(t); if(tm) map[archiveTeamKey(tm)||sanitizeKey(tm.name)]=true; });
+  });
+  return Object.keys(map).length;
+}
+function updateMasterPreviewFromChecks(){
+  const temp={};
+  document.querySelectorAll(".master-archive-check:checked").forEach(cb=>{ temp[cb.value]=true; });
+  const old=masterConfig.selectedArchives;
+  masterConfig.selectedArchives=temp;
+  const summary=document.getElementById("master-summary");
+  if(summary){
+    const count=Object.keys(temp).length;
+    summary.textContent=count ? `${count} archived Event Group nights selected | ${previewMasterTeamCount()} teams in master table` : "No Event Group archives selected yet.";
+  }
+  masterConfig.selectedArchives=old;
+}
+function saveMasterLeaderboard(){
+  const selected={};
+  document.querySelectorAll(".master-archive-check:checked").forEach(cb=>{ selected[cb.value]=true; });
+  const title=(document.getElementById("master-title")?.value||"MASTER LEADERBOARD").trim()||"MASTER LEADERBOARD";
+  const eventInfo=(document.getElementById("master-event-info")?.value||"GROUP STAGE").trim()||"GROUP STAGE";
+  const pageSeconds=Math.max(5,Math.min(120,parseInt(document.getElementById("master-page-seconds")?.value,10)||30));
+  overlaySettingsRef.child("masterLeaderboard").update({title,eventInfo,pageSeconds,selectedArchives:selected,updatedAt:Date.now(),updatedBy:currentAdminUid||""}).then(()=>{
+    showToast("Master Leaderboard saved",true);
+  }).catch(e=>showToast("Master save failed: "+(e&&e.message?e.message:e),false));
+}
 
 function setArchiveEditStatus(msg,ok){
   const el=document.getElementById("archive-edit-status");
