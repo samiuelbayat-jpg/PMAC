@@ -1183,10 +1183,46 @@ function fillMasterControls(){
   set("master-event-info", masterConfig.eventInfo || "GROUP STAGE");
   set("master-page-seconds", parseInt(masterConfig.pageSeconds,10)||30);
 }
+function masterSelectedArchiveKeys(selected){
+  if(Array.isArray(selected)) return selected.filter(Boolean);
+  return Object.keys(selected||{}).filter(key=>{
+    const val=selected[key];
+    return val===true || val==="true" || val===1 || val==="1";
+  });
+}
+function sameMasterTeam(a,b){
+  const an=String(a&&a.name||"").trim().toUpperCase().replace(/\s+/g," ");
+  const bn=String(b&&b.name||"").trim().toUpperCase().replace(/\s+/g," ");
+  const at=String(a&&a.tag||"").trim().toUpperCase().replace(/\s+/g," ");
+  const bt=String(b&&b.tag||"").trim().toUpperCase().replace(/\s+/g," ");
+  return (!!an&&an===bn) || (!!at&&!!bt&&at===bt);
+}
+function findMasterTeamKey(map,tm){
+  const direct=archiveTeamKey(tm)||sanitizeKey(tm.name);
+  if(map[direct]) return direct;
+  return Object.keys(map||{}).find(key=>sameMasterTeam(map[key],tm)) || direct;
+}
+function masterArchiveTeams(a){
+  const map={};
+  const scoreSource=Object.assign({}, (a&&a.data)||{}, (a&&a.scores)||{});
+  const add=t=>{
+    if(!t) return;
+    if(typeof t==="string") t={name:t};
+    const tm=archiveTeamObj(t);
+    if(!tm) return;
+    const key=findMasterTeamKey(map,tm);
+    if(!map[key]) map[key]=tm;
+    else {
+      if(tm.tag&&!map[key].tag) map[key].tag=tm.tag;
+      if(tm.logo&&!map[key].logo) map[key].logo=tm.logo;
+    }
+  };
+  (Array.isArray(a&&a.teams)?a.teams:Object.values((a&&a.teams)||{})).forEach(add);
+  Object.keys(scoreSource).forEach(name=>add({name}));
+  return Object.values(map);
+}
 function masterArchiveCount(a){
-  if(!a) return 0;
-  if(a.teams) return Array.isArray(a.teams)?a.teams.length:Object.keys(a.teams).length;
-  return Object.keys(a.data||a.scores||{}).length;
+  return masterArchiveTeams(a).length;
 }
 function isMasterEventGroupArchive(a){
   if(!a) return false;
@@ -1214,7 +1250,7 @@ function renderMasterArchiveList(){
   const items=Object.keys(masterArchiveCache||{}).map(key=>({key,data:masterArchiveCache[key]||{}}))
     .filter(item=>isMasterEventGroupArchive(item.data))
     .sort((a,b)=>(b.data.date||b.data.archivedAt||0)-(a.data.date||a.data.archivedAt||0));
-  const selectedCount=Object.keys(selected).filter(k=>selected[k]&&masterArchiveCache[k]).length;
+  const selectedCount=masterSelectedArchiveKeys(selected).filter(k=>masterArchiveCache[k]).length;
   const totalTeams=selectedCount ? previewMasterTeamCount() : 0;
   const summary=document.getElementById("master-summary");
   if(summary) summary.textContent=selectedCount ? `${selectedCount} archived match nights selected | ${totalTeams} teams in master table` : "No archived match nights selected yet.";
@@ -1231,11 +1267,9 @@ function renderMasterArchiveList(){
 function previewMasterTeamCount(){
   const selected=masterConfig.selectedArchives||{};
   const map={};
-  Object.keys(selected).forEach(key=>{
-    if(!selected[key]) return;
+  masterSelectedArchiveKeys(selected).forEach(key=>{
     const a=masterArchiveCache[key]||{};
-    const list=a.teams?(Array.isArray(a.teams)?a.teams:Object.values(a.teams)):Object.keys(a.data||a.scores||{}).map(name=>({name}));
-    list.forEach(t=>{ const tm=archiveTeamObj(t); if(tm) map[archiveTeamKey(tm)||sanitizeKey(tm.name)]=true; });
+    masterArchiveTeams(a).forEach(t=>{ const tm=archiveTeamObj(t); if(tm) map[archiveTeamKey(tm)||sanitizeKey(tm.name)]=true; });
   });
   return Object.keys(map).length;
 }
