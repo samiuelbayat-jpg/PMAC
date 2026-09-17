@@ -99,7 +99,7 @@ var TITLE=qs.get("title")||"OVERALL RANKINGS";
 var SUBTITLE=qs.get("subtitle")||"";
 var MODE=qs.get("mode")||qs.get("scope")||"event";
 var OVERALL_MODE=/^(overall|all|history)$/i.test(MODE);
-var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},overlayInfo={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,overlayInfoRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null,activeTeamRefs=[],activeScoreRefs=[];
+var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},overlayInfo={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,overlayInfoRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null,activeTeamRefs=[],activeScoreRefs=[],lastRenderSignature="";
 var THEME_KEY="pmac_match_points_theme_"+EVENT_ID;
 var THEME_DEFAULTS={titleColor:"#f4eadc",team:"#d95b06",accent:"#f47a19",text:"#080808",total1:"#f2eee6",total2:"#ddd8cf",total3:"#c9c2b7"};
 var THEME_VARS={titleColor:"--title-color",team:"--team-b",accent:"--sub-accent",text:"--row-text",total1:"--total-a",total2:"--total-b",total3:"--total-c"};
@@ -527,11 +527,22 @@ function renderColumn(list,startIdx){
   }).join("");
   return html+'</div>';
 }
+function renderSignature(list){
+  return list.map(function(t,idx){
+    return [idx+1,t.name||"",t.tag||"",t.logo||"",t.kills||0,t.rankPts||0,t.total||0].join("|");
+  }).join("~");
+}
 function render(){
   renderHead();
   var list=(teams||[]).filter(function(t){return t&&t.name;}).map(function(t){var stats=teamStats(t);return Object.assign({},t,{total:stats.total,rankPts:stats.rankPts,kills:stats.kills});});
   list.sort(function(a,b){return b.total-a.total||b.rankPts-a.rankPts||b.kills-a.kills||norm(a.name).localeCompare(norm(b.name));});
   list=list.slice(0,LIMIT);
+  var signature=renderSignature(list);
+  if(signature===lastRenderSignature){
+    setStatus((OVERALL_MODE?"overall: ":"event: ")+EVENT_ID+" | teams: "+teams.length);
+    return;
+  }
+  lastRenderSignature=signature;
   fitRows(list.length);
   var rows=document.getElementById("rows");
   rows.classList.remove("ready");
