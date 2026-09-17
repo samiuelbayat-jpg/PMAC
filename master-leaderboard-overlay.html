@@ -475,7 +475,7 @@ function addArchiveScoresToMaster(totals,archive,archiveKey){
     var rows=rowsList(source[scoreKey]);
     if(!rows.length) return;
     var meta=archiveMetaForScoreKey(metaList,scoreKey)||{name:scoreKey,tag:"",logo:""};
-    addRowsToMasterTotals(totals,meta,rows,archiveKey+"|"+scoreKey);
+    addRowsToMasterTotals(totals,meta,rows,archiveKey+"|"+teamKey(meta));
   });
 }
 function detachOverallRefs(){
