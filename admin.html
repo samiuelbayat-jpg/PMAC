@@ -1191,7 +1191,9 @@ function masterArchiveCount(a){
 function isMasterEventGroupArchive(a){
   if(!a) return false;
   if(a.source==="admin-overall-rankings") return true;
+  if(a.source==="admin-current") return masterArchiveCount(a)>0;
   if(a.groupsArchived || a.overallStartDate || a.overallEndDate) return true;
+  if(a.teams && (a.data || a.scores)) return masterArchiveCount(a)>0;
   return Object.values(a.data||a.scores||{}).some(rows=>(Array.isArray(rows)?rows:Object.values(rows||{})).some(r=>r&&(r.group||r.date)));
 }
 function masterArchiveLabel(a,key){
@@ -1201,7 +1203,7 @@ function masterArchiveLabel(a,key){
   Object.values(a.data||a.scores||{}).forEach(rows=>{
     (Array.isArray(rows)?rows:Object.values(rows||{})).forEach(r=>{ if(r&&r.group) groups[r.group]=true; });
   });
-  const groupText=Object.keys(groups).sort().join(" + ") || (a.groupsArchived?`${a.groupsArchived} groups`:"Event Group");
+  const groupText=Object.keys(groups).sort().join(" + ") || (a.groupsArchived?`${a.groupsArchived} groups`:(a.source==="admin-current"?"Manual archived match":"Event Group"));
   return {name,date,groupText,count:masterArchiveCount(a)};
 }
 function renderMasterArchiveList(){
@@ -1215,9 +1217,9 @@ function renderMasterArchiveList(){
   const selectedCount=Object.keys(selected).filter(k=>selected[k]&&masterArchiveCache[k]).length;
   const totalTeams=selectedCount ? previewMasterTeamCount() : 0;
   const summary=document.getElementById("master-summary");
-  if(summary) summary.textContent=selectedCount ? `${selectedCount} archived Event Group nights selected | ${totalTeams} teams in master table` : "No Event Group archives selected yet.";
+  if(summary) summary.textContent=selectedCount ? `${selectedCount} archived match nights selected | ${totalTeams} teams in master table` : "No archived match nights selected yet.";
   if(!items.length){
-    wrap.innerHTML='<div class="no-teams">No Event Group archives found yet. Archive Event Group nights first, then refresh here.</div>';
+    wrap.innerHTML='<div class="no-teams">No usable archives found yet. Archive an Event Group night or a manual group match, then refresh here.</div>';
     return;
   }
   wrap.innerHTML=items.map(item=>{
@@ -1245,7 +1247,7 @@ function updateMasterPreviewFromChecks(){
   const summary=document.getElementById("master-summary");
   if(summary){
     const count=Object.keys(temp).length;
-    summary.textContent=count ? `${count} archived Event Group nights selected | ${previewMasterTeamCount()} teams in master table` : "No Event Group archives selected yet.";
+    summary.textContent=count ? `${count} archived match nights selected | ${previewMasterTeamCount()} teams in master table` : "No archived match nights selected yet.";
   }
   masterConfig.selectedArchives=old;
 }
