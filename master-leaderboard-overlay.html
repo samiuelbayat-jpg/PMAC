@@ -445,15 +445,37 @@ function watchOverall(){
   mainTeamsRef.on("value",function(s){window.__overallMainTeams=s.val()||[];renderOverallFromSnapshots();});
   mainScoresRef.on("value",function(s){window.__overallMainScores=s.val()||{};renderOverallFromSnapshots();});
 }
+function selectedArchiveKeys(selected){
+  if(Array.isArray(selected)) return selected.filter(Boolean);
+  return Object.keys(selected||{}).filter(function(key){
+    var val=selected[key];
+    return val===true || val==="true" || val===1 || val==="1";
+  });
+}
 function archiveTeamList(archive){
-  if(archive&&archive.teams) return toList(archive.teams);
+  var map={};
+  function add(t){
+    if(!t) return;
+    if(typeof t==="string") t={name:t};
+    var name=String(t.name||"").trim();
+    if(!name) return;
+    var tag=String(t.tag||"").trim();
+    var key=tag ? "TAG:"+norm(tag) : "NAME:"+norm(name);
+    if(!map[key]) map[key]={name:name,tag:tag,logo:t.logo||""};
+    else {
+      if(tag&&!map[key].tag) map[key].tag=tag;
+      if(t.logo&&!map[key].logo) map[key].logo=t.logo;
+    }
+  }
+  toList(archive&&archive.teams).forEach(add);
   var source=(archive&&archive.data)||(archive&&archive.scores)||{};
-  return Object.keys(source||{}).map(function(name){return {name:name,tag:"",logo:""};});
+  Object.keys(source||{}).forEach(function(name){add({name:name});});
+  return Object.keys(map).map(function(k){return map[k];});
 }
 function rebuildMasterFromArchive(){
   var selected=masterConfig.selectedArchives||{},totals={},selectedCount=0,loadedCount=0;
-  Object.keys(selected).forEach(function(key){
-    if(selected[key]!==true||!archiveCache[key]) return;
+  selectedArchiveKeys(selected).forEach(function(key){
+    if(!archiveCache[key]) return;
     selectedCount++;
     var archive=archiveCache[key]||{};
     addOverallScores(totals,archiveTeamList(archive),archive.data||archive.scores||{},key);
