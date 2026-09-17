@@ -369,11 +369,11 @@ function addOverallScores(totals,teamList,scoreSet,slotPrefix){
     if(!totals[k]) totals[k]={name:t.name,tag:t.tag||"",logo:t.logo||"",matchRows:[],totalOverall:0,killsOverall:0,rankPtsOverall:0,playedOverall:0,bestSingleMatch:0,matchSlots:{}};
     if(t.logo&&!totals[k].logo) totals[k].logo=t.logo;
     if(t.tag&&!totals[k].tag) totals[k].tag=t.tag;
-    var md=scoreRowsFromSet(scoreSet,t);
-    for(var i=0;i<50;i++){
-      var st=matchStats(md&&md[i]);
+    var md=rowsList(scoreRowsFromSet(scoreSet,t));
+    for(var i=0;i<md.length;i++){
+      var st=matchStats(md[i]);
       if(!st) continue;
-      var slot=slotPrefix+"|M"+(i+1);
+      var slot=slotPrefix+"|M"+((md[i]&&md[i].match)||i+1);
       if(totals[k].matchSlots[slot]) continue;
       totals[k].matchSlots[slot]=true;
       totals[k].totalOverall+=st.total;
@@ -385,9 +385,29 @@ function addOverallScores(totals,teamList,scoreSet,slotPrefix){
     }
   });
 }
+function rowsList(v){
+  if(Array.isArray(v)) return v;
+  if(!v || typeof v!=="object") return [];
+  return Object.keys(v).sort(function(a,b){
+    var na=parseInt(a,10),nb=parseInt(b,10);
+    if(Number.isFinite(na)&&Number.isFinite(nb)) return na-nb;
+    return String(a).localeCompare(String(b));
+  }).map(function(k){return v[k];});
+}
 function scoreRowsFromSet(scoreSet,t){
-  var keys=[t&&t.name,t&&t.tag,norm(t&&t.name),norm(t&&t.tag)].map(sanitizeKey).filter(Boolean);
+  if(Array.isArray(scoreSet)) return scoreSet;
+  var raw=[t&&t.name,t&&t.tag,norm(t&&t.name),norm(t&&t.tag)].filter(Boolean);
+  var keys=[];
+  raw.forEach(function(k){
+    [k,sanitizeKey(k),norm(k),sanitizeKey(norm(k))].forEach(function(v){if(v&&keys.indexOf(v)<0)keys.push(v);});
+  });
   for(var i=0;i<keys.length;i++) if(scoreSet&&scoreSet[keys[i]]) return scoreSet[keys[i]];
+  var targetName=norm(t&&t.name),targetTag=norm(t&&t.tag);
+  var foundKey=Object.keys(scoreSet||{}).find(function(k){
+    var nk=norm(k),sk=norm(sanitizeKey(k));
+    return nk===targetName||nk===targetTag||sk===targetName||sk===targetTag;
+  });
+  if(foundKey) return scoreSet[foundKey];
   return [];
 }
 function detachOverallRefs(){
@@ -431,14 +451,17 @@ function archiveTeamList(archive){
   return Object.keys(source||{}).map(function(name){return {name:name,tag:"",logo:""};});
 }
 function rebuildMasterFromArchive(){
-  var selected=masterConfig.selectedArchives||{},totals={};
+  var selected=masterConfig.selectedArchives||{},totals={},selectedCount=0,loadedCount=0;
   Object.keys(selected).forEach(function(key){
     if(selected[key]!==true||!archiveCache[key]) return;
+    selectedCount++;
     var archive=archiveCache[key]||{};
     addOverallScores(totals,archiveTeamList(archive),archive.data||archive.scores||{},key);
+    loadedCount++;
   });
   teams=Object.keys(totals).map(function(k){delete totals[k].matchSlots;return totals[k];});
   scores={};
+  window.__masterArchiveStatus={selected:selectedCount,loaded:loadedCount};
   render();
 }
 function resetMasterTimer(){
@@ -588,7 +611,8 @@ function render(){
   var list=all.slice(start,start+LIMIT);
   var signature=renderSignature(list);
   if(signature===lastRenderSignature){
-    setStatus("master: "+EVENT_ID+" | teams: "+all.length+" | page "+(pageIndex+1)+"/"+pages);
+    var archiveStatus=window.__masterArchiveStatus||{selected:0,loaded:0};
+    setStatus("master: "+EVENT_ID+" | archives: "+archiveStatus.loaded+" | teams: "+all.length+" | page "+(pageIndex+1)+"/"+pages);
     return;
   }
   lastRenderSignature=signature;
@@ -607,7 +631,8 @@ function render(){
     rows.classList.add("ready");
     rows.querySelectorAll(".row").forEach(function(row){row.classList.add("animate-in");});
   });
-  setStatus("master: "+EVENT_ID+" | teams: "+all.length+" | page "+(pageIndex+1)+"/"+pages+" | "+currentPageSeconds+"s");
+  var archiveStatus=window.__masterArchiveStatus||{selected:0,loaded:0};
+  setStatus("master: "+EVENT_ID+" | archives: "+archiveStatus.loaded+" | teams: "+all.length+" | page "+(pageIndex+1)+"/"+pages+" | "+currentPageSeconds+"s");
 }
 
 watchTheme();
