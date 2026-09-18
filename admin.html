@@ -2033,7 +2033,7 @@ function loadOverlaySettings(){ if(overlaySettingsRef) overlaySettingsRef.off();
 function fillOverlaySettingsForm(){
   const set=(id,val)=>{ const el=document.getElementById(id); if(el && document.activeElement!==el) el.value=val||""; };
   const sharedColor = (overlaySettings.design==="pmgo" ? (overlaySettings.accent || overlaySettings.top4Color || "#d85a10") : overlaySettings.accent) || "#d85a10";
-  set("ov-design", overlaySettings.design || "classic"); set("ov-accent", sharedColor); set("ov-bg", overlaySettings.bg || "#0a0b0d"); set("ov-text", overlaySettings.text || "#eef0f5"); set("ov-alive-style", overlaySettings.aliveStyle || "bars"); set("ov-alive-color", overlaySettings.aliveColor || "#00d26a"); set("ov-dead-color", overlaySettings.deadColor || "#252a31"); set("ov-top4", overlaySettings.top4Mode || "auto"); set("ov-elim-style", overlaySettings.elimStyle || "compact"); set("ov-elim-bg", overlaySettings.elimBgColor || "#b00000"); set("ov-elim-text", overlaySettings.elimTextColor || "#ffffff"); set("ov-elim-accent", overlaySettings.elimAccentColor || "#ff3434"); set("ov-elim-logo", overlaySettings.elimShowLogo || "yes"); set("ov-match-event-info", overlaySettings.matchEventInfo || ""); set("ov-streamer-name", overlaySettings.streamerName || "");
+  set("ov-design", overlaySettings.design || "classic"); set("ov-accent", sharedColor); set("ov-bg", overlaySettings.bg || "#0a0b0d"); set("ov-text", overlaySettings.text || "#eef0f5"); set("ov-alive-style", overlaySettings.aliveStyle || "bars"); set("ov-alive-color", overlaySettings.aliveColor || "#00d26a"); set("ov-dead-color", overlaySettings.deadColor || "#252a31"); set("ov-top4", overlaySettings.top4Mode || "auto"); set("ov-elim-style", overlaySettings.elimStyle || "compact"); set("ov-elim-bg", overlaySettings.elimBgColor || "#b00000"); set("ov-elim-text", overlaySettings.elimTextColor || "#ffffff"); set("ov-elim-accent", overlaySettings.design==="pmgo" ? sharedColor : (overlaySettings.elimAccentColor || "#ff3434")); set("ov-elim-logo", overlaySettings.elimShowLogo || "yes"); set("ov-match-event-info", overlaySettings.matchEventInfo || ""); set("ov-streamer-name", overlaySettings.streamerName || "");
   const prev=document.getElementById("ov-logo-preview"); if(prev){ const src=overlayLogoDraft || overlaySettings.streamerLogo || ""; prev.src=src; prev.style.display=src?"inline-block":"none"; }
   const helmetPrev=document.getElementById("ov-top4-helmet-preview"); if(helmetPrev){ const src=top4HelmetDraft || overlaySettings.top4HelmetUrl || ""; helmetPrev.src=src; helmetPrev.style.display=src?"inline-block":"none"; }
 }
@@ -2056,7 +2056,7 @@ function applyOverlayDesignPreset(design){
   set("ov-elim-style","pmgo");
   set("ov-elim-bg","#070809");
   set("ov-elim-text","#ffffff");
-  set("ov-elim-accent","#f1a21d");
+  set("ov-elim-accent","#d85a10");
   set("ov-elim-logo","yes");
   showToast("PMGO colors loaded and will be sent to OBS.", true);
 }
@@ -2071,7 +2071,8 @@ function saveOverlaySettings(opts){
     const nextTop4Helmet = autoOnly ? (overlaySettings.top4HelmetUrl||"") : (top4HelmetDraft!==null?helmetUrl:(overlaySettings.top4HelmetUrl||""));
     const rawMatchEventInfo=(document.getElementById("ov-match-event-info")?.value||"");
     const matchEventInfo=autoOnly ? rawMatchEventInfo : rawMatchEventInfo.trim();
-    const data={ design:document.getElementById("ov-design").value, accent:sharedColor, bg:document.getElementById("ov-bg").value, text:document.getElementById("ov-text").value, aliveStyle:document.getElementById("ov-alive-style").value, aliveColor:document.getElementById("ov-alive-color").value, deadColor:document.getElementById("ov-dead-color").value, top4Mode:document.getElementById("ov-top4").value, top4Color:sharedColor, elimStyle:document.getElementById("ov-elim-style").value, elimBgColor:document.getElementById("ov-elim-bg").value, elimTextColor:document.getElementById("ov-elim-text").value, elimAccentColor:document.getElementById("ov-elim-accent").value, elimShowLogo:document.getElementById("ov-elim-logo").value, matchEventInfo, streamerName:document.getElementById("ov-streamer-name").value.trim(), streamerLogo:nextStreamerLogo, top4HelmetUrl:nextTop4Helmet, updatedAt:Date.now() };
+    const selectedDesign=document.getElementById("ov-design").value;
+    const data={ design:selectedDesign, accent:sharedColor, bg:document.getElementById("ov-bg").value, text:document.getElementById("ov-text").value, aliveStyle:document.getElementById("ov-alive-style").value, aliveColor:document.getElementById("ov-alive-color").value, deadColor:document.getElementById("ov-dead-color").value, top4Mode:document.getElementById("ov-top4").value, top4Color:sharedColor, elimStyle:document.getElementById("ov-elim-style").value, elimBgColor:document.getElementById("ov-elim-bg").value, elimTextColor:document.getElementById("ov-elim-text").value, elimAccentColor:selectedDesign==="pmgo" ? sharedColor : document.getElementById("ov-elim-accent").value, elimShowLogo:document.getElementById("ov-elim-logo").value, matchEventInfo, streamerName:document.getElementById("ov-streamer-name").value.trim(), streamerLogo:nextStreamerLogo, top4HelmetUrl:nextTop4Helmet, updatedAt:Date.now() };
     const writes=[overlaySettingsRef.update(data)];
     if(activeEventId!=="default") writes.push(db.ref("pmac/overlaySettings").update(data).catch(()=>null));
     localStorage.setItem("pmac_overlay_settings_latest", JSON.stringify(data));
