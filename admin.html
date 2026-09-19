@@ -441,7 +441,18 @@ function eventUrlFor(url,eventId){ const sep=url.indexOf("?")>-1?"&":"?"; return
 function eventUrl(url){ return eventUrlFor(url,activeEventId); }
 function defaultEventUrl(url){ return eventUrlFor(url,"default"); }
 function eventStorageKey(key){ return key+"_"+activeEventId; }
-function resetEventRefs(){ dbTeamsRef=db.ref(eventPath("teams")); dbScoresRef=db.ref(eventPath("matches")); dbActiveSessionRef=db.ref(eventPath("activeSession")); dbEgRef=db.ref(eventPath("eventGroups")); overlaySettingsRef=db.ref(eventPath("overlaySettings")); forumRef=db.ref(eventPath("forum/messages")); localStorage.setItem("pmac_active_event", activeEventId); const lbl=document.getElementById("event-path-label"); if(lbl) lbl.textContent=eventBasePath(); }
+function loadLocalScoreMatch(){ const saved=parseInt(localStorage.getItem(eventStorageKey("score_edit_match")),10); currentMatch=Math.max(0,Math.min(9,Number.isFinite(saved)?saved:(currentMatch||0))); }
+function saveLocalScoreMatch(){ localStorage.setItem(eventStorageKey("score_edit_match"),String(currentMatch)); }
+function applyActiveMatchFromScoreMap(scoreMap){
+  const idx=parseInt(scoreMap&&scoreMap._activeMatch&&scoreMap._activeMatch.index,10);
+  if(!Number.isFinite(idx)) return false;
+  const next=Math.max(0,Math.min(9,idx));
+  if(next===currentMatch) return false;
+  currentMatch=next;
+  saveLocalScoreMatch();
+  return true;
+}
+function resetEventRefs(){ dbTeamsRef=db.ref(eventPath("teams")); dbScoresRef=db.ref(eventPath("matches")); dbActiveSessionRef=db.ref(eventPath("activeSession")); dbEgRef=db.ref(eventPath("eventGroups")); overlaySettingsRef=db.ref(eventPath("overlaySettings")); forumRef=db.ref(eventPath("forum/messages")); localStorage.setItem("pmac_active_event", activeEventId); loadLocalScoreMatch(); const lbl=document.getElementById("event-path-label"); if(lbl) lbl.textContent=eventBasePath(); }
 
 function canEditEvent(meta){
   if(isSuperAdmin) return true;
@@ -565,7 +576,7 @@ function loadFirebaseData(){
   dbTeamsRef.off();
   dbScoresRef.off();
   dbTeamsRef.on("value",(s)=>{ teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : []; teams = teams.map(t => { if (!t.playerUIDs) t.playerUIDs = []; return t; }); seedTeamLogoLibrary(teams); renderTeamsMgmt(); queueScoreGridRender(); document.getElementById("fb-status").className="fb-badge fb-ok"; document.getElementById("fb-status").textContent="● Single Day Mode"; });
-  dbScoresRef.on("value",(s)=>{ scores = s.val() || {}; queueScoreGridRender(); });
+  dbScoresRef.on("value",(s)=>{ scores = s.val() || {}; applyActiveMatchFromScoreMap(scores); queueScoreGridRender(); });
 }
 function egSessionsFromActive(active){
   if(!active) return [];
@@ -603,7 +614,7 @@ function toggleForumPanel(forceOpen){
   if(btn) btn.textContent = open ? "▾" : "▴";
   if(open) setTimeout(()=>{ const msgs=document.getElementById("chat-messages"); if(msgs) msgs.scrollTop=msgs.scrollHeight; },100);
 }
-function showSection(sec){ if(sec==="forum"){ toggleForumPanel(true); return; } document.getElementById("section-teams").style.display = sec==="teams"?"block":"none"; document.getElementById("section-scores").style.display = sec==="scores"?"block":"none"; document.getElementById("section-eventgroup").style.display = sec==="eventgroup"?"block":"none"; document.getElementById("section-master").style.display = sec==="master"?"block":"none"; document.getElementById("section-overlay").style.display = sec==="overlay"?"block":"none"; document.getElementById("section-gfx").style.display = sec==="gfx"?"block":"none"; document.getElementById("section-roadmap").style.display = sec==="roadmap"?"block":"none"; const order=["teams","scores","eventgroup","master","overlay","gfx","roadmap","forum"]; document.querySelectorAll(".stab").forEach((b,i)=>{ b.classList.toggle("active", order[i]===sec); }); if(sec==="scores"){ requestAnimationFrame(()=>{ publishActiveMatch(); renderScoreGrid(); }); } if(sec==="eventgroup"){ renderEventGroups(); updateActiveBanner(); } if(sec==="master") renderMasterArchiveList(); if(sec==="overlay") fillOverlaySettingsForm(); if(sec==="roadmap") loadRoadmapAdmin(); }
+function showSection(sec){ if(sec==="forum"){ toggleForumPanel(true); return; } document.getElementById("section-teams").style.display = sec==="teams"?"block":"none"; document.getElementById("section-scores").style.display = sec==="scores"?"block":"none"; document.getElementById("section-eventgroup").style.display = sec==="eventgroup"?"block":"none"; document.getElementById("section-master").style.display = sec==="master"?"block":"none"; document.getElementById("section-overlay").style.display = sec==="overlay"?"block":"none"; document.getElementById("section-gfx").style.display = sec==="gfx"?"block":"none"; document.getElementById("section-roadmap").style.display = sec==="roadmap"?"block":"none"; const order=["teams","scores","eventgroup","master","overlay","gfx","roadmap","forum"]; document.querySelectorAll(".stab").forEach((b,i)=>{ b.classList.toggle("active", order[i]===sec); }); if(sec==="scores"){ requestAnimationFrame(()=>{ renderScoreGrid(); }); } if(sec==="eventgroup"){ renderEventGroups(); updateActiveBanner(); } if(sec==="master") renderMasterArchiveList(); if(sec==="overlay") fillOverlaySettingsForm(); if(sec==="roadmap") loadRoadmapAdmin(); }
 function logoKey(name){ return String(name||"").trim().toUpperCase(); }
 function teamLogoDbKey(name){ return sanitizeKey(logoKey(name)); }
 function loadTeamLogoLibrary(){ try{ teamLogoLibrary = JSON.parse(localStorage.getItem(eventStorageKey(TEAM_LOGO_LIBRARY_KEY))||"{}") || {}; }catch(e){ teamLogoLibrary={}; } }
@@ -953,11 +964,9 @@ function scorePathForSafe(safe){
   return eventPath("matches");
 }
 function saveOneTeamScore(safe){
-  scores._activeMatch=activeMatchPayload();
   const base=scorePathForSafe(safe);
   const updates={};
   updates[`${base}/${safe}`]=scores[safe]||emptyScoreRows();
-  updates[`${base}/_activeMatch`]=scores._activeMatch;
   return db.ref().update(updates);
 }
 function updateScoreCardPreview(team,row){
@@ -974,7 +983,7 @@ function updateScoreCardPreview(team,row){
   if(wrap) wrap.classList.toggle("has-data", missed || rankVal !== null || killsVal > 0 || playersVal !== 4);
 }
 function scoreDomKey(team){ return sanitizeKey(String(team||"")).replace(/[^A-Za-z0-9_-]/g,"_"); }
-function switchMatch(idx){ saveAll().then(()=>{ currentMatch=Math.max(0,Math.min(9,parseInt(idx)||0)); publishActiveMatch(); renderScoreGrid(); }); }
+function switchMatch(idx){ saveAll({quiet:true}).then(()=>{ currentMatch=Math.max(0,Math.min(9,parseInt(idx)||0)); saveLocalScoreMatch(); return publishActiveMatch(); }).then(()=>{ renderScoreGrid(); }).catch(e=>showToast((e&&e.message)||"Match switch failed",false)); }
 function getUsedRanks(excludeTeam){ let used={}; teams.forEach(t=>{ if(t.name===excludeTeam) return; const m=scores[sanitizeKey(t.name)]?.[currentMatch]; if(m?.rank) used[m.rank]=t.name; }); return used; }
 function renderScoreGrid(){ 
     if(!teams.length){ document.getElementById("team-grid").innerHTML='<div class="no-teams">Add teams first.</div>'; return; } 
@@ -1082,7 +1091,7 @@ function savePlayersNow(team,el){
 }
 function autoSave(team,opts){ const row=scoreRowFromInputs(team); if(!row) return Promise.resolve(); const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; updateScoreCardPreview(team,row); return saveOneTeamScore(safe).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); const savedDiv=document.getElementById(`saved_${scoreDomKey(team)}`); if(savedDiv){ savedDiv.classList.add("show"); setTimeout(()=>savedDiv.classList.remove("show"),1200); } }); }
 function clearTeamMatch(team){ const safe=sanitizeKey(team); if(scores[safe]) scores[safe][currentMatch]=emptyScoreRow(); else scores[safe]=emptyScoreRows(); saveOneTeamScore(safe); renderScoreGrid(); }
-function saveAll(){ teams.forEach(t=>{ const row=scoreRowFromInputs(t.name); if(row){ const safe=sanitizeKey(t.name); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; } }); scores._activeMatch=activeMatchPayload(); return _scoresRef().set(scores).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); showToast("All saved",true); }); }
+function saveAll(opts){ opts=opts||{}; teams.forEach(t=>{ const row=scoreRowFromInputs(t.name); if(row){ const safe=sanitizeKey(t.name); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; } }); if(!opts.quiet) scores._activeMatch=activeMatchPayload(); return _scoresRef().set(scores).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); if(!opts.quiet) showToast("All saved",true); }); }
 function confirmReset(){
   if(!isSuperAdmin){ showToast("Super admin required",false); return; }
   if(!confirm("⚠️ FULL RESET: Delete ALL teams, scores, active sessions, and Event Group teams/scores for this event? Archive is not deleted.")) return;
@@ -1639,6 +1648,7 @@ function combineActiveBuckets(teamBuckets, scoreBuckets, sessions){
   });
   teams = combinedTeams;
   scores = combinedScores;
+  applyActiveMatchFromScoreMap(scores);
   renderTeamsMgmt(); queueScoreGridRender();
   document.getElementById("fb-status").className="fb-badge fb-ok";
   document.getElementById("fb-status").textContent = sessions.length>1 ? `● ${sessions.length} Groups Active` : `● Group ${sessions[0].group} · ${sessions[0].date}`;
