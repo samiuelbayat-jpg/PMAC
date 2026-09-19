@@ -430,7 +430,7 @@ let playersSaveTimers = {};
 const TEAM_LOGO_LIBRARY_KEY = "pmac_team_logo_library_v1";
 let groqApiKey = localStorage.getItem("groq_api_key") || "";
 const initialParams = new URLSearchParams(location.search);
-let activeEventId = initialParams.get("event") || localStorage.getItem("pmac_active_event") || "default";
+let activeEventId = initialParams.get("event") || "default";
 let pendingArchiveEditKey = initialParams.get("archiveEdit") || "";
 let dbTeamsRef, dbScoresRef, dbActiveSessionRef, dbEgRef, overlaySettingsRef, forumRef;
 let masterConfig = {title:"MASTER LEADERBOARD", eventInfo:"GROUP STAGE", pageSeconds:30, selectedArchives:{}};
@@ -505,6 +505,11 @@ function showAccessDenied(){
 
 function loadEventList(){
   const sel=document.getElementById("event-select"); if(!sel) return;
+  if(STAFF_ADMIN_MODE){
+    sel.innerHTML=`<option value="${escapeHtml(activeEventId)}">${escapeHtml(activeEventId==="default"?"Default Event":activeEventId)}</option>`;
+    sel.value=activeEventId;
+    return;
+  }
   db.ref("pmac/eventsMeta").on("value", snap=>{
     const meta=snap.val()||{};
     const items=[{id:"default",name:(meta.default&&meta.default.name)||"Default Event",meta:meta.default||{}}]
@@ -518,7 +523,7 @@ function loadEventList(){
     sel.value=activeEventId;
   });
 }
-function switchEvent(id){ if(!id || id===activeEventId) return; localStorage.setItem("pmac_active_event", id); location.href=location.pathname+"?event="+encodeURIComponent(id); }
+function switchEvent(id){ if(STAFF_ADMIN_MODE){ showToast("Staff page is locked to this event", false); return; } if(!id || id===activeEventId) return; localStorage.setItem("pmac_active_event", id); location.href=location.pathname+"?event="+encodeURIComponent(id); }
 function createPmacEvent(){
   const inp=document.getElementById("new-event-name"); const name=(inp&&inp.value.trim())||"New Event"; const id=cleanEventId(name);
   db.ref("pmac/eventsMeta/"+id).set(eventMetaDefaults(name)).then(()=>{ localStorage.setItem("pmac_active_event", id); location.href=location.pathname+"?event="+encodeURIComponent(id); }).catch(e=>showToast(e.message,false));
@@ -554,6 +559,8 @@ function applyStaffAdminUi(){
   }
   const eventBar=document.getElementById("event-select")?.parentElement;
   if(eventBar){
+    const sel=document.getElementById("event-select");
+    if(sel){ sel.disabled=true; sel.style.pointerEvents="none"; sel.title="Staff page is locked to this event"; }
     Array.from(eventBar.children).forEach(el=>{
       if(el.id==="event-select" || el.id==="event-user-label" || (el.textContent||"").trim()==="EVENT") el.style.display="";
       else el.style.display="none";
