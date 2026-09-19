@@ -168,6 +168,7 @@
   const params = new URLSearchParams(window.location.search);
   const nextParam = params.get("next") || "";
   const loginTarget = nextParam && !/^[a-z]+:/i.test(nextParam) && !nextParam.startsWith("//") ? nextParam : "admin.html?event=default";
+  if(!nextParam) localStorage.removeItem("pmac_active_event");
 
   // Always sign out on load so login form always shows
   signOut(auth).catch(()=>{});

@@ -2244,6 +2244,7 @@ firebase.auth().onAuthStateChanged(function(user) {
 });
 
 function doSignOut(){
+  localStorage.removeItem("pmac_active_event");
   firebase.auth().signOut().then(function(){
     window.location.href = "index.html";
   }).catch(function(e){
