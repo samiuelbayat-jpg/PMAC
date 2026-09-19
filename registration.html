@@ -2857,6 +2857,7 @@ function pubKillCls(k){var n=parseInt(k)||0;return n>=10?"kh":n>=5?"km":"kl";}
 var pubSortMode = "pts";
 var pubTeamsGlobal = [], pubScoresGlobal = {};
 var pubScoreListenersAttached = false;
+var pubActiveSessionRef = null, pubTeamsRef = null, pubScoresRef = null;
 
 function pubSortBy(mode){
   pubSortMode = mode;
@@ -2872,14 +2873,77 @@ function loadScoreboard(){
   renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
   if(pubScoreListenersAttached) return;
   pubScoreListenersAttached=true;
-  db.ref(eventPath("teams")).on("value",function(s){
-    var v=s.val()||[];pubTeamsGlobal=Array.isArray(v)?v:Object.values(v);
+  pubActiveSessionRef = db.ref(eventPath("activeSession"));
+  pubActiveSessionRef.on("value",function(snap){
+    bindPubLiveScoreboard(snap.val()||null);
+  });
+}
+
+function stopPubLiveRefs(){
+  if(pubTeamsRef && pubTeamsRef.off) pubTeamsRef.off();
+  if(pubScoresRef && pubScoresRef.off) pubScoresRef.off();
+  pubTeamsRef=null; pubScoresRef=null;
+}
+function pubActiveSessions(session){
+  if(!session) return [];
+  if(Array.isArray(session.sessions)) return session.sessions.filter(function(s){return s&&s.group&&s.date;});
+  if(session.group&&session.date) return [{group:session.group,date:session.date}];
+  return [];
+}
+function bindPubLiveScoreboard(session){
+  stopPubLiveRefs();
+  pubTeamsGlobal=[];
+  pubScoresGlobal={};
+  var sessions=pubActiveSessions(session);
+  if(sessions.length>1){ bindPubMultiLiveScoreboard(sessions); return; }
+  var active=sessions.length===1, one=sessions[0];
+  pubTeamsRef = active ? db.ref(eventPath("eventGroups")+"/"+one.group+"/sessions/"+one.date+"/teams") : db.ref(eventPath("teams"));
+  pubScoresRef = active ? db.ref(eventPath("eventGroups")+"/"+one.group+"/sessions/"+one.date+"/scores") : db.ref(eventPath("matches"));
+  pubTeamsRef.on("value",function(s){
+    var v=s.val()||[];
+    var list=Array.isArray(v)?v:Object.values(v);
+    pubTeamsGlobal=list;
     renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
   });
-  db.ref(eventPath("matches")).on("value",function(s2){
+  pubScoresRef.on("value",function(s2){
     pubScoresGlobal=s2.val()||{};
     renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
   });
+}
+function bindPubMultiLiveScoreboard(sessions){
+  var teamRefs=[], scoreRefs=[], teamBuckets={}, scoreBuckets={};
+  function combine(){
+    var teamMap={};
+    pubTeamsGlobal=[];
+    pubScoresGlobal={};
+    sessions.forEach(function(s){
+      var key=s.group+"|"+s.date;
+      (teamBuckets[key]||[]).forEach(function(t){
+        if(!t||!t.name) return;
+        var tk=sanitizeKey(String(t.name).toUpperCase());
+        if(!teamMap[tk]){ teamMap[tk]=true; pubTeamsGlobal.push(t); }
+      });
+      Object.assign(pubScoresGlobal, scoreBuckets[key]||{});
+    });
+    renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
+  }
+  sessions.forEach(function(s){
+    var key=s.group+"|"+s.date;
+    var tr=db.ref(eventPath("eventGroups")+"/"+s.group+"/sessions/"+s.date+"/teams");
+    var sr=db.ref(eventPath("eventGroups")+"/"+s.group+"/sessions/"+s.date+"/scores");
+    teamRefs.push(tr); scoreRefs.push(sr);
+    tr.on("value",function(snap){
+      var v=snap.val()||[];
+      teamBuckets[key]=Array.isArray(v)?v:Object.values(v);
+      combine();
+    });
+    sr.on("value",function(snap){
+      scoreBuckets[key]=snap.val()||{};
+      combine();
+    });
+  });
+  pubTeamsRef={off:function(){teamRefs.forEach(function(r){r.off();});}};
+  pubScoresRef={off:function(){scoreRefs.forEach(function(r){r.off();});}};
 }
 
 function renderPubScoreboard(pubTeams,pubScores){
