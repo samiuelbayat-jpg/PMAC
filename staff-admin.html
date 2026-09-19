@@ -608,8 +608,7 @@ function startAdminForUser(user){
   ]).then(([superAllowed, meta, role])=>{
     staffRole = role;
     const hasStaffRole = isStaffRoleConfigured(role);
-    const legacyDefault = activeEventId==="default" && !meta;
-    isSuperAdmin = superAllowed || (legacyDefault && !hasStaffRole);
+    isSuperAdmin = superAllowed;
     if(STAFF_ADMIN_MODE){
       if(!isSuperAdmin && !staffCanUseEvent(role,activeEventId)){
         showAccessDenied();
@@ -623,7 +622,7 @@ function startAdminForUser(user){
       window.location.href = staffAdminUrl();
       return;
     }
-    if(!legacyDefault && !canEditEvent(meta)){
+    if(!canEditEvent(meta)){
       showAccessDenied();
       loadEventList();
       return;
