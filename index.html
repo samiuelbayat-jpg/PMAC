@@ -165,6 +165,9 @@
   const auth = getAuth(app);
   const errEl = document.getElementById("err");
   const btn   = document.getElementById("login-btn");
+  const params = new URLSearchParams(window.location.search);
+  const nextParam = params.get("next") || "";
+  const loginTarget = nextParam && !/^[a-z]+:/i.test(nextParam) && !nextParam.startsWith("//") ? nextParam : "admin.html";
 
   // Always sign out on load so login form always shows
   signOut(auth).catch(()=>{});
@@ -178,7 +181,7 @@
     btn.disabled = true; btn.textContent = "Signing in\u2026";
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      window.location.href = "admin.html";
+      window.location.href = loginTarget;
     } catch(err) {
       const msgs = {
         "auth/user-not-found":    "No account found with that email.",
