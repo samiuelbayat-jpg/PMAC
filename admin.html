@@ -321,15 +321,15 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div class="teams-mgmt">
       <div class="mgmt-title">OBS Overlay Settings</div>
       <div class="ov-grid">
-        <div class="inp-wrap"><div class="inp-lbl">Design</div><select class="text-inp" id="ov-design" onchange="applyOverlayDesignPreset(this.value); saveOverlaySettingsSoon()"><option value="classic">Classic Side Panel</option><option value="neon">Neon Edge</option><option value="minimal">Minimal Clean</option><option value="broadcast">Broadcast Bold</option><option value="pmgc">PMGC Gold</option><option value="pgs">PGS Blue</option><option value="worldcup">World Cup Red</option><option value="tactical">Tactical Green</option><option value="glass">Glass Broadcast</option><option value="compact">Compact Lower</option><option value="split">Split Panel</option><option value="arena">Arena Purple</option><option value="redlive">Red Live Standing</option><option value="pmgo">PMGO Live Points</option></select></div>
-        <div class="inp-wrap"><div class="inp-lbl">PMGO Rank + WWCD + Bottom Banner</div><input class="text-inp" type="color" id="ov-accent" value="#d85a10" oninput="saveOverlaySettingsSoon()" onchange="saveOverlaySettingsSoon()" style="min-width:90px;height:42px;padding:4px;"></div>
+        <div class="inp-wrap"><div class="inp-lbl">Design</div><select class="text-inp" id="ov-design" onchange="applyOverlayDesignPreset(this.value); saveOverlaySettingsSoon()"><option value="classic">Classic Side Panel</option><option value="neon">Neon Edge</option><option value="minimal">Minimal Clean</option><option value="broadcast">Broadcast Bold</option><option value="pmgc">PMGC Gold</option><option value="pgs">PGS Blue</option><option value="worldcup">World Cup Red</option><option value="tactical">Tactical Green</option><option value="glass">Glass Broadcast</option><option value="compact">Compact Lower</option><option value="split">Split Panel</option><option value="arena">Arena Purple</option><option value="redlive">Red Live Standing</option><option value="pmgo">PMGO Live Points</option><option value="pmgo-teal">PMGO Teal Live Points</option></select></div>
+        <div class="inp-wrap"><div class="inp-lbl">Shared Overlay Color</div><input class="text-inp" type="color" id="ov-accent" value="#d85a10" oninput="saveOverlaySettingsSoon()" onchange="saveOverlaySettingsSoon()" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Side Panel Background</div><input class="text-inp" type="color" id="ov-bg" value="#0a0b0d" onchange="saveOverlaySettingsSoon()" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Main Text</div><input class="text-inp" type="color" id="ov-text" value="#eef0f5" onchange="saveOverlaySettingsSoon()" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Alive Indicator Shape</div><select class="text-inp" id="ov-alive-style" onchange="saveOverlaySettingsSoon()"><option value="bars">Bold Bars Under Tag</option><option value="pipes">|||| After Tag</option><option value="dots">Round Dots After Tag</option></select></div>
         <div class="inp-wrap"><div class="inp-lbl">Alive Player Color</div><input class="text-inp" type="color" id="ov-alive-color" value="#00d26a" onchange="saveOverlaySettingsSoon()" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Eliminated Player Color</div><input class="text-inp" type="color" id="ov-dead-color" value="#252a31" onchange="saveOverlaySettingsSoon()" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Top 4 WWCD Cards</div><select class="text-inp" id="ov-top4" onchange="saveOverlaySettingsSoon()"><option value="auto">Auto When 4 Alive</option><option value="always">Always Show</option><option value="off">Off</option></select></div>
-        <div class="inp-wrap"><div class="inp-lbl">Elimination Popup Style</div><select class="text-inp" id="ov-elim-style" onchange="saveOverlaySettingsSoon()"><option value="compact">Compact Alert</option><option value="slash">Slash Broadcast</option><option value="clean">Clean Bar</option><option value="danger">Danger Red</option><option value="official">Official Elims Card</option><option value="bluecard">Blue Elims Card</option><option value="pmgo">PMGO Elims Card</option></select></div>
+        <div class="inp-wrap"><div class="inp-lbl">Elimination Popup Style</div><select class="text-inp" id="ov-elim-style" onchange="saveOverlaySettingsSoon()"><option value="compact">Compact Alert</option><option value="slash">Slash Broadcast</option><option value="clean">Clean Bar</option><option value="danger">Danger Red</option><option value="official">Official Elims Card</option><option value="bluecard">Blue Elims Card</option><option value="pmgo">PMGO Elims Card</option><option value="pmgo-teal">PMGO Teal Elims Card</option></select></div>
         <div class="inp-wrap"><div class="inp-lbl">Elim Popup Background</div><input class="text-inp" type="color" id="ov-elim-bg" value="#b00000" onchange="saveOverlaySettingsSoon()" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Elim Popup Text</div><input class="text-inp" type="color" id="ov-elim-text" value="#ffffff" onchange="saveOverlaySettingsSoon()" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Elim Popup Border</div><input class="text-inp" type="color" id="ov-elim-accent" value="#ff3434" onchange="saveOverlaySettingsSoon()" style="min-width:90px;height:42px;padding:4px;"></div>
@@ -2032,8 +2032,9 @@ let overlayAutoSaveTimer = null;
 function loadOverlaySettings(){ if(overlaySettingsRef) overlaySettingsRef.off(); overlaySettingsRef.on("value", snap => { overlaySettings = Object.assign({}, overlaySettings, snap.val() || {}); fillOverlaySettingsForm(); }); }
 function fillOverlaySettingsForm(){
   const set=(id,val)=>{ const el=document.getElementById(id); if(el && document.activeElement!==el) el.value=val||""; };
-  const sharedColor = (overlaySettings.design==="pmgo" ? (overlaySettings.accent || overlaySettings.top4Color || "#d85a10") : overlaySettings.accent) || "#d85a10";
-  set("ov-design", overlaySettings.design || "classic"); set("ov-accent", sharedColor); set("ov-bg", overlaySettings.bg || "#0a0b0d"); set("ov-text", overlaySettings.text || "#eef0f5"); set("ov-alive-style", overlaySettings.aliveStyle || "bars"); set("ov-alive-color", overlaySettings.aliveColor || "#00d26a"); set("ov-dead-color", overlaySettings.deadColor || "#252a31"); set("ov-top4", overlaySettings.top4Mode || "auto"); set("ov-elim-style", overlaySettings.elimStyle || "compact"); set("ov-elim-bg", overlaySettings.elimBgColor || "#b00000"); set("ov-elim-text", overlaySettings.elimTextColor || "#ffffff"); set("ov-elim-accent", overlaySettings.design==="pmgo" ? sharedColor : (overlaySettings.elimAccentColor || "#ff3434")); set("ov-elim-logo", overlaySettings.elimShowLogo || "yes"); set("ov-match-event-info", overlaySettings.matchEventInfo || ""); set("ov-streamer-name", overlaySettings.streamerName || "");
+  const linkedDesign = overlaySettings.design==="pmgo" || overlaySettings.design==="pmgo-teal";
+  const sharedColor = (linkedDesign ? (overlaySettings.accent || overlaySettings.top4Color || "#d85a10") : overlaySettings.accent) || "#d85a10";
+  set("ov-design", overlaySettings.design || "classic"); set("ov-accent", sharedColor); set("ov-bg", overlaySettings.bg || "#0a0b0d"); set("ov-text", overlaySettings.text || "#eef0f5"); set("ov-alive-style", overlaySettings.aliveStyle || "bars"); set("ov-alive-color", overlaySettings.aliveColor || "#00d26a"); set("ov-dead-color", overlaySettings.deadColor || "#252a31"); set("ov-top4", overlaySettings.top4Mode || "auto"); set("ov-elim-style", overlaySettings.elimStyle || "compact"); set("ov-elim-bg", overlaySettings.elimBgColor || "#b00000"); set("ov-elim-text", overlaySettings.elimTextColor || "#ffffff"); set("ov-elim-accent", linkedDesign ? sharedColor : (overlaySettings.elimAccentColor || "#ff3434")); set("ov-elim-logo", overlaySettings.elimShowLogo || "yes"); set("ov-match-event-info", overlaySettings.matchEventInfo || ""); set("ov-streamer-name", overlaySettings.streamerName || "");
   const prev=document.getElementById("ov-logo-preview"); if(prev){ const src=overlayLogoDraft || overlaySettings.streamerLogo || ""; prev.src=src; prev.style.display=src?"inline-block":"none"; }
   const helmetPrev=document.getElementById("ov-top4-helmet-preview"); if(helmetPrev){ const src=top4HelmetDraft || overlaySettings.top4HelmetUrl || ""; helmetPrev.src=src; helmetPrev.style.display=src?"inline-block":"none"; }
 }
@@ -2046,19 +2047,21 @@ function clearOverlayLogo(){ overlayLogoDraft=""; overlayLogoDraftFile=null; ove
 function ovPreviewTop4Helmet(input){ const file=input.files[0]; if(!file) return; top4HelmetDraftFile=file; const reader=new FileReader(); reader.onload=e=>{ top4HelmetDraft=e.target.result; fillOverlaySettingsForm(); }; reader.readAsDataURL(file); }
 function clearTop4Helmet(){ top4HelmetDraft=""; top4HelmetDraftFile=null; overlaySettings.top4HelmetUrl=""; fillOverlaySettingsForm(); }
 function applyOverlayDesignPreset(design){
-  if(design!=="pmgo") return;
+  if(design!=="pmgo" && design!=="pmgo-teal") return;
   const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.value=val; };
-  set("ov-accent","#d85a10");
-  set("ov-bg","#f4f4ef");
-  set("ov-text","#101010");
+  const isTeal = design==="pmgo-teal";
+  const color = isTeal ? "#26c6c0" : "#d85a10";
+  set("ov-accent",color);
+  set("ov-bg",isTeal ? "#2b3334" : "#f4f4ef");
+  set("ov-text",isTeal ? "#ffffff" : "#101010");
   set("ov-alive-color","#13c58b");
-  set("ov-dead-color","#2c302d");
-  set("ov-elim-style","pmgo");
+  set("ov-dead-color",isTeal ? "#697273" : "#2c302d");
+  set("ov-elim-style",isTeal ? "pmgo-teal" : "pmgo");
   set("ov-elim-bg","#070809");
   set("ov-elim-text","#ffffff");
-  set("ov-elim-accent","#d85a10");
+  set("ov-elim-accent",color);
   set("ov-elim-logo","yes");
-  showToast("PMGO colors loaded and will be sent to OBS.", true);
+  showToast((isTeal?"PMGO Teal":"PMGO")+" colors loaded and will be sent to OBS.", true);
 }
 function saveOverlaySettings(opts){
   opts = opts || {};
@@ -2072,7 +2075,8 @@ function saveOverlaySettings(opts){
     const rawMatchEventInfo=(document.getElementById("ov-match-event-info")?.value||"");
     const matchEventInfo=autoOnly ? rawMatchEventInfo : rawMatchEventInfo.trim();
     const selectedDesign=document.getElementById("ov-design").value;
-    const data={ design:selectedDesign, accent:sharedColor, bg:document.getElementById("ov-bg").value, text:document.getElementById("ov-text").value, aliveStyle:document.getElementById("ov-alive-style").value, aliveColor:document.getElementById("ov-alive-color").value, deadColor:document.getElementById("ov-dead-color").value, top4Mode:document.getElementById("ov-top4").value, top4Color:sharedColor, elimStyle:document.getElementById("ov-elim-style").value, elimBgColor:document.getElementById("ov-elim-bg").value, elimTextColor:document.getElementById("ov-elim-text").value, elimAccentColor:selectedDesign==="pmgo" ? sharedColor : document.getElementById("ov-elim-accent").value, elimShowLogo:document.getElementById("ov-elim-logo").value, matchEventInfo, streamerName:document.getElementById("ov-streamer-name").value.trim(), streamerLogo:nextStreamerLogo, top4HelmetUrl:nextTop4Helmet, updatedAt:Date.now() };
+    const linkedDesign = selectedDesign==="pmgo" || selectedDesign==="pmgo-teal";
+    const data={ design:selectedDesign, accent:sharedColor, bg:document.getElementById("ov-bg").value, text:document.getElementById("ov-text").value, aliveStyle:document.getElementById("ov-alive-style").value, aliveColor:document.getElementById("ov-alive-color").value, deadColor:document.getElementById("ov-dead-color").value, top4Mode:document.getElementById("ov-top4").value, top4Color:sharedColor, elimStyle:document.getElementById("ov-elim-style").value, elimBgColor:document.getElementById("ov-elim-bg").value, elimTextColor:document.getElementById("ov-elim-text").value, elimAccentColor:linkedDesign ? sharedColor : document.getElementById("ov-elim-accent").value, elimShowLogo:document.getElementById("ov-elim-logo").value, matchEventInfo, streamerName:document.getElementById("ov-streamer-name").value.trim(), streamerLogo:nextStreamerLogo, top4HelmetUrl:nextTop4Helmet, updatedAt:Date.now() };
     const writes=[overlaySettingsRef.update(data)];
     if(activeEventId!=="default") writes.push(db.ref("pmac/overlaySettings").update(data).catch(()=>null));
     localStorage.setItem("pmac_overlay_settings_latest", JSON.stringify(data));

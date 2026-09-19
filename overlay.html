@@ -8,7 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{width:1920px;height:1080px;min-width:1920px;min-height:1080px;overflow:hidden;background:transparent;font-family:'Barlow Condensed',sans-serif;--ov-accent:#e8b800;--ov-bg:rgba(10,11,13,0.96);--ov-text:#eef0f5;--alive-color:#00d26a;--dead-color:#252a31;--top4-color:#d85a10;}
+html,body{width:1920px;height:1080px;min-width:1920px;min-height:1080px;overflow:hidden;background:transparent;font-family:'Barlow Condensed',sans-serif;--ov-accent:#e8b800;--ov-bg:rgba(10,11,13,0.96);--ov-text:#eef0f5;--alive-color:#00d26a;--dead-color:#252a31;--top4-color:#d85a10;--wwcd-color:#d85a10;}
 .panel{position:fixed;right:0;bottom:0;width:260px;background:var(--ov-bg);border-left:3px solid var(--ov-accent);border-top:3px solid var(--ov-accent);display:flex;flex-direction:column;}
 .panel-top{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(10,11,13,0.70);border-bottom:2px solid var(--ov-accent);flex-shrink:0;}
 .panel-logo{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--ov-accent);flex-shrink:0;}
@@ -99,6 +99,47 @@ body.design-pmgo .team-row.eliminated-team .pos,body.design-pmgo .team-row.misse
 body.design-pmgo .pmgo-team-cell{padding-left:8px;}
 body.design-pmgo .ticker{background:var(--ov-bg);border-top:3px solid var(--top4-color);}
 body.design-pmgo .ticker-label{background:var(--top4-color);color:#fff;}
+.design-pmgo-teal .panel{width:320px;background:rgba(35,41,42,.86);border:0;box-shadow:-8px 0 24px rgba(0,0,0,.42);padding-bottom:35px;}
+.design-pmgo-teal .panel:before{content:"";position:absolute;inset:0;border-left:3px solid var(--ov-accent);border-bottom:3px solid var(--ov-accent);pointer-events:none;}
+.design-pmgo-teal .panel:after,.design-pmgo-teal .panel-top{display:none;}
+.design-pmgo-teal .pmgo-legend{position:absolute;left:8px;right:8px;bottom:7px;height:24px;background:#081214;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:19px;border-top:2px solid var(--ov-accent);}
+.design-pmgo-teal .pmgo-legend-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.design-pmgo-teal .pmgo-legend-mark{width:9px;height:9px;display:inline-block;background:#777;}
+.design-pmgo-teal .pmgo-legend-mark.alive{background:var(--alive-color);}
+.design-pmgo-teal .pmgo-legend-mark.knocked{background:#f0001f;}
+.design-pmgo-teal .pmgo-legend-mark.eliminated{background:var(--dead-color);}
+.design-pmgo-teal .col-headers{grid-template-columns:34px minmax(0,1fr) 58px 44px 44px;background:var(--ov-accent);border:0;padding:7px 8px;min-height:31px;}
+.design-pmgo-teal .col-h{color:#051213;font-size:15px;font-weight:900;text-align:center;letter-spacing:.02em;font-family:'Barlow Condensed',sans-serif;}
+.design-pmgo-teal .col-h:nth-child(2){text-align:left;padding-left:9px;}
+.design-pmgo-teal .team-row{grid-template-columns:34px minmax(0,1fr) 58px 44px 44px;align-items:center;margin:0;padding:0 8px;min-height:39px;background:rgba(69,75,76,.82);border:0;border-bottom:1px solid rgba(255,255,255,.18);clip-path:none;}
+.design-pmgo-teal .team-row:nth-child(even){background:rgba(57,63,64,.82);}
+.design-pmgo-teal .team-row.eliminated-team,.design-pmgo-teal .team-row.missed-current{background:rgba(76,82,83,.72)!important;filter:grayscale(.55);opacity:.86;}
+.design-pmgo-teal .pos{font-size:22px;color:#eef9f7!important;text-shadow:0 2px 0 rgba(0,0,0,.45);min-height:32px;line-height:1;font-weight:900;}
+.design-pmgo-teal .rank-move{display:none;}
+.design-pmgo-teal .pmgo-team-cell{display:flex;align-items:center;gap:6px;min-width:0;padding-left:3px;}
+.design-pmgo-teal .t-logo{width:27px;height:27px;border-radius:0;border:0;background:transparent;object-fit:contain;flex:0 0 27px;box-shadow:none;}
+.design-pmgo-teal .t-logo-wrap{border-radius:0;}
+.design-pmgo-teal .t-name{font-size:20px;color:#f4f7f7;letter-spacing:.02em;font-weight:900;line-height:1;text-transform:uppercase;text-overflow:clip;text-shadow:0 1px 0 #000;}
+.design-pmgo-teal .pmgo-alive{display:flex;justify-content:center;align-items:center;}
+.design-pmgo-teal .player-strips{width:48px;margin:0;display:grid;grid-template-columns:repeat(4,1fr);gap:3px;align-self:center;}
+.design-pmgo-teal .pstrip{height:24px;border-radius:0;background:var(--alive-color);box-shadow:none;}
+.design-pmgo-teal .pstrip.dead{background:var(--dead-color);border:0;opacity:1;}
+.design-pmgo-teal .player-pipes,.design-pmgo-teal .player-dots{width:48px;transform:none;justify-content:center;}
+.design-pmgo-teal .player-pipes .pmark{font-size:23px;color:var(--alive-color);}
+.design-pmgo-teal .player-pipes .pmark.dead{color:var(--dead-color);}
+.design-pmgo-teal .player-dots .pmark{width:10px;height:23px;border-radius:0;background:var(--alive-color);}
+.design-pmgo-teal .player-dots .pmark.dead{background:var(--dead-color);border:0;}
+.design-pmgo-teal .t-pts,.design-pmgo-teal .t-kills{display:flex;align-items:center;justify-content:center;color:#eef3f4;background:transparent;border-radius:0;font-size:21px;font-weight:900;text-align:center;padding:0;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.45);}
+.design-pmgo-teal .t-kills{position:relative;min-height:32px;}
+.design-pmgo-teal .t-kills.has-plus{justify-content:center;padding:0;}
+.design-pmgo-teal .pmgo-prev-points{display:block;min-width:22px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:18px;font-weight:900;color:#eef3f4;letter-spacing:-.04em;}
+.design-pmgo-teal .pmgo-elim-plus{position:absolute;right:-11px;top:-2px;display:block;font-family:'Share Tech Mono',monospace;font-size:17px;font-weight:900;color:var(--alive-color);letter-spacing:-.06em;text-shadow:0 1px 0 rgba(0,0,0,.45);}
+.design-pmgo-teal .team-row.eliminated-team .t-name,.design-pmgo-teal .team-row.eliminated-team .t-kills,.design-pmgo-teal .team-row.eliminated-team .t-pts,.design-pmgo-teal .team-row.eliminated-team .pos,.design-pmgo-teal .team-row.missed-current .t-name,.design-pmgo-teal .team-row.missed-current .t-kills,.design-pmgo-teal .team-row.missed-current .t-pts,.design-pmgo-teal .team-row.missed-current .pos{color:#aab1b2!important;text-shadow:none;}
+.design-pmgo-teal .team-row.eliminated-team .pmgo-elim-plus,.design-pmgo-teal .team-row.missed-current .pmgo-elim-plus{color:#b8c0c1;text-shadow:none;}
+.design-pmgo-teal .ticker{right:320px;height:38px;background:#081214;border-top:3px solid var(--ov-accent);}
+.design-pmgo-teal .ticker-label{background:var(--ov-accent);color:#051213;letter-spacing:.08em;}
+.design-pmgo-teal .ti-name,.design-pmgo-teal .ti-pts,.design-pmgo-teal .ti-pos{color:#fff;}
+.design-pmgo-teal .ti-val{color:#d7ded5;}
 .team-row.missed-current{filter:grayscale(.55);box-shadow:inset 0 0 18px rgba(120,126,132,.30),0 0 9px rgba(120,126,132,.22);opacity:.84;}.team-row.missed-current .t-name,.team-row.missed-current .t-kills,.team-row.missed-current .t-place,.team-row.missed-current .t-pts,.team-row.missed-current .pos{color:#8f969c!important;text-shadow:none;}.missed-label{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:900;letter-spacing:.12em;color:#8f969c;text-transform:uppercase;margin-top:2px;}body.design-pmgo .team-row.missed-current{background:#5f625d!important;filter:grayscale(.65);opacity:.9;}body.design-pmgo .team-row.missed-current .t-name,body.design-pmgo .team-row.missed-current .t-kills,body.design-pmgo .team-row.missed-current .t-pts{color:#d3d6d2!important;}body.design-pmgo .team-row.missed-current .pos{background:var(--top4-color)!important;color:#fff!important;text-shadow:0 2px 0 rgba(0,0,0,.38)!important;}body.design-pmgo .missed-label{font-size:12px;color:#d3d6d2;margin:0;text-align:center;}
 .elim-alert[data-style="pmgo"]{top:135px;padding:0;width:620px;max-width:620px;height:132px;background:#070809;border:1px solid rgba(255,190,55,.38);border-radius:0;clip-path:none;box-shadow:0 0 0 1px rgba(0,0,0,.78) inset,0 16px 35px rgba(0,0,0,.38);text-align:left;overflow:hidden;}
 .elim-alert[data-style="pmgo"]:before{opacity:.48;background:linear-gradient(103deg,transparent 0 66%,rgba(255,255,255,.08) 68%,transparent 75%),radial-gradient(circle at 18% 14%,rgba(255,255,255,.17),transparent 28%);}
@@ -119,6 +160,25 @@ body.design-pmgo .ticker-label{background:var(--top4-color);color:#fff;}
 .elim-alert[data-style="pmgo"] .elim-meta{position:absolute;left:105px;bottom:10px;margin:0;font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;line-height:1;color:#fff;letter-spacing:0;text-shadow:0 2px 6px rgba(0,0,0,.85);z-index:2;}
 .elim-alert[data-style="pmgo"][data-logo="no"] .elim-logo-wrap{display:flex;}
 .elim-alert[data-style="pmgo"][data-logo="no"] .elim-logo,.elim-alert[data-style="pmgo"][data-logo="no"] .elim-logo-fallback{display:none!important;}
+.elim-alert[data-style="pmgo-teal"]{left:50%;top:74px;transform:translateX(-50%);padding:0;width:470px;max-width:470px;height:124px;background:transparent;border:0;border-radius:0;clip-path:none;box-shadow:none;text-align:left;overflow:visible;}
+.elim-alert[data-style="pmgo-teal"].show{transform:translateX(-50%);}
+.elim-alert[data-style="pmgo-teal"]:before,.elim-alert[data-style="pmgo-teal"]:after{display:none;}
+.elim-alert[data-style="pmgo-teal"] .elim-content{height:100%;justify-content:flex-start;align-items:stretch;gap:0;position:relative;}
+.elim-alert[data-style="pmgo-teal"] .elim-logo-wrap{position:absolute;left:0;bottom:0;width:168px;height:70px;flex:0 0 168px;border:0;border-radius:0;box-shadow:none;background:#111b20;clip-path:polygon(18px 0,100% 0,88% 100%,0 100%);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.elim-alert[data-style="pmgo-teal"] .elim-logo{width:72px;height:72px;object-fit:contain;background:transparent;border:0;border-radius:0;}
+.elim-alert[data-style="pmgo-teal"] .elim-logo-fallback{width:72px;height:72px;background:transparent;color:#fff;border:0;font-size:18px;}
+.elim-alert[data-style="pmgo-teal"] .elim-copy{position:absolute;left:130px;right:34px;bottom:0;height:70px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(105deg,rgba(255,255,255,.18) 0 7%,transparent 7% 13%,rgba(0,0,0,.13) 13% 20%,transparent 20% 100%),repeating-linear-gradient(104deg,color-mix(in srgb,var(--elim-accent) 86%,#031416) 0 9px,color-mix(in srgb,var(--elim-accent) 72%,#001013) 9px 17px,color-mix(in srgb,var(--elim-accent) 92%,#ffffff) 17px 26px),linear-gradient(105deg,var(--elim-accent) 0%,color-mix(in srgb,var(--elim-accent) 86%,#ffffff) 76%,transparent 76%);clip-path:polygon(16px 0,100% 0,88% 100%,0 100%);padding:8px 82px 7px 44px;text-align:left;box-shadow:inset 9px 0 0 rgba(255,255,255,.16),inset -22px 0 0 rgba(0,0,0,.14);}
+.elim-alert[data-style="pmgo-teal"] .elim-kicker{position:absolute;left:50%;top:-44px;transform:translateX(-50%);height:38px;width:310px;min-width:310px;display:flex;align-items:center;justify-content:center;background:#c7cccb;color:#060b0c;font-size:28px;font-weight:900;letter-spacing:.03em;text-transform:uppercase;padding:0 38px 0 18px;clip-path:polygon(0 0,100% 0,93% 100%,0 100%);z-index:3;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,.28);}
+.elim-alert[data-style="pmgo-teal"] .elim-kicker:before{content:attr(data-rank);position:absolute;left:18px;color:var(--elim-accent);font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;}
+.elim-alert[data-style="pmgo-teal"] .elim-team{display:contents;color:#fff;text-shadow:none;letter-spacing:0;}
+.elim-alert[data-style="pmgo-teal"] .elim-team:before,.elim-alert[data-style="pmgo-teal"] .elim-team:after{display:none;content:"";}
+.elim-alert[data-style="pmgo-teal"] .elim-pmgo-name{max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:44px;font-weight:900;line-height:.9;color:#fff;text-transform:uppercase;letter-spacing:.03em;text-shadow:0 2px 0 rgba(0,0,0,.42);}
+.elim-alert[data-style="pmgo-teal"] .elim-pmgo-score{position:absolute;right:98px;top:14px;display:block;}
+.elim-alert[data-style="pmgo-teal"] .elim-pmgo-count{font-family:'Share Tech Mono',monospace;font-size:54px;font-weight:900;line-height:.8;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.35);}
+.elim-alert[data-style="pmgo-teal"] .elim-pmgo-word{display:none;}
+.elim-alert[data-style="pmgo-teal"] .elim-meta{display:none;}
+.elim-alert[data-style="pmgo-teal"][data-logo="no"] .elim-logo-wrap{display:flex;}
+.elim-alert[data-style="pmgo-teal"][data-logo="no"] .elim-logo,.elim-alert[data-style="pmgo-teal"][data-logo="no"] .elim-logo-fallback{display:none!important;}
 .top4-win-panel{position:fixed;left:50%;top:26px;transform:translateX(-50%);width:min(1280px,calc(100vw - 40px));display:none;align-items:flex-start;justify-content:center;gap:34px;z-index:730;pointer-events:none;}
 .top4-win-panel.show{display:flex;}
 .top4-win-card{width:286px;height:132px;background:linear-gradient(180deg,rgba(16,16,16,.92),rgba(6,6,6,.92));border:1px solid rgba(255,185,78,.72);box-shadow:0 8px 24px rgba(0,0,0,.48),inset 0 0 0 1px rgba(255,255,255,.06);font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;color:#fff;overflow:hidden;}
@@ -196,12 +256,25 @@ body.design-pmgo .ticker-label{background:var(--top4-color);color:#fff;}
 .top4-percent{font-size:14px;}
 .top4-helmet{width:13px;height:12px;}
 .top4-helmet-fallback{width:12px;height:11px;}
+.wwcd-video-layer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#000;z-index:5000;pointer-events:none;opacity:0;transition:opacity .22s ease;overflow:hidden;}
+.wwcd-video-layer.show{display:flex;opacity:1;}
+.wwcd-video-layer:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,color-mix(in srgb,var(--wwcd-color) 60%,transparent),transparent 38%,color-mix(in srgb,var(--wwcd-color) 45%,transparent));mix-blend-mode:color;opacity:.42;z-index:1;}
+.wwcd-video-layer:after{display:none;}
+.wwcd-video{position:relative;z-index:0;width:1920px;height:1080px;object-fit:cover;filter:saturate(1.12) contrast(1.04);}
+.wwcd-winner-chip{position:absolute;left:50%;top:62%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:16px;justify-content:center;padding:0;background:transparent;border:0;box-shadow:none;font-family:'Barlow Condensed',Impact,sans-serif;font-size:72px;font-weight:900;letter-spacing:.08em;color:#fff;text-transform:uppercase;text-align:center;text-shadow:0 5px 0 #000,0 0 26px #000,0 0 34px color-mix(in srgb,var(--wwcd-color) 72%,transparent);z-index:3;}
+.wwcd-winner-name{max-width:940px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:.9;}
+.wwcd-logo-triangle{position:relative;width:220px;height:190px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 10px 0 #000) drop-shadow(0 0 30px color-mix(in srgb,var(--wwcd-color) 62%,transparent));}
+.wwcd-logo-triangle:before{content:"";position:absolute;inset:0;background:linear-gradient(160deg,#fff 0 10%,var(--wwcd-color) 35%,color-mix(in srgb,var(--wwcd-color) 62%,#000) 100%);clip-path:polygon(50% 0,100% 100%,0 100%);}
+.wwcd-logo-triangle:after{content:"";position:absolute;inset:10px 14px 12px;background:rgba(3,8,10,.76);clip-path:polygon(50% 0,100% 100%,0 100%);}
+.wwcd-winner-logo{position:relative;z-index:2;width:122px;height:122px;object-fit:contain;background:transparent;transform:translateY(22px);}
+.wwcd-winner-logo-fallback{position:relative;z-index:2;width:122px;height:122px;display:flex;align-items:center;justify-content:center;background:transparent;color:#fff;font-size:42px;transform:translateY(22px);}
 </style>
 </head>
 <body class="design-classic">
 <div class="streamer-card" id="streamer-card"><img class="streamer-logo" id="streamer-logo" alt=""><div class="streamer-name" id="streamer-name"></div></div>
 <div class="elim-alert" id="elim-alert"><div class="elim-content"><div class="elim-logo-wrap" id="elim-logo-wrap"><img class="elim-logo" id="elim-logo" alt=""><div class="elim-logo-fallback" id="elim-logo-fallback">PUBG</div></div><div class="elim-copy"><div class="elim-kicker">Team Eliminated</div><div class="elim-team" id="elim-team"></div><div class="elim-meta" id="elim-meta"></div></div></div></div>
 <div class="top4-win-panel" id="top4-win-panel"></div>
+<div class="wwcd-video-layer" id="wwcd-video-layer"><video class="wwcd-video" id="wwcd-video" src="wwcd-chicken-dinner.mp4" preload="auto" playsinline muted loop></video><div class="wwcd-winner-chip" id="wwcd-winner-chip"></div></div>
 <div class="panel">
   <div class="panel-top">
     <img class="panel-logo" id="panel-logo" src="data:image/jpeg;base64,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" alt="PMAC">
@@ -282,13 +355,18 @@ function hexToRgba(hex,a){
 function currentOverlayDesign(){
   return FORCE_DESIGN || (overlaySettings && overlaySettings.design) || "classic";
 }
+function isSharedColorDesign(design){
+  return design==="pmgo" || design==="pmgo-teal";
+}
 function pmgoSharedColor(s){
   return (s && (s.accent || s.top4Color)) || "#d85a10";
 }
 function applyColumnHeaders(){
   const headers=document.querySelector(".col-headers");
   if(!headers) return;
-  if(currentOverlayDesign()==="pmgo"){
+  if(currentOverlayDesign()==="pmgo-teal"){
+    headers.innerHTML='<div class="col-h">#</div><div class="col-h L">TEAMS</div><div class="col-h">STATUS</div><div class="col-h">PTS.</div><div class="col-h acc">ELIMS</div>';
+  }else if(currentOverlayDesign()==="pmgo"){
     headers.innerHTML='<div class="col-h">RANK</div><div class="col-h L">TEAM</div><div class="col-h">ALIVE</div><div class="col-h">ELIMS</div><div class="col-h acc">TOTAL</div>';
   }else{
     headers.innerHTML='<div class="col-h">#</div><div class="col-h"></div><div class="col-h L">Tag</div><div class="col-h">Kills</div><div class="col-h">Place</div><div class="col-h acc">Total</div>';
@@ -298,8 +376,9 @@ function applyOverlaySettings(){
   const s=overlaySettings||{};
   const activeDesign = currentOverlayDesign();
   const sharedPmgoColor = pmgoSharedColor(s);
-  const accentColor = activeDesign==="pmgo" ? sharedPmgoColor : (s.accent||"#e8b800");
-  const top4Color = activeDesign==="pmgo" ? sharedPmgoColor : (s.accent||s.top4Color||"#d85a10");
+  const sharedDesign = isSharedColorDesign(activeDesign);
+  const accentColor = sharedDesign ? sharedPmgoColor : (s.accent||"#e8b800");
+  const top4Color = sharedDesign ? sharedPmgoColor : (s.accent||s.top4Color||"#d85a10");
   document.body.className="design-"+activeDesign;
   applyColumnHeaders();
   document.documentElement.style.setProperty("--ov-accent",accentColor);
@@ -310,15 +389,17 @@ function applyOverlaySettings(){
   document.documentElement.style.setProperty("--dead-color",s.deadColor||"#252a31");
   document.documentElement.style.setProperty("--top4-color",top4Color);
   document.body.style.setProperty("--top4-color",top4Color);
+  document.documentElement.style.setProperty("--wwcd-color",top4Color);
+  document.body.style.setProperty("--wwcd-color",top4Color);
   document.documentElement.style.setProperty("--elim-bg",hexToRgba(s.elimBgColor||"#b00000",0.94));
   document.documentElement.style.setProperty("--elim-bg-soft",hexToRgba(s.elimBgColor||"#b00000",0.70));
   document.documentElement.style.setProperty("--elim-text",s.elimTextColor||"#ffffff");
-  document.documentElement.style.setProperty("--elim-accent",activeDesign==="pmgo" ? sharedPmgoColor : (s.elimAccentColor||"#ff3434"));
+  document.documentElement.style.setProperty("--elim-accent",sharedDesign ? sharedPmgoColor : (s.elimAccentColor||"#ff3434"));
   const elimBox=document.getElementById("elim-alert"); if(elimBox){ elimBox.dataset.style=s.elimStyle||"compact"; elimBox.dataset.logo=s.elimShowLogo||"yes"; }
   const card=document.getElementById("streamer-card"), panelLogo=document.getElementById("panel-logo"), panelTitle=document.getElementById("panel-title-text");
   if(card) card.style.display="none";
   if(s.streamerLogo){ panelLogo.src=s.streamerLogo; panelLogo.style.display="block"; }
-  panelTitle.textContent=(activeDesign==="redlive"?(s.streamerName||"LIVE STANDING"):(activeDesign==="pmgo"?(s.streamerName||"PMGO LIVE POINTS"):(s.streamerName||"Standings")));
+  panelTitle.textContent=(activeDesign==="redlive"?(s.streamerName||"LIVE STANDING"):(sharedDesign?(s.streamerName||"PMGO LIVE POINTS"):(s.streamerName||"Standings")));
 }
 function applySettingsPayload(val){ overlaySettings=Object.assign({},overlaySettings,val||{}); applyOverlaySettings(); render(); }
 const overlaySettingsLiveRef=db.ref(eventPath("overlaySettings"));
@@ -345,9 +426,14 @@ function showEliminationAlert(a){
   const elimInfo=getEliminationInfo(matched,team,tag);
   const alertRank = a.rank!==null && a.rank!==undefined && a.rank!=="" ? a.rank : elimInfo.rank;
   const alertKills = a.kills!==null && a.kills!==undefined && a.kills!=="" ? a.kills : elimInfo.kills;
-  if(activeElimStyle==="pmgo"){
+  if(activeElimStyle==="pmgo" || activeElimStyle==="pmgo-teal"){
     teamEl.innerHTML="<span class=\"elim-pmgo-name\">"+escapeHtml(display)+"</span><span class=\"elim-pmgo-score\"><span class=\"elim-pmgo-count\">"+escapeHtml(alertKills)+"</span><span class=\"elim-pmgo-word\">ELIMS</span></span>";
     metaEl.innerHTML="<span class=\"elim-pmgo-rank\">#"+escapeHtml(alertRank)+"</span>";
+    const kicker=box.querySelector(".elim-kicker");
+    if(kicker){
+      kicker.setAttribute("data-rank","#"+String(alertRank||"-"));
+      kicker.textContent=activeElimStyle==="pmgo-teal" ? "ELIMINATED" : "Team Eliminated";
+    }
   }else if(["official","bluecard"].includes(activeElimStyle)){
     teamEl.innerHTML="<span class=\"elim-name\">"+escapeHtml(display)+"</span><span class=\"elim-word\">ELIMINATED · "+escapeHtml(alertKills)+" ELIMS</span>";
     metaEl.textContent="";
@@ -384,7 +470,7 @@ function teamTag(team){
 function playerIndicator(count){
   if(count==="missed") return '<span class="missed-label">MISSED</span>';
   const alive=playerCount(count);
-  const style=currentOverlayDesign()==="pmgo" ? "bars" : (overlaySettings.aliveStyle||"bars").toLowerCase();
+  const style=isSharedColorDesign(currentOverlayDesign()) ? "bars" : (overlaySettings.aliveStyle||"bars").toLowerCase();
   let html="";
   if(style==="pipes"){
     for(let i=0;i<4;i++) html+='<span class="pmark '+(i<alive?'':'dead')+'">|</span>';
@@ -433,6 +519,59 @@ function renderTop4WinPanel(teams){
       '</div>';
     }).join("");
   panel.classList.add("show");
+}
+let lastWwcdVideoKey="";
+function aliveTeamsForWwcd(teams){
+  return (teams||[])
+    .map(t=>Object.assign({},t,{alivePlayers:playerCount(t.players)}))
+    .filter(t=>!t.missed && t.alivePlayers>0);
+}
+function hideWwcdVideo(){
+  const layer=document.getElementById("wwcd-video-layer");
+  const video=document.getElementById("wwcd-video");
+  if(layer) layer.classList.remove("show");
+  if(video){
+    video.pause();
+    try{ video.currentTime=0; }catch(e){}
+  }
+}
+function wwcdWinnerKey(team){
+  return String(activeMatchIndex||0)+"|"+teamKey(team);
+}
+function showWwcdVideo(team){
+  const layer=document.getElementById("wwcd-video-layer");
+  const video=document.getElementById("wwcd-video");
+  const chip=document.getElementById("wwcd-winner-chip");
+  if(!layer||!video||!team) return;
+  const tag=teamTag(team);
+  const displayName=String(team.name||tag).trim().toUpperCase();
+  if(chip){
+    const fallback='<span class="wwcd-winner-logo-fallback">'+escapeHtml(tag.slice(0,2))+'</span>';
+    const logo=team.logo
+      ? '<img class="wwcd-winner-logo" src="'+escapeAttr(team.logo)+'" alt="" onerror="this.outerHTML=\''+fallback.replace(/'/g,"&#39;")+'\'">'
+      : fallback;
+    chip.innerHTML='<div class="wwcd-logo-triangle">'+logo+'</div><span class="wwcd-winner-name">'+escapeHtml(displayName)+'</span>';
+  }
+  layer.classList.add("show");
+  try{ video.currentTime=0; }catch(e){}
+  video.muted=true;
+  video.loop=true;
+  const playResult=video.play();
+  if(playResult&&playResult.catch) playResult.catch(()=>{});
+  video.onerror=hideWwcdVideo;
+}
+function updateWwcdVideo(teams){
+  const alive=aliveTeamsForWwcd(teams);
+  if((teams||[]).length<2 || alive.length!==1){
+    lastWwcdVideoKey="";
+    hideWwcdVideo();
+    return;
+  }
+  const winner=alive[0];
+  const key=wwcdWinnerKey(winner);
+  if(key===lastWwcdVideoKey) return;
+  lastWwcdVideoKey=key;
+  showWwcdVideo(winner);
 }
 function teamNameBlock(team){
   if(team.missed) return '<div class="t-name">'+escapeHtml(teamTag(team))+'</div><div class="missed-label">MISSED</div>';
@@ -705,6 +844,7 @@ function render() {
     if(list) list.innerHTML = '<div class="no-data">'+escapeHtml(overlayMessage || ("No teams found for event: "+EVENT_ID))+'</div>';
     document.getElementById("ticker-inner").innerHTML = '<div class="ti"><span style="color:#606878">'+escapeHtml(overlayMessage || "No teams found")+'</span></div>';
     hideTop4WinPanel();
+    hideWwcdVideo();
     return;
   }
   updateActiveMatchFromScores();
@@ -713,6 +853,7 @@ function render() {
   let teams = currentTeams.map(t => calculateTeamStats(t, currentScores[t.name] || currentScores[sanitizeKey(t.name)] || []));
   teams = sortTeams(teams);
   renderTop4WinPanel(teams);
+  updateWwcdVideo(teams);
   
   // Calculate max matches played
   let maxMatches = 0;
@@ -753,7 +894,7 @@ function render() {
       '<span class="t-logo-wrap"><img class="' + logoClass + '" src="' + renderLogoSrc + '" alt="" data-logo-src="' + logoSrc + '" onload="fitOverlayLogo(this)" onerror="retryOverlayLogoProxy(this)"></span>' : 
       '<span class="t-logo-wrap"><div class="t-logo t-logo-fallback logo-normalized">?</div></span>';
     
-    if(activeDesign==="pmgo"){
+    if(activeDesign==="pmgo" || activeDesign==="pmgo-teal"){
       const activeElimPoints = Math.max(0, parseInt(team.activeKills,10) || 0);
       const prevElims = Math.max(0, parseInt(team.previousKills,10) || 0);
       const baseElims = activeMatchIndex > 0 ? prevElims : activeElimPoints;
@@ -761,12 +902,21 @@ function render() {
       const elimCell = team.missed
         ? '<span class="pmgo-prev-points">0</span>'
         : '<span class="pmgo-prev-points">' + escapeHtml(baseElims) + '</span>' + (showActiveElimPlus ? '<span class="pmgo-elim-plus">+' + escapeHtml(activeElimPoints) + '</span>' : '');
-      row.innerHTML =
-        '<div class="pos ' + posColorClass + '">' + position + '</div>' +
-        '<div class="pmgo-team-cell">' + logoHtml + '<div class="t-name">' + escapeHtml(teamTag(team)) + '</div></div>' +
-        '<div class="pmgo-alive">' + playerIndicator(team.players) + '</div>' +
-        '<div class="t-kills' + (showActiveElimPlus ? ' has-plus' : '') + '">' + elimCell + '</div>' +
-        '<div class="t-pts">' + (team.missed ? '0' : team.total) + '</div>';
+      if(activeDesign==="pmgo-teal"){
+        row.innerHTML =
+          '<div class="pos ' + posColorClass + '">' + position + '</div>' +
+          '<div class="pmgo-team-cell">' + logoHtml + '<div class="t-name">' + escapeHtml(teamTag(team)) + '</div></div>' +
+          '<div class="pmgo-alive">' + playerIndicator(team.players) + '</div>' +
+          '<div class="t-pts">' + (team.missed ? '0' : team.total) + '</div>' +
+          '<div class="t-kills' + (showActiveElimPlus ? ' has-plus' : '') + '">' + elimCell + '</div>';
+      }else{
+        row.innerHTML =
+          '<div class="pos ' + posColorClass + '">' + position + '</div>' +
+          '<div class="pmgo-team-cell">' + logoHtml + '<div class="t-name">' + escapeHtml(teamTag(team)) + '</div></div>' +
+          '<div class="pmgo-alive">' + playerIndicator(team.players) + '</div>' +
+          '<div class="t-kills' + (showActiveElimPlus ? ' has-plus' : '') + '">' + elimCell + '</div>' +
+          '<div class="t-pts">' + (team.missed ? '0' : team.total) + '</div>';
+      }
     }else{
       row.innerHTML =
         '<div class="pos ' + posColorClass + '">' + position + move.html + '</div>' +
