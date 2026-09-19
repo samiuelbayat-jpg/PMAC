@@ -44,8 +44,8 @@
     .total{font-size:var(--total-size,30px)}
     .footer-center{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);font-family:"Share Tech Mono",monospace;font-size:16px;font-weight:900;letter-spacing:.38em;text-transform:uppercase;color:#fff}
     .footer-date{position:absolute;right:38px;bottom:52px;font-family:"Share Tech Mono",monospace;font-size:16px;font-weight:900;letter-spacing:.20em;text-transform:uppercase;color:#fff}
-    .empty{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:42px;font-weight:900;text-transform:uppercase;color:rgba(255,255,255,.8);background:transparent}
-    .status{position:absolute;right:24px;bottom:20px;font-family:"Share Tech Mono",monospace;font-size:12px;color:rgba(255,255,255,.55)}
+    .empty{position:absolute;inset:0;display:none!important;align-items:center;justify-content:center;font-size:42px;font-weight:900;text-transform:uppercase;color:rgba(255,255,255,.8);background:transparent}
+    .status{display:none!important;position:absolute;right:24px;bottom:20px;font-family:"Share Tech Mono",monospace;font-size:12px;color:rgba(255,255,255,.55)}
     .theme-controls{position:fixed;right:18px;top:18px;z-index:50;display:none;width:300px;background:rgba(8,10,14,.94);border:1px solid rgba(255,255,255,.18);padding:14px;color:#fff;font-family:Arial,sans-serif;box-shadow:0 18px 50px rgba(0,0,0,.45)}
     .theme-controls.show{display:block}
     .theme-controls h2{font-size:16px;margin-bottom:10px;text-transform:uppercase}
@@ -99,7 +99,7 @@ var TITLE=qs.get("title")||"MASTER LEADERBOARD";
 var SUBTITLE=qs.get("subtitle")||"GROUP STAGE";
 var MODE=qs.get("mode")||qs.get("scope")||"event";
 var OVERALL_MODE=/^(overall|all|history)$/i.test(MODE);
-var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},overlayInfo={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,overlayInfoRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null,activeTeamRefs=[],activeScoreRefs=[],lastRenderSignature="";
+var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},overlayInfo={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,overlayInfoRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null,activeTeamRefs=[],activeScoreRefs=[],lastRenderSignature="",currentTheme=null;
 var masterConfig={title:TITLE,eventInfo:SUBTITLE,pageSeconds:30,selectedArchives:{}},archiveCache={},masterConfigRef=null,masterArchiveRef=null,pageIndex=0,pageTimer=null,currentPageSeconds=30,masterRotationStartedAt=Date.now();
 var THEME_KEY="pmac_match_points_theme_"+EVENT_ID;
 var THEME_DEFAULTS={titleColor:"#f4eadc",team:"#d95b06",accent:"#f47a19",text:"#080808",total1:"#f2eee6",total2:"#ddd8cf",total3:"#c9c2b7"};
@@ -115,6 +115,7 @@ function readTheme(){
   return Object.assign({},THEME_DEFAULTS,saved);
 }
 function applyTheme(theme,save){
+  currentTheme=Object.assign({},THEME_DEFAULTS,theme||{});
   Object.keys(THEME_VARS).forEach(function(k){
     var val=theme[k]||THEME_DEFAULTS[k];
     document.documentElement.style.setProperty(THEME_VARS[k],val);
@@ -126,6 +127,17 @@ function applyTheme(theme,save){
   document.documentElement.style.setProperty("--col-bg",darkenHex(theme.team||THEME_DEFAULTS.team,.10));
   if(save)localStorage.setItem(THEME_KEY,JSON.stringify(theme));
   updateThemeLink(theme);
+}
+function sharedOverlayColor(){
+  var s=overlayInfo||{};
+  return s.accent||s.top4Color||"";
+}
+function applySharedOverlayColor(){
+  if(HAS_THEME_PARAMS)return;
+  var color=sharedOverlayColor();
+  if(!color)return;
+  var theme=Object.assign({},currentTheme||readTheme(),{team:color,accent:color});
+  applyTheme(theme,false);
 }
 function darkenHex(hex,mix){
   hex=String(hex||"#d95b06").replace("#","");
@@ -197,6 +209,7 @@ function watchTheme(){
   themeRef.on("value",function(s){
     var theme=Object.assign({},THEME_DEFAULTS,s.val()||{});
     applyTheme(theme,true);
+    applySharedOverlayColor();
   });
 }
 function watchOverlayInfo(){
@@ -204,6 +217,7 @@ function watchOverlayInfo(){
   overlayInfoRef=db.ref(eventPath("overlaySettings"));
   overlayInfoRef.on("value",function(s){
     overlayInfo=s.val()||{};
+    applySharedOverlayColor();
     renderHead();
   });
 }
