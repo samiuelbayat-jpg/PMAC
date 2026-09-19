@@ -99,7 +99,7 @@ var TITLE=qs.get("title")||"OVERALL RANKINGS";
 var SUBTITLE=qs.get("subtitle")||"";
 var MODE=qs.get("mode")||qs.get("scope")||"event";
 var OVERALL_MODE=/^(overall|all|history)$/i.test(MODE);
-var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},overlayInfo={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,overlayInfoRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null,activeTeamRefs=[],activeScoreRefs=[],lastRenderSignature="";
+var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},overlayInfo={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,overlayInfoRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null,activeTeamRefs=[],activeScoreRefs=[],lastRenderSignature="",currentTheme=null;
 var THEME_KEY="pmac_match_points_theme_"+EVENT_ID;
 var THEME_DEFAULTS={titleColor:"#f4eadc",team:"#d95b06",accent:"#f47a19",text:"#080808",total1:"#f2eee6",total2:"#ddd8cf",total3:"#c9c2b7"};
 var THEME_VARS={titleColor:"--title-color",team:"--team-b",accent:"--sub-accent",text:"--row-text",total1:"--total-a",total2:"--total-b",total3:"--total-c"};
@@ -114,6 +114,7 @@ function readTheme(){
   return Object.assign({},THEME_DEFAULTS,saved);
 }
 function applyTheme(theme,save){
+  currentTheme=Object.assign({},THEME_DEFAULTS,theme||{});
   Object.keys(THEME_VARS).forEach(function(k){
     var val=theme[k]||THEME_DEFAULTS[k];
     document.documentElement.style.setProperty(THEME_VARS[k],val);
@@ -125,6 +126,17 @@ function applyTheme(theme,save){
   document.documentElement.style.setProperty("--col-bg",darkenHex(theme.team||THEME_DEFAULTS.team,.10));
   if(save)localStorage.setItem(THEME_KEY,JSON.stringify(theme));
   updateThemeLink(theme);
+}
+function sharedOverlayColor(){
+  var s=overlayInfo||{};
+  return s.accent||s.top4Color||"";
+}
+function applySharedOverlayColor(){
+  if(HAS_THEME_PARAMS)return;
+  var color=sharedOverlayColor();
+  if(!color)return;
+  var theme=Object.assign({},currentTheme||readTheme(),{team:color,accent:color});
+  applyTheme(theme,false);
 }
 function darkenHex(hex,mix){
   hex=String(hex||"#d95b06").replace("#","");
@@ -196,6 +208,7 @@ function watchTheme(){
   themeRef.on("value",function(s){
     var theme=Object.assign({},THEME_DEFAULTS,s.val()||{});
     applyTheme(theme,true);
+    applySharedOverlayColor();
   });
 }
 function watchOverlayInfo(){
@@ -203,6 +216,7 @@ function watchOverlayInfo(){
   overlayInfoRef=db.ref(eventPath("overlaySettings"));
   overlayInfoRef.on("value",function(s){
     overlayInfo=s.val()||{};
+    applySharedOverlayColor();
     renderHead();
   });
 }
@@ -453,6 +467,7 @@ function retryLogoProxy(img){
   img.src=candidates[attempt];
 }
 function logoProxyCandidates(src){
+  if(isFirebaseStorageLogo(src)) return [];
   var clean=src.split("?")[0].replace(/^https?:\/\//,"");
   var noProtocol=src.replace(/^https?:\/\//,"");
   return [
@@ -461,6 +476,9 @@ function logoProxyCandidates(src){
     "https://images.weserv.nl/?url="+encodeURIComponent(clean)+"&output=png",
     "https://wsrv.nl/?url="+encodeURIComponent(noProtocol)+"&output=png"
   ];
+}
+function isFirebaseStorageLogo(src){
+  return /firebasestorage\.googleapis\.com|\.firebasestorage\.app/i.test(String(src||""));
 }
 function cropLogoFromImage(target,source){
   try{
@@ -493,6 +511,7 @@ function cropLogoFromImage(target,source){
 }
 function normalizeLogoViaProxy(img){
   if(img.dataset.logoProxyFit==="1") return;
+  if(isFirebaseStorageLogo(img.getAttribute("data-logo-src")||img.src||"")) return;
   img.dataset.logoProxyFit="1";
   var candidates=logoProxyCandidates(img.getAttribute("data-logo-src")||img.src||"");
   var i=0;
