@@ -430,7 +430,7 @@ let playersSaveTimers = {};
 const TEAM_LOGO_LIBRARY_KEY = "pmac_team_logo_library_v1";
 let groqApiKey = localStorage.getItem("groq_api_key") || "";
 const initialParams = new URLSearchParams(location.search);
-let activeEventId = initialParams.get("event") || localStorage.getItem("pmac_active_event") || "default";
+let activeEventId = initialParams.get("event") || "default";
 let pendingArchiveEditKey = initialParams.get("archiveEdit") || "";
 let dbTeamsRef, dbScoresRef, dbActiveSessionRef, dbEgRef, overlaySettingsRef, forumRef;
 let masterConfig = {title:"MASTER LEADERBOARD", eventInfo:"GROUP STAGE", pageSeconds:30, selectedArchives:{}};
