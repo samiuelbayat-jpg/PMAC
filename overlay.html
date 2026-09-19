@@ -522,10 +522,30 @@ function renderTop4WinPanel(teams){
   panel.classList.add("show");
 }
 let lastWwcdVideoKey="";
+let lastWwcdAliveCount=null;
+let lastWwcdMatchIndex=null;
+let wwcdArmed=false;
 function aliveTeamsForWwcd(teams){
   return (teams||[])
     .map(t=>Object.assign({},t,{alivePlayers:playerCount(t.players)}))
     .filter(t=>!t.missed && t.alivePlayers>0);
+}
+function activePlayerStateFromScores(){
+  let explicit=0, alive=0;
+  (currentTeams||[]).forEach(team=>{
+    const ms=currentScores[team.name]||currentScores[sanitizeKey(team.name)]||[];
+    const list=Array.isArray(ms)?ms:Object.values(ms||{});
+    const row=list[activeMatchIndex]||{};
+    if(row && row.missed===true){
+      explicit++;
+      return;
+    }
+    const hasPlayers=row && row.players!==null && row.players!==undefined && row.players!=="";
+    if(!hasPlayers) return;
+    explicit++;
+    if(playerCount(row.players)>0) alive++;
+  });
+  return {explicit,alive};
 }
 function hideWwcdVideo(){
   const layer=document.getElementById("wwcd-video-layer");
@@ -563,14 +583,40 @@ function showWwcdVideo(team){
 }
 function updateWwcdVideo(teams){
   const alive=aliveTeamsForWwcd(teams);
+  const matchKey=String(activeMatchIndex||0);
+  if(lastWwcdMatchIndex!==matchKey){
+    lastWwcdMatchIndex=matchKey;
+    lastWwcdAliveCount=null;
+    lastWwcdVideoKey="";
+    wwcdArmed=false;
+    hideWwcdVideo();
+  }
+  const scoreState=activePlayerStateFromScores();
+  if(scoreState.explicit<2){
+    lastWwcdAliveCount=null;
+    hideWwcdVideo();
+    return;
+  }
   if((teams||[]).length<2 || alive.length!==1){
+    if(scoreState.alive>1) wwcdArmed=true;
+    lastWwcdAliveCount=alive.length;
     lastWwcdVideoKey="";
     hideWwcdVideo();
     return;
   }
   const winner=alive[0];
   const key=wwcdWinnerKey(winner);
-  if(key===lastWwcdVideoKey) return;
+  if(key===lastWwcdVideoKey){
+    lastWwcdAliveCount=alive.length;
+    return;
+  }
+  const justReachedWinner = lastWwcdAliveCount!==null && lastWwcdAliveCount>1;
+  lastWwcdAliveCount=alive.length;
+  if(!wwcdArmed || !justReachedWinner){
+    lastWwcdVideoKey=key;
+    hideWwcdVideo();
+    return;
+  }
   lastWwcdVideoKey=key;
   showWwcdVideo(winner);
 }
