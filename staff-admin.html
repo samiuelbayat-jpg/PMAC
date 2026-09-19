@@ -417,7 +417,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 const FB_CONFIG = { apiKey: "AIzaSyD-RFu-40Igcoqhm8QBbu_PgdFxV6aUIQA", authDomain: "pubg-mobile-afghanistan.firebaseapp.com", databaseURL: "https://pubg-mobile-afghanistan-default-rtdb.europe-west1.firebasedatabase.app", projectId: "pubg-mobile-afghanistan", storageBucket: "pubg-mobile-afghanistan.firebasestorage.app", appId: "1:279105805502:web:8def653069d0b3d73bd2ef" };
 if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
 const db = firebase.database(), storage = firebase.storage(), auth = firebase.auth();
-const STAFF_ADMIN_MODE = /(?:^|\/)staff-admin\.html$/i.test(location.pathname);
+const STAFF_ADMIN_MODE = true;
  
 let isSuperAdmin = false, currentMatch = 0, teams = [], scores = {};
 let staffRole = null;
@@ -475,6 +475,9 @@ function staffCanUseEvent(role,eventId){
   if(role.events && role.events[eventId]===true) return true;
   if(role[eventId]===true) return true;
   return false;
+}
+function staffAdminUrl(){
+  return "staff-admin.html?event="+encodeURIComponent(activeEventId||"default");
 }
 function eventMetaDefaults(name, extra){
   const uid=currentAdminUid || (auth.currentUser && auth.currentUser.uid) || "";
@@ -604,8 +607,9 @@ function startAdminForUser(user){
     db.ref("pmac/staffAdmins/"+user.uid).once("value").then(s=>s.val()).catch(()=>null)
   ]).then(([superAllowed, meta, role])=>{
     staffRole = role;
+    const hasStaffRole = isStaffRoleConfigured(role);
     const legacyDefault = activeEventId==="default" && !meta;
-    isSuperAdmin = superAllowed || legacyDefault;
+    isSuperAdmin = superAllowed || (legacyDefault && !hasStaffRole);
     if(STAFF_ADMIN_MODE){
       if(!isSuperAdmin && !staffCanUseEvent(role,activeEventId)){
         showAccessDenied();
@@ -615,8 +619,8 @@ function startAdminForUser(user){
       showMainPage();
       return;
     }
-    if(!isSuperAdmin && isStaffRoleConfigured(role)){
-      showAccessDenied();
+    if(!isSuperAdmin && hasStaffRole){
+      window.location.href = staffAdminUrl();
       return;
     }
     if(!legacyDefault && !canEditEvent(meta)){

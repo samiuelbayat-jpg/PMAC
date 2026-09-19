@@ -476,6 +476,9 @@ function staffCanUseEvent(role,eventId){
   if(role[eventId]===true) return true;
   return false;
 }
+function staffAdminUrl(){
+  return "staff-admin.html?event="+encodeURIComponent(activeEventId||"default");
+}
 function eventMetaDefaults(name, extra){
   const uid=currentAdminUid || (auth.currentUser && auth.currentUser.uid) || "";
   const data=Object.assign({name,createdAt:Date.now(),ownerUid:uid,admins:{}}, extra||{});
@@ -604,8 +607,9 @@ function startAdminForUser(user){
     db.ref("pmac/staffAdmins/"+user.uid).once("value").then(s=>s.val()).catch(()=>null)
   ]).then(([superAllowed, meta, role])=>{
     staffRole = role;
+    const hasStaffRole = isStaffRoleConfigured(role);
     const legacyDefault = activeEventId==="default" && !meta;
-    isSuperAdmin = superAllowed || legacyDefault;
+    isSuperAdmin = superAllowed || (legacyDefault && !hasStaffRole);
     if(STAFF_ADMIN_MODE){
       if(!isSuperAdmin && !staffCanUseEvent(role,activeEventId)){
         showAccessDenied();
@@ -615,8 +619,8 @@ function startAdminForUser(user){
       showMainPage();
       return;
     }
-    if(!isSuperAdmin && isStaffRoleConfigured(role)){
-      showAccessDenied();
+    if(!isSuperAdmin && hasStaffRole){
+      window.location.href = staffAdminUrl();
       return;
     }
     if(!legacyDefault && !canEditEvent(meta)){
