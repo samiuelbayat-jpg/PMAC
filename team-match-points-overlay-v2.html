@@ -36,8 +36,8 @@
     @keyframes rowSlideIn{0%{opacity:0;transform:translateX(-360px);filter:blur(3px)}65%{opacity:1;filter:blur(0)}100%{opacity:1;transform:translateX(0);filter:blur(0)}}
     .rank{font-size:var(--rank-size,29px);font-weight:900;text-align:center;color:var(--row-text);border-right:2px solid rgba(0,0,0,.28)}
     .team{min-width:0;display:flex;align-items:center;gap:14px;padding-left:14px}
-    .logo{width:var(--logo-w,38px);height:var(--logo-h,38px);display:flex;align-items:center;justify-content:center;overflow:visible;flex:0 0 auto;filter:drop-shadow(0 2px 3px rgba(0,0,0,.28))}
-    .logo img{width:100%;height:100%;object-fit:contain;display:block;transform:scale(var(--logo-scale,1));transform-origin:center center}
+    .flag,.logo{width:var(--logo-w,38px);height:var(--logo-h,38px);display:flex;align-items:center;justify-content:center;overflow:visible;flex:0 0 auto;filter:drop-shadow(0 2px 3px rgba(0,0,0,.28))}
+    .flag img,.logo img{width:100%;height:100%;object-fit:contain;display:block;transform:scale(var(--logo-scale,1));transform-origin:center center}
     .logo span{font-size:15px;font-weight:900;color:var(--row-text)}
     .name{font-size:var(--name-size,32px);font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--row-text)}
     .points,.total{height:100%;display:flex;align-items:center;justify-content:center;font-size:var(--point-size,29px);font-weight:900;color:var(--row-text)}
@@ -99,7 +99,7 @@ var TITLE=qs.get("title")||"OVERALL RANKINGS";
 var SUBTITLE=qs.get("subtitle")||"";
 var MODE=qs.get("mode")||qs.get("scope")||"event";
 var OVERALL_MODE=/^(overall|all|history)$/i.test(MODE);
-var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},overlayInfo={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,overlayInfoRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null,activeTeamRefs=[],activeScoreRefs=[],lastRenderSignature="",currentTheme=null;
+var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},overlayInfo={},countryFlagLibrary={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,overlayInfoRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null,countryFlagsRef=null,activeTeamRefs=[],activeScoreRefs=[],lastRenderSignature="",currentTheme=null;
 var THEME_KEY="pmac_match_points_theme_"+EVENT_ID;
 var THEME_DEFAULTS={titleColor:"#f4eadc",team:"#d95b06",accent:"#f47a19",text:"#080808",total1:"#f2eee6",total2:"#ddd8cf",total3:"#c9c2b7"};
 var THEME_VARS={titleColor:"--title-color",team:"--team-b",accent:"--sub-accent",text:"--row-text",total1:"--total-a",total2:"--total-b",total3:"--total-c"};
@@ -222,6 +222,30 @@ function watchOverlayInfo(){
 }
 function sanitizeKey(n){return String(n||"").replace(/[\.\#\$\/\[\]]/g,"_");}
 function norm(n){return String(n||"").trim().toUpperCase();}
+function countryCode(v){return String(v||"").trim().toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4);}
+function teamCountryFlag(team){
+  if(!team) return "";
+  if(team.flag||team.countryFlag) return team.flag||team.countryFlag||"";
+  var code=countryCode(team.country);
+  return code&&countryFlagLibrary[code] ? (countryFlagLibrary[code].flag||"") : "";
+}
+function renderFlag(team){
+  var flag=teamCountryFlag(team);
+  return flag?'<div class="flag"><img src="'+esc(flag)+'" alt="" onerror="this.parentElement.remove()"></div>':"";
+}
+function watchCountryFlags(){
+  if(countryFlagsRef) countryFlagsRef.off();
+  countryFlagsRef=db.ref(eventPath("countryFlags"));
+  countryFlagsRef.on("value",function(s){
+    var data=s.val()||{},next={};
+    Object.keys(data).forEach(function(k){
+      var item=data[k]||{},code=countryCode(item.code||k);
+      if(code&&item.flag) next[code]={code:code,flag:item.flag};
+    });
+    countryFlagLibrary=next;
+    render();
+  },function(){});
+}
 function initials(n){return String(n||"?").trim().split(/\s+/).slice(0,2).map(function(s){return s[0]||"";}).join("").toUpperCase()||"?";}
 function placePoints(rank){
   var r=parseInt(rank,10);
@@ -379,9 +403,11 @@ function addOverallScores(totals,teamList,scoreSet,slotPrefix){
   toList(teamList).forEach(function(t){
     if(!t||!t.name) return;
     var k=teamKey(t);
-    if(!totals[k]) totals[k]={name:t.name,tag:t.tag||"",logo:t.logo||"",matchRows:[],totalOverall:0,killsOverall:0,rankPtsOverall:0,playedOverall:0,matchSlots:{}};
+    if(!totals[k]) totals[k]={name:t.name,tag:t.tag||"",logo:t.logo||"",country:t.country||"",flag:t.flag||t.countryFlag||"",matchRows:[],totalOverall:0,killsOverall:0,rankPtsOverall:0,playedOverall:0,matchSlots:{}};
     if(t.logo&&!totals[k].logo) totals[k].logo=t.logo;
     if(t.tag&&!totals[k].tag) totals[k].tag=t.tag;
+    if(t.country&&!totals[k].country) totals[k].country=t.country;
+    if((t.flag||t.countryFlag)&&!totals[k].flag) totals[k].flag=t.flag||t.countryFlag;
     var md=scoreRowsFromSet(scoreSet,t);
     for(var i=0;i<50;i++){
       var st=matchStats(md&&md[i]);
@@ -412,7 +438,7 @@ function renderOverallFromSnapshots(){
   activeSessions.forEach(function(a){ if(a&&a.group&&a.date) activeSlots[a.group+"|"+a.date]=true; });
   var totals={};
   mainTeams=toList(mainTeams);
-  mainTeams.forEach(function(t){ if(t&&t.name&&!totals[teamKey(t)]) totals[teamKey(t)]={name:t.name,tag:t.tag||"",logo:t.logo||"",matchRows:[],totalOverall:0,playedOverall:0,matchSlots:{}}; });
+  mainTeams.forEach(function(t){ if(t&&t.name&&!totals[teamKey(t)]) totals[teamKey(t)]={name:t.name,tag:t.tag||"",logo:t.logo||"",country:t.country||"",flag:t.flag||t.countryFlag||"",matchRows:[],totalOverall:0,playedOverall:0,matchSlots:{}}; });
   Object.keys(groups).sort().forEach(function(gid){
     var sessions=(groups[gid]&&groups[gid].sessions)||{};
     Object.keys(sessions).sort().forEach(function(date){
@@ -548,13 +574,13 @@ function renderColumn(list,startIdx){
   var html='<div class="rank-column"><div class="colhead"><div class="hcell rankh">RANK</div><div class="hcell teamh">TEAM</div><div class="hcell">ELIMS</div><div class="hcell">RANK PTS</div><div class="hcell">TOTAL PTS</div></div>';
   html+=list.map(function(t,idx){
     var stats=teamStats(t),rank=startIdx+idx+1;
-    return '<div class="row" style="--i:'+rank+'"><div class="rank">#'+rank+'</div><div class="team"><div class="logo">'+renderLogo(t)+'</div><div class="name">'+esc(String(t.name||"").toUpperCase())+'</div></div><div class="points">'+stats.kills+'</div><div class="points">'+stats.rankPts+'</div><div class="total">'+stats.total+'</div></div>';
+    return '<div class="row" style="--i:'+rank+'"><div class="rank">#'+rank+'</div><div class="team">'+renderFlag(t)+'<div class="logo">'+renderLogo(t)+'</div><div class="name">'+esc(String(t.name||"").toUpperCase())+'</div></div><div class="points">'+stats.kills+'</div><div class="points">'+stats.rankPts+'</div><div class="total">'+stats.total+'</div></div>';
   }).join("");
   return html+'</div>';
 }
 function renderSignature(list){
   return list.map(function(t,idx){
-    return [idx+1,t.name||"",t.tag||"",t.logo||"",t.kills||0,t.rankPts||0,t.total||0].join("|");
+    return [idx+1,t.name||"",t.tag||"",t.logo||"",t.country||"",teamCountryFlag(t)||"",t.kills||0,t.rankPts||0,t.total||0].join("|");
   }).join("~");
 }
 function render(){
@@ -590,6 +616,7 @@ function render(){
 
 watchTheme();
 watchOverlayInfo();
+watchCountryFlags();
 if(OVERALL_MODE) watchOverall(); else watchActive();
 </script>
 </body>
