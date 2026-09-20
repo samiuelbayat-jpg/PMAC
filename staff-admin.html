@@ -301,7 +301,7 @@ body.staff-admin .staff-event-bar #event-path-label{display:none!important;}
 
   <div class="section-tabs"><button class="stab active" onclick="showSection('teams')">Manage Teams</button><button class="stab" onclick="showSection('scores')">Enter Scores</button></div>
 
-  <div id="section-teams"><div class="teams-mgmt"><div class="mgmt-title">Add Team</div><div class="add-team-row"><div class="inp-wrap"><div class="inp-lbl">Team Name</div><input class="text-inp" id="new-team-name" placeholder="e.g. BLACK ZONE" list="team-logo-suggest" oninput="updateManageSavedLogo()" onchange="updateManageSavedLogo()"><datalist id="team-logo-suggest"></datalist></div><div class="inp-wrap"><div class="inp-lbl">Team Tag</div><input class="text-inp" id="new-team-tag" placeholder="BZ" maxlength="8" style="min-width:90px;width:100px;"></div><div class="team-logo-field"><div class="inp-lbl">Team Logo</div><div class="team-logo-controls"><input type="file" id="new-team-logo" accept="image/*" style="display:none" onchange="previewLogo(this)"><button class="logo-inp-btn" onclick="document.getElementById('new-team-logo').click()">📷 Choose Logo</button><button class="logo-inp-btn" id="use-saved-team-logo-btn" style="display:none" onclick="useSavedTeamLogo()">Use Saved Logo</button><img id="logo-preview" class="logo-preview"><span id="logo-name" style="font-size:9px;"></span></div></div><button class="btn btn-primary" onclick="addTeam()">+ Add Team</button><span id="uploading-badge" class="uploading-badge">Uploading...</span></div><div class="csv-row"><div><div class="inp-lbl">Import CSV</div><div class="csv-note">One team name per line</div></div><input type="file" id="csv-file" accept=".csv,.txt" style="display:none" onchange="importCSV(this)"><button class="btn" onclick="document.getElementById('csv-file').click()">📄 Import CSV</button><button class="btn" onclick="fixAllLogos()" id="fix-logos-btn" style="background:linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.1));border-color:rgba(0,255,136,0.4);color:#00ff88;">🔧 Fix All Logos</button><span id="fix-logos-status" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;max-width:520px;line-height:1.35;"></span><button class="btn btn-primary" onclick="if(!isSuperAdmin){showToast('Super Admin required',false);return;}importFromRegistration()">📥 Import from Registration</button><button class="btn btn-danger" onclick="removeAllTeams()">Remove All Teams</button></div></div><div class="mgmt-title">Current Teams (<span id="team-count">0</span>)</div><div class="teams-list-mgmt" id="teams-list-mgmt"><div class="no-teams">No teams yet.</div></div></div>
+  <div id="section-teams"><div class="teams-mgmt"><div class="mgmt-title">Add Team</div><div class="add-team-row"><div class="inp-wrap"><div class="inp-lbl">Team Name</div><input class="text-inp" id="new-team-name" placeholder="e.g. BLACK ZONE" list="team-logo-suggest" oninput="updateManageSavedLogo()" onchange="updateManageSavedLogo()"><datalist id="team-logo-suggest"></datalist></div><div class="inp-wrap"><div class="inp-lbl">Team Tag</div><input class="text-inp" id="new-team-tag" placeholder="BZ" maxlength="8" style="min-width:90px;width:100px;"></div><div class="inp-wrap"><div class="inp-lbl">Country</div><input class="text-inp" id="new-team-country" placeholder="AFG" maxlength="4" style="min-width:70px;width:82px;text-transform:uppercase;"></div><div class="team-logo-field"><div class="inp-lbl">Team Logo</div><div class="team-logo-controls"><input type="file" id="new-team-logo" accept="image/*" style="display:none" onchange="previewLogo(this)"><button class="logo-inp-btn" onclick="document.getElementById('new-team-logo').click()">📷 Choose Logo</button><button class="logo-inp-btn" id="use-saved-team-logo-btn" style="display:none" onclick="useSavedTeamLogo()">Use Saved Logo</button><img id="logo-preview" class="logo-preview"><span id="logo-name" style="font-size:9px;"></span></div></div><button class="btn btn-primary" onclick="addTeam()">+ Add Team</button><span id="uploading-badge" class="uploading-badge">Uploading...</span></div><div class="csv-row"><div><div class="inp-lbl">Import CSV</div><div class="csv-note">One team name per line</div></div><input type="file" id="csv-file" accept=".csv,.txt" style="display:none" onchange="importCSV(this)"><button class="btn" onclick="document.getElementById('csv-file').click()">📄 Import CSV</button><button class="btn" onclick="fixAllLogos()" id="fix-logos-btn" style="background:linear-gradient(135deg,rgba(0,255,136,0.2),rgba(0,255,136,0.1));border-color:rgba(0,255,136,0.4);color:#00ff88;">🔧 Fix All Logos</button><span id="fix-logos-status" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;max-width:520px;line-height:1.35;"></span><button class="btn btn-primary" onclick="if(!isSuperAdmin){showToast('Super Admin required',false);return;}importFromRegistration()">📥 Import from Registration</button><button class="btn btn-danger" onclick="removeAllTeams()">Remove All Teams</button></div></div><div class="mgmt-title">Current Teams (<span id="team-count">0</span>)</div><div class="teams-list-mgmt" id="teams-list-mgmt"><div class="no-teams">No teams yet.</div></div></div>
 
   <div id="section-scores" style="display:none;"><div class="archive-resume-panel" id="archive-resume-panel"><div><div class="archive-resume-title">Edit Archived Points</div><div class="archive-resume-text" id="archive-resume-text">Archived event selected. Load it here to edit points.</div></div><div class="archive-resume-actions"><button class="btn btn-primary" onclick="restoreArchiveEditFromLink()">Load Archived Teams Now</button><button class="btn" onclick="openArchiveModal()">Open Archive Tools</button></div></div><div class="pts-info"><span class="pts-lbl">Points system</span><span class="pts-pill hi">#1=10</span><span class="pts-pill hi">#2=6</span><span class="pts-pill hi">#3=5</span><span class="pts-pill hi">#4=4</span><span class="pts-pill hi">#5=3</span><span class="pts-pill hi">#6=2</span><span class="pts-pill hi">#7=1</span><span class="pts-pill hi">#8=1</span><span class="pts-pill">#9+=0</span><span class="pts-pill">+1/kill</span><button class="btn" style="padding:5px 10px;font-size:10px;background:rgba(0,201,122,.12);border-color:rgba(0,201,122,.35);color:#00c97a;" onclick="restoreLatestManageNight()">Restore Latest Saved Night</button></div><div class="match-tabs" id="match-tabs-scores"></div>
     <div class="team-grid" id="team-grid"><div class="no-teams">Go to "Manage Teams" tab first.</div></div>
@@ -445,9 +445,11 @@ let archiveEditTargetKey = "", archiveEditTargetMeta = null;
 let scoreGridRenderTimer = null;
 let currentAdminUid = "";
 let teamLogoLibrary = {};
+let countryFlagLibrary = {};
 let killsSaveTimers = {};
 let playersSaveTimers = {};
 const TEAM_LOGO_LIBRARY_KEY = "pmac_team_logo_library_v1";
+const COUNTRY_FLAG_LIBRARY_KEY = "pmac_country_flag_library_v1";
 let groqApiKey = localStorage.getItem("groq_api_key") || "";
 const initialParams = new URLSearchParams(location.search);
 let activeEventId = initialParams.get("event") || "default";
@@ -609,6 +611,8 @@ function showMainPage(){
   if(STAFF_ADMIN_MODE){
     loadTeamLogoLibrary();
     watchTeamLogoLibrary();
+    loadCountryFlagLibrary();
+    watchCountryFlagLibrary();
     loadEventList();
     watchActiveSession();
     loadFirebaseData();
@@ -622,6 +626,8 @@ function showMainPage(){
   }
   loadTeamLogoLibrary();
   watchTeamLogoLibrary();
+  loadCountryFlagLibrary();
+  watchCountryFlagLibrary();
   loadEventList();
   loadEventGroups();
   watchActiveSession();
@@ -685,7 +691,7 @@ function loadFirebaseData(){
   stopActiveRefs();
   dbTeamsRef.off();
   dbScoresRef.off();
-  dbTeamsRef.on("value",(s)=>{ teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : []; teams = teams.map(t => { if (!t.playerUIDs) t.playerUIDs = []; return t; }); seedTeamLogoLibrary(teams); renderTeamsMgmt(); queueScoreGridRender(); document.getElementById("fb-status").className="fb-badge fb-ok"; document.getElementById("fb-status").textContent="● Single Day Mode"; });
+  dbTeamsRef.on("value",(s)=>{ teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : []; teams = teams.map(t => { if (!t.playerUIDs) t.playerUIDs = []; return t; }); seedTeamLogoLibrary(teams); seedCountryFlagLibrary(teams); renderTeamsMgmt(); queueScoreGridRender(); document.getElementById("fb-status").className="fb-badge fb-ok"; document.getElementById("fb-status").textContent="● Single Day Mode"; });
   dbScoresRef.on("value",(s)=>{ scores = s.val() || {}; applyActiveMatchFromScoreMap(scores); queueScoreGridRender(); });
 }
 function egSessionsFromActive(active){
@@ -764,6 +770,47 @@ function seedTeamLogoLibrary(list){
   (list||[]).forEach(t=>{ if(t && t.name && t.logo) rememberTeamLogo(t.name,t.logo,false); });
   refreshManageTeamSuggestions();
 }
+function countryCode(value){ return String(value||"").trim().toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4); }
+function countryFlagDbKey(code){ return sanitizeKey(countryCode(code)); }
+function loadCountryFlagLibrary(){ try{ countryFlagLibrary = JSON.parse(localStorage.getItem(eventStorageKey(COUNTRY_FLAG_LIBRARY_KEY))||"{}") || {}; }catch(e){ countryFlagLibrary={}; } }
+function saveCountryFlagLibrary(){ try{ localStorage.setItem(eventStorageKey(COUNTRY_FLAG_LIBRARY_KEY), JSON.stringify(countryFlagLibrary)); }catch(e){} }
+function rememberCountryFlag(code, flag, persist){
+  const key=countryCode(code);
+  if(!key || !flag) return;
+  countryFlagLibrary[key]={code:key,flag:flag,savedAt:Date.now()};
+  saveCountryFlagLibrary();
+  if(persist===false) return;
+  const dbKey=countryFlagDbKey(key);
+  if(dbKey && auth.currentUser){
+    db.ref(eventPath("countryFlags/"+dbKey)).update({code:key,flag:flag,source:"admin",event:activeEventId,savedAt:Date.now(),savedBy:auth.currentUser.uid}).catch(()=>{});
+  }
+}
+function watchCountryFlagLibrary(){
+  if(window._countryFlagLibraryWatching) return;
+  window._countryFlagLibraryWatching=true;
+  db.ref(eventPath("countryFlags")).on("value", snap=>{
+    const data=snap.val()||{};
+    Object.keys(data).forEach(k=>{
+      const item=data[k]||{};
+      if(item.code && item.flag) countryFlagLibrary[countryCode(item.code)]={code:countryCode(item.code),flag:item.flag,savedAt:item.savedAt||0};
+    });
+    saveCountryFlagLibrary();
+    renderTeamsMgmt();
+  }, err=>{
+    window._countryFlagLibraryWatching=false;
+    if(!STAFF_ADMIN_MODE) showToast(err && err.message ? err.message : "Country flag library permission denied", false);
+  });
+}
+function seedCountryFlagLibrary(list){
+  (list||[]).forEach(t=>{ if(t && t.country && (t.flag||t.countryFlag)) rememberCountryFlag(t.country,t.flag||t.countryFlag,false); });
+}
+function findCountryFlag(code){
+  const key=countryCode(code);
+  if(!key) return "";
+  if(countryFlagLibrary[key] && countryFlagLibrary[key].flag) return countryFlagLibrary[key].flag;
+  const existing=teams.find(t=>countryCode(t.country)===key && (t.flag||t.countryFlag));
+  return existing ? (existing.flag||existing.countryFlag||"") : "";
+}
 function findSavedLogo(name){
   const key = logoKey(name);
   if(!key) return null;
@@ -803,13 +850,14 @@ function cleanStorageName(name){ return String(name||"image").replace(/[^a-zA-Z0
 function dataUrlToBlob(dataUrl){ const parts=String(dataUrl||"").split(","); const meta=parts[0]||""; const mime=(meta.match(/data:([^;]+)/)||[])[1]||"image/png"; const bin=atob(parts[1]||""); const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); return new Blob([bytes],{type:mime}); }
 function uploadLogoFileToStorage(file, owner, kind){ if(!file) return Promise.resolve(""); const safeOwner=sanitizeKey(owner||"logo"); const clean=cleanStorageName(file.name||"logo.png"); const path=`pmac-assets/${activeEventId}/logos/${kind||"team"}/${safeOwner}/${Date.now()}_${clean}`; return storage.ref(path).put(file,{contentType:file.type||"image/png"}).then(s=>s.ref.getDownloadURL()); }
 function uploadLogoDataUrlToStorage(dataUrl, owner, kind){ if(!String(dataUrl||"").startsWith("data:")) return Promise.resolve(dataUrl||""); const blob=dataUrlToBlob(dataUrl); const ext=(blob.type||"image/png").includes("jpeg")?"jpg":"png"; const safeOwner=sanitizeKey(owner||"logo"); const path=`pmac-assets/${activeEventId}/logos/${kind||"team"}/${safeOwner}/${Date.now()}_migrated.${ext}`; return storage.ref(path).put(blob,{contentType:blob.type||"image/png"}).then(s=>s.ref.getDownloadURL()); }
-function addTeam(){ const name=document.getElementById("new-team-name").value.trim().toUpperCase(); const tag=(document.getElementById("new-team-tag")?.value||"").trim().toUpperCase() || compactTeamTag(name); if(!name) return showToast("Enter team name",false); if(teams.find(t=>t.name===name)) return showToast("Team exists",false); const file=document.getElementById("new-team-logo").files[0]; const savedLogo=document.getElementById("logo-preview")?.dataset?.savedLogo || ""; if(file){ document.getElementById("uploading-badge").style.display="inline"; uploadLogoFileToStorage(file,name,"team").then(url=>pushTeamToDb(name,url,tag)).catch(e=>{ document.getElementById("uploading-badge").style.display="none"; showToast("Logo upload failed: "+(e.message||e),false); }); } else pushTeamToDb(name,savedLogo,tag); }
-function clearAddTeamForm(){ document.getElementById("new-team-name").value=""; document.getElementById("new-team-tag").value=""; document.getElementById("new-team-logo").value=""; const prev=document.getElementById("logo-preview"); if(prev){ prev.style.display="none"; prev.src=""; prev.dataset.savedLogo=""; } const btn=document.getElementById("use-saved-team-logo-btn"); if(btn) btn.style.display="none"; document.getElementById("uploading-badge").style.display="none"; }
-function pushTeamToDb(name,logo,tag){
+function addTeam(){ const name=document.getElementById("new-team-name").value.trim().toUpperCase(); const tag=(document.getElementById("new-team-tag")?.value||"").trim().toUpperCase() || compactTeamTag(name); const country=countryCode(document.getElementById("new-team-country")?.value||""); const flag=findCountryFlag(country); if(!name) return showToast("Enter team name",false); if(teams.find(t=>t.name===name)) return showToast("Team exists",false); const file=document.getElementById("new-team-logo").files[0]; const savedLogo=document.getElementById("logo-preview")?.dataset?.savedLogo || ""; if(file){ document.getElementById("uploading-badge").style.display="inline"; uploadLogoFileToStorage(file,name,"team").then(url=>pushTeamToDb(name,url,tag,country,flag)).catch(e=>{ document.getElementById("uploading-badge").style.display="none"; showToast("Logo upload failed: "+(e.message||e),false); }); } else pushTeamToDb(name,savedLogo,tag,country,flag); }
+function clearAddTeamForm(){ document.getElementById("new-team-name").value=""; document.getElementById("new-team-tag").value=""; const countryEl=document.getElementById("new-team-country"); if(countryEl) countryEl.value=""; document.getElementById("new-team-logo").value=""; const prev=document.getElementById("logo-preview"); if(prev){ prev.style.display="none"; prev.src=""; prev.dataset.savedLogo=""; } const btn=document.getElementById("use-saved-team-logo-btn"); if(btn) btn.style.display="none"; document.getElementById("uploading-badge").style.display="none"; }
+function pushTeamToDb(name,logo,tag,country,flag){
   if(logo) rememberTeamLogo(name,logo);
   const firstTeam = !teams.length;
   if(firstTeam){ currentMatch=0; saveLocalScoreMatch(); }
-  const newTeam = { name, tag:(tag||compactTeamTag(name)), logo, playerUIDs: [] };
+  const code=countryCode(country);
+  const newTeam = { name, tag:(tag||compactTeamTag(name)), logo, country:code, flag:flag||findCountryFlag(code)||"", playerUIDs: [] };
   const newTeams = [...teams, newTeam];
   _teamsRef().set(newTeams).then(()=>{
     const safe=sanitizeKey(name);
@@ -977,6 +1025,33 @@ function updateTeamLogoFile(teamName, input){
     return _teamsRef().set(teams);
   }).then(()=>{ showToast("Logo replaced", true); renderTeamsMgmt(); }).catch(err=>showToast(err.message,false));
 }
+function updateTeamCountry(teamName, value){
+  const idx=teams.findIndex(t=>t.name===teamName);
+  if(idx<0) return showToast("Team not found", false);
+  const code=countryCode(value);
+  const savedFlag = code && countryFlagLibrary[code] && countryFlagLibrary[code].flag
+    ? countryFlagLibrary[code].flag
+    : ((teams.find((t,i)=>i!==idx && countryCode(t.country)===code && (t.flag||t.countryFlag))||{}).flag || (teams.find((t,i)=>i!==idx && countryCode(t.country)===code && (t.flag||t.countryFlag))||{}).countryFlag || "");
+  teams[idx].country=code;
+  if(savedFlag){ teams[idx].flag=savedFlag; teams[idx].countryFlag=savedFlag; }
+  if(!code || !savedFlag){ teams[idx].flag=savedFlag||""; teams[idx].countryFlag=savedFlag||""; }
+  _teamsRef().set(teams).then(()=>showToast(code ? "Country saved" : "Country cleared", true)).catch(e=>showToast(e.message,false));
+}
+function updateTeamCountryFlagFile(teamName, input){
+  const file=input && input.files ? input.files[0] : null;
+  if(!file) return;
+  const idx=teams.findIndex(t=>t.name===teamName);
+  if(idx<0){ showToast("Team not found", false); return; }
+  const code=countryCode(teams[idx].country);
+  if(!code){ input.value=""; return showToast("Type country code first, like AFG or IR", false); }
+  showToast("Uploading flag...", true);
+  uploadLogoFileToStorage(file, code, "country-flag").then(flag=>{
+    rememberCountryFlag(code, flag);
+    teams[idx].flag=flag;
+    teams[idx].countryFlag=flag;
+    return _teamsRef().set(teams);
+  }).then(()=>{ showToast(code+" flag saved", true); renderTeamsMgmt(); }).catch(err=>showToast(err.message,false));
+}
 
 function updatePlayerUid(teamName, uidIndex, value) { 
     const idx = teams.findIndex(t => t.name === teamName); 
@@ -996,6 +1071,8 @@ function renderTeamsMgmt(){
     teams.forEach(t => { 
         const call = t.name.replace(/\\/g,"\\\\").replace(/'/g,"\\'");
         const safeName = sanitizeKey(t.name);
+        const flagSrc = t.flag || t.countryFlag || findCountryFlag(t.country);
+        const flagPreview = flagSrc ? `<img class="team-mgmt-logo" src="${escapeHtml(flagSrc)}" title="${escapeHtml(countryCode(t.country))} flag" onerror="this.style.opacity=0.2">` : `<span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#8a96a8;">Flag</span>`;
         const uids = t.playerUIDs || []; 
         const uidInputs = uids.map((uid, idx) => `
             <div class="player-row">
@@ -1011,9 +1088,13 @@ function renderTeamsMgmt(){
                     <img class="team-mgmt-logo" src="${t.logo||''}" onerror="this.style.opacity=0.2">
                     <input class="eg-inp team-name-edit" value="${escapeHtml(t.name)}" title="Team name shown everywhere" onchange="updateTeamName('${call}',this.value)">
                     <input class="eg-inp eg-inp-tag" value="${escapeHtml(t.tag||compactTeamTag(t.name))}" maxlength="8" title="Team tag shown in OBS overlay" onchange="updateTeamTag('${t.name.replace(/'/g,"\\'")}',this.value)">
+                    <input class="eg-inp eg-inp-tag" value="${escapeHtml(countryCode(t.country))}" maxlength="4" placeholder="AFG" title="Country flag code shown in OBS" style="text-transform:uppercase;width:64px;" onchange="updateTeamCountry('${call}',this.value)">
+                    ${flagPreview}
                     <input type="file" id="replace-logo-${safeName}" accept="image/png,image/*" style="display:none" onchange="updateTeamLogoFile('${t.name.replace(/'/g,"\'")}',this)">
+                    <input type="file" id="replace-flag-${safeName}" accept="image/png,image/*" style="display:none" onchange="updateTeamCountryFlagFile('${t.name.replace(/'/g,"\'")}',this)">
 
                     <button class="btn" style="font-size:10px;padding:2px 8px;" onclick="document.getElementById('replace-logo-${safeName}').click()">Replace Logo</button>
+                    <button class="btn" style="font-size:10px;padding:2px 8px;" onclick="document.getElementById('replace-flag-${safeName}').click()">Upload Flag</button>
                     <button class="btn" style="font-size:10px;padding:2px 8px;background:rgba(0,201,122,.12);border-color:rgba(0,201,122,.35);color:#00c97a;" onclick="replaceTeam('${call}')">Replace Team</button>
 
                     <span class="team-mgmt-del" onclick="removeTeam('${t.name.replace(/'/g,"\'")}')">🗑️ Remove Team</span>
