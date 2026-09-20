@@ -491,6 +491,7 @@ function staffCanUseEvent(role,eventId){
   if(role===true) return true;
   if(!role || typeof role!=="object") return false;
   if(role.enabled===false) return false;
+  if(role.teams===true || role.scores===true) return true;
   if(role.allEvents===true || role.events===true) return true;
   if(role.events && role.events[eventId]===true) return true;
   if(role[eventId]===true) return true;
@@ -637,7 +638,7 @@ function startAdminForUser(user){
     const hasStaffRole = isStaffRoleConfigured(role);
     isSuperAdmin = superAllowed;
     if(STAFF_ADMIN_MODE){
-      if(!isSuperAdmin && !staffCanUseEvent(role,activeEventId)){
+      if(!isSuperAdmin && !hasStaffRole){
         showAccessDenied();
         loadEventList();
         return;
