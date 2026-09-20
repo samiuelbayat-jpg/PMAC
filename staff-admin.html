@@ -569,7 +569,7 @@ function applyStaffAdminUi(){
   const title=document.querySelector(".topbar-title");
   const sub=document.querySelector(".topbar-sub");
   if(title) title.textContent="PMAF Staff Admin";
-  if(sub) sub.textContent="Manage Teams + Enter Scores";
+  if(sub) sub.textContent="Manage Teams + Enter Scores" + (currentAdminUid ? " — UID " + currentAdminUid : "");
   document.title="PMAF Staff Admin";
   const topbar=document.querySelector(".topbar-right");
   if(topbar){
@@ -645,8 +645,8 @@ function startAdminForUser(user){
     isSuperAdmin = superAllowed;
     if(STAFF_ADMIN_MODE){
       if(!isSuperAdmin && !hasStaffRole){
-        showAccessDenied();
-        loadEventList();
+        showMainPage();
+        showToast("Staff UID was not confirmed in Firebase. You can view the staff page, but saving may be blocked. Copy this UID and add it under pmac/staffAdmins.", false);
         return;
       }
       showMainPage();
