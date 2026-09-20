@@ -149,7 +149,7 @@
 <!-- FIREBASE AUTH -->
 <script type="module">
   import { initializeApp }                from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
@@ -192,6 +192,7 @@
     if (!email || !password) { errEl.textContent="Please enter your email and password."; errEl.style.display="block"; return; }
     btn.disabled = true; btn.textContent = "Signing in\u2026";
     try {
+      await setPersistence(auth, browserSessionPersistence);
       const credential = await signInWithEmailAndPassword(auth, email, password);
       let target = loginTarget;
       const superSnap = await get(ref(db, "pmac/superAdmins/"+credential.user.uid)).catch(()=>null);
