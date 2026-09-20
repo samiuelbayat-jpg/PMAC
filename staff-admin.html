@@ -606,6 +606,14 @@ function showMainPage(){
   const userLabel=document.getElementById("event-user-label");
   if(userLabel) userLabel.innerHTML=`UID: ${escapeHtml(currentAdminUid)} <button class="btn" style="font-size:10px;padding:3px 8px;margin-left:5px;" onclick="copyMyAdminUid()">Copy UID</button>`;
   resetEventRefs();
+  if(STAFF_ADMIN_MODE){
+    loadTeamLogoLibrary();
+    watchTeamLogoLibrary();
+    loadEventList();
+    loadFirebaseData();
+    applyStaffAdminUi();
+    return;
+  }
   if(pendingArchiveEditKey){
     egActiveSession=null;
     localStorage.removeItem(eventStorageKey('eg_active_session'));
@@ -623,8 +631,6 @@ function showMainPage(){
   if(pendingArchiveEditKey){
     showSection("scores");
     showArchiveEditResumePanel(pendingArchiveEditKey);
-  } else if(STAFF_ADMIN_MODE){
-    applyStaffAdminUi();
   }
 }
 function startAdminForUser(user){
@@ -742,6 +748,11 @@ function watchTeamLogoLibrary(){
     refreshManageTeamSuggestions();
     updateManageSavedLogo();
     renderEventGroups();
+  }, err=>{
+    window._teamLogoLibraryWatching = false;
+    refreshManageTeamSuggestions();
+    updateManageSavedLogo();
+    if(!STAFF_ADMIN_MODE) showToast(err && err.message ? err.message : "Team logo library permission denied", false);
   });
 }
 function seedTeamLogoLibrary(list){
@@ -2274,7 +2285,7 @@ firebase.auth().onAuthStateChanged(function(user) {
 function doSignOut(){
   localStorage.removeItem("pmac_active_event");
   firebase.auth().signOut().then(function(){
-    window.location.href = "index.html";
+    window.location.href = "index.html?next="+encodeURIComponent("staff-admin.html?event="+encodeURIComponent(activeEventId||"default"));
   }).catch(function(e){
     showToast(e.message, false);
   });
