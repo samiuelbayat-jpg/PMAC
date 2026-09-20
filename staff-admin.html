@@ -610,6 +610,7 @@ function showMainPage(){
     loadTeamLogoLibrary();
     watchTeamLogoLibrary();
     loadEventList();
+    watchActiveSession();
     loadFirebaseData();
     applyStaffAdminUi();
     return;
@@ -1083,6 +1084,8 @@ function queueScoreGridRender(){
 function scorePathForSafe(safe){
   const owner = window._teamSessionMap && window._teamSessionMap[safe];
   if(owner && owner.group && owner.date) return `${eventPath("eventGroups")}/${owner.group}/sessions/${owner.date}/scores`;
+  const activeList = egSessionsFromActive(egActiveSession);
+  if(activeList.length===1) return `${eventPath("eventGroups")}/${activeList[0].group}/sessions/${activeList[0].date}/scores`;
   return eventPath("matches");
 }
 function saveOneTeamScore(safe){
@@ -1782,7 +1785,15 @@ function applyActiveSessions(sessionList, doToast){
   });
   window._activeTeamsRef = {
     off:function(){ (window._activeTeamRefs||[]).forEach(r=>r.off()); },
-    set:function(){ showToast("Edit group teams inside the Event Group cards, not Manage Teams, while multiple groups are active.", false); return Promise.reject(new Error("Multiple groups active")); }
+    set:function(nextTeams){
+      if(sessions.length!==1){
+        showToast("Edit group teams inside the Event Group cards, not Manage Teams, while multiple groups are active.", false);
+        return Promise.reject(new Error("Multiple groups active"));
+      }
+      const s=sessions[0];
+      const clean=(nextTeams||[]).map(t=>{ const c=Object.assign({},t); delete c.__egGroup; delete c.__egDate; return c; });
+      return db.ref(`${eventPath("eventGroups")}/${s.group}/sessions/${s.date}/teams`).set(clean);
+    }
   };
   window._activeScoresRef = {
     off:function(){ (window._activeScoreRefs||[]).forEach(r=>r.off()); },
