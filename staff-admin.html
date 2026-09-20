@@ -644,6 +644,10 @@ function startAdminForUser(user){
     const hasStaffRole = isStaffRoleConfigured(role);
     isSuperAdmin = superAllowed;
     if(STAFF_ADMIN_MODE){
+      if(isSuperAdmin){
+        window.location.href = "admin.html?event="+encodeURIComponent(activeEventId||"default");
+        return;
+      }
       if(!isSuperAdmin && !hasStaffRole){
         showMainPage();
         showToast("Staff UID was not confirmed in Firebase. You can view the staff page, but saving may be blocked. Copy this UID and add it under pmac/staffAdmins.", false);

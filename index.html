@@ -194,7 +194,11 @@
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password);
       let target = loginTarget;
-      if(!/^staff-admin\.html(?:\?|$)/i.test(target)){
+      const superSnap = await get(ref(db, "pmac/superAdmins/"+credential.user.uid)).catch(()=>null);
+      const isSuperAdmin = !!(superSnap && superSnap.val() === true);
+      if(isSuperAdmin && /^staff-admin\.html(?:\?|$)/i.test(target)){
+        target = "admin.html?event=default";
+      } else if(!isSuperAdmin && !/^staff-admin\.html(?:\?|$)/i.test(target)){
         const staffSnap = await get(ref(db, "pmac/staffAdmins/"+credential.user.uid)).catch(()=>null);
         if(staffSnap && staffSnap.exists()) target = "staff-admin.html?event=default";
       }
