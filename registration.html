@@ -1304,7 +1304,11 @@ function lookupFirebaseLogo(kind, name){
     if(logo && logoKey(currentName)===key) setRegistrationLogoPreview(kind, logo);
   }).catch(function(e){ console.warn("Saved logo lookup failed", e); });
 }
-db.ref("pmac/teamLogos").on("value", function(s){
+var teamLogoLibraryLoaded = false;
+function loadTeamLogoLibraryOnce(){
+  if(teamLogoLibraryLoaded) return;
+  teamLogoLibraryLoaded = true;
+  db.ref("pmac/teamLogos").once("value").then(function(s){
   var data=s.val()||{};
   teamLogoLibrary={};
   Object.keys(data).forEach(function(k){
@@ -1314,7 +1318,8 @@ db.ref("pmac/teamLogos").on("value", function(s){
   refreshSavedTeamLogoList();
   previewSavedRegistrationLogo("reg");
   previewSavedRegistrationLogo("scrim");
-});
+  }).catch(function(){});
+}
 function saveTeamLogoToLibrary(team){
   if(!isAdmin || !auth.currentUser || !team || !team.name || !team.logo) return Promise.resolve();
   var key = sanitizeKey(logoKey(team.name));
@@ -1830,6 +1835,8 @@ var forumName = "";
 var forumSeenLatest = 0;
 var forumLoadedOnce = false;
 var forumSoundReady = false;
+var eventGroupsRef = null;
+var idPassRef = null;
 
 // Apply admin UI immediately
 applyAdminUI();
@@ -1841,18 +1848,31 @@ db.ref(eventPath("event")).on("value", function(s) {
   evMax = parseInt(eventInfo.maxTeams) || 24;
   updateCard();
 });
-db.ref(eventPath("eventGroups")).on("value", function(s) {
-  communityEventGroups = s.val() || {};
-  renderGroupExportOptions();
-  renderScrimGroupExportOptions();
-});
-db.ref(eventPath("idpass")).on("value", function(s) {
-  idPassInfo = s.val() || {event:{},scrim:{}};
-  renderIdPassAdmin();
-  if(document.getElementById("sec-idpass") && document.getElementById("sec-idpass").classList.contains("show") && getRememberedIdPassAccess()){
-    showPublicIdPass();
+function startAdminOnlyListeners(){
+  if(!isAdmin) return;
+  if(!eventGroupsRef){
+    eventGroupsRef=db.ref(eventPath("eventGroups"));
+    eventGroupsRef.on("value", function(s) {
+      communityEventGroups = s.val() || {};
+      renderGroupExportOptions();
+      renderScrimGroupExportOptions();
+    });
   }
-});
+  if(!idPassRef){
+    idPassRef=db.ref(eventPath("idpass"));
+    idPassRef.on("value", function(s) {
+      idPassInfo = s.val() || {event:{},scrim:{}};
+      renderIdPassAdmin();
+      if(document.getElementById("sec-idpass") && document.getElementById("sec-idpass").classList.contains("show") && getRememberedIdPassAccess()){
+        showPublicIdPass();
+      }
+    });
+  }
+}
+function stopAdminOnlyListeners(){
+  if(eventGroupsRef){ eventGroupsRef.off(); eventGroupsRef=null; }
+  if(idPassRef){ idPassRef.off(); idPassRef=null; }
+}
 db.ref(eventPath("forum/messages")).limitToLast(80).on("value", function(s) {
   forumMessages = s.val() || {};
   handleForumNotification();
@@ -1873,6 +1893,7 @@ db.ref(eventPath("registrations")).on("value", function(s) {
 
 function applyAdminUI() {
   if (isAdmin) {
+    loadTeamLogoLibraryOnce();
     document.getElementById("hdr-login-row").style.display = "none";
     document.getElementById("hdr-admin-row").style.display = "flex";
     document.getElementById("admin-lbl").textContent = isSuperAdmin ? "● Super Admin" : "● Event Admin";
@@ -1882,6 +1903,8 @@ function applyAdminUI() {
   }
   var gfxUpload=document.getElementById("gfx-admin-upload");
   if(gfxUpload) gfxUpload.style.display = isAdmin ? "block" : "none";
+  if(isAdmin) startAdminOnlyListeners();
+  else stopAdminOnlyListeners();
   var ruleTab=document.getElementById("tab-rulelog");
   if(ruleTab) ruleTab.style.display = isAdmin ? "" : "none";
   updateIdPassTabVisibility();
@@ -2857,7 +2880,7 @@ function pubKillCls(k){var n=parseInt(k)||0;return n>=10?"kh":n>=5?"km":"kl";}
 var pubSortMode = "pts";
 var pubTeamsGlobal = [], pubScoresGlobal = {};
 var pubScoreListenersAttached = false;
-var pubActiveSessionRef = null, pubTeamsRef = null, pubScoresRef = null;
+var pubActiveSessionRef = null, pubTeamsRef = null, pubScoresRef = null, pubSnapshotRef = null;
 
 function pubSortBy(mode){
   pubSortMode = mode;
@@ -2873,16 +2896,50 @@ function loadScoreboard(){
   renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
   if(pubScoreListenersAttached) return;
   pubScoreListenersAttached=true;
-  pubActiveSessionRef = db.ref(eventPath("activeSession"));
-  pubActiveSessionRef.on("value",function(snap){
-    bindPubLiveScoreboard(snap.val()||null);
-  });
+  bindPubSnapshotScoreboard();
 }
 
 function stopPubLiveRefs(){
   if(pubTeamsRef && pubTeamsRef.off) pubTeamsRef.off();
   if(pubScoresRef && pubScoresRef.off) pubScoresRef.off();
+  if(pubActiveSessionRef && pubActiveSessionRef.off) pubActiveSessionRef.off();
   pubTeamsRef=null; pubScoresRef=null;
+  pubActiveSessionRef=null;
+}
+function pubRowsFromSnapshotTeams(list,idx){
+  var out={_activeMatch:{index:idx,number:idx+1,updatedAt:Date.now()}};
+  (list||[]).forEach(function(t){
+    var rows=Array.isArray(t.rows) ? t.rows.map(function(r){return {rank:r&&r.rank!==undefined?r.rank:null,kills:r&&r.kills!==undefined?r.kills:null,players:r&&r.players!==undefined?r.players:4,missed:r&&r.missed===true};}) : Array(10).fill(null).map(function(){return {rank:null,kills:null,players:4};});
+    if(!Array.isArray(t.rows)) rows[idx]={rank:t.rank||null,kills:t.kills||0,players:t.players||4,missed:t.missed===true};
+    out[t.name]=rows;
+    out[pubSan(t.name)]=rows;
+    out[sanitizeKey(t.name)]=rows;
+  });
+  return out;
+}
+function applyPubSnapshot(data){
+  var list=Array.isArray(data&&data.teams)?data.teams:[];
+  if(!list.length) return false;
+  stopPubLiveRefs();
+  var idx=Math.max(0,Math.min(9,parseInt(data.activeMatchIndex)||0));
+  pubTeamsGlobal=list.map(function(t){return {name:t.name||"",tag:t.tag||"",country:t.country||"",flag:t.flag||"",logo:t.logo||""};});
+  pubScoresGlobal=pubRowsFromSnapshotTeams(list,idx);
+  renderPubScoreboard(pubTeamsGlobal,pubScoresGlobal);
+  return true;
+}
+function bindPubSnapshotScoreboard(){
+  if(pubSnapshotRef) pubSnapshotRef.off();
+  pubSnapshotRef=db.ref(eventPath("liveOverlaySnapshot"));
+  pubSnapshotRef.on("value",function(snap){
+    if(!applyPubSnapshot(snap.val())) bindPubActiveSessionFallback();
+  },function(){ bindPubActiveSessionFallback(); });
+}
+function bindPubActiveSessionFallback(){
+  if(pubActiveSessionRef) return;
+  pubActiveSessionRef = db.ref(eventPath("activeSession"));
+  pubActiveSessionRef.on("value",function(snap){
+    bindPubLiveScoreboard(snap.val()||null);
+  });
 }
 function pubActiveSessions(session){
   if(!session) return [];

@@ -125,6 +125,7 @@ localStorage.setItem("pmac_active_event", EVENT_ID);
 var RANK_PTS = [10,6,5,4,3,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 var teams = [], scores = {}, eventInfo = {}, teamLogoLibrary = {};
 var teamsReady = false, scoresReady = false;
+var obsDisabled = false;
 var EVENT_LOGO = null;
 var BG_IMAGE = null;
 var EVENT_LOGO_DATA = "";
@@ -241,15 +242,37 @@ db.ref(eventPath("event")).once("value").then(function(s){
   if(eventInfo.name) document.getElementById("inp-title").value = eventInfo.name;
 });
 function watchLogoLibrary(path){
-  db.ref(path).on("value",function(snap){
+  db.ref(path).once("value").then(function(snap){
     var data=snap.val()||{};
     Object.keys(data).forEach(function(k){ addLogoToLibrary(data[k]); });
     build();
-  });
+  }).catch(function(){});
 }
 watchLogoLibrary(eventPath("teamLogos"));
 if(EVENT_ID!=="default") watchLogoLibrary("pmac/teamLogos");
-var liveTeamsRef=null, liveScoresRef=null;
+var liveTeamsRef=null, liveScoresRef=null, activeSessionRef=null, overlaySettingsRef=null;
+function stopLiveRefs(){
+  if(liveTeamsRef) liveTeamsRef.off();
+  if(liveScoresRef) liveScoresRef.off();
+  liveTeamsRef=null; liveScoresRef=null;
+}
+function setObsDisabledState(disabled){
+  obsDisabled=!!disabled;
+  if(!obsDisabled) return;
+  stopLiveRefs();
+  teams=[]; scores={}; teamsReady=false; scoresReady=false;
+  var status=document.getElementById("status");
+  if(status) status.textContent="OBS links disabled from admin";
+  var canvas=document.getElementById("gfx");
+  if(canvas){ var ctx=canvas.getContext("2d"); ctx.clearRect(0,0,canvas.width,canvas.height); }
+}
+overlaySettingsRef=db.ref(eventPath("overlaySettings"));
+overlaySettingsRef.on("value",function(s){
+  var disabled=(s.val()||{}).obsLinksEnabled===false;
+  var wasDisabled=obsDisabled;
+  setObsDisabledState(disabled);
+  if(wasDisabled && !disabled && activeSessionRef) activeSessionRef.once("value").then(function(snap){ bindLiveSession(snap.val()); });
+});
 function activeSessions(session){
   if(!session) return [];
   if(Array.isArray(session.sessions)) return session.sessions.filter(function(s){return s&&s.group&&s.date;});
@@ -257,6 +280,7 @@ function activeSessions(session){
   return [];
 }
 function bindLiveSession(session){
+  if(obsDisabled) return;
   if(liveTeamsRef) liveTeamsRef.off();
   if(liveScoresRef) liveScoresRef.off();
   teamsReady=false; scoresReady=false;
@@ -266,7 +290,7 @@ function bindLiveSession(session){
   liveTeamsRef = active ? db.ref(eventPath("eventGroups")+"/"+one.group+"/sessions/"+one.date+"/teams") : db.ref(eventPath("teams"));
   liveScoresRef = active ? db.ref(eventPath("eventGroups")+"/"+one.group+"/sessions/"+one.date+"/scores") : db.ref(eventPath("matches"));
   liveTeamsRef.on("value",function(s){
-    var v=s.val()||[]; teams=Array.isArray(v)?v:Object.values(v);
+    var v=s.val()||[]; teams=mergeTeamLists(v);
     teamsReady=true; if(scoresReady) build();
   });
   liveScoresRef.on("value",function(s){
@@ -279,7 +303,7 @@ function bindMultiLiveSession(sessions){
     var combinedTeams=[],combinedScores={};
     sessions.forEach(function(s){
       var key=s.group+"|"+s.date;
-      (teamBuckets[key]||[]).forEach(function(t){ if(!combinedTeams.find(function(x){return x.name===t.name;})) combinedTeams.push(t); });
+      combinedTeams=mergeTeamLists(combinedTeams.concat(teamBuckets[key]||[]));
       Object.assign(combinedScores,scoreBuckets[key]||{});
     });
     teams=combinedTeams;scores=combinedScores;teamsReady=true;scoresReady=true;build();
@@ -294,7 +318,8 @@ function bindMultiLiveSession(sessions){
   liveTeamsRef={off:function(){teamRefs.forEach(function(r){r.off();});}};
   liveScoresRef={off:function(){scoreRefs.forEach(function(r){r.off();});}};
 }
-db.ref(eventPath("activeSession")).on("value",function(s){ bindLiveSession(s.val()); });
+activeSessionRef=db.ref(eventPath("activeSession"));
+activeSessionRef.on("value",function(s){ bindLiveSession(s.val()); });
 
 document.getElementById("refresh-btn").onclick = build;
 document.getElementById("clear-setup-btn").onclick = clearGfxSetup;
@@ -391,6 +416,24 @@ document.getElementById("slot-gfx-btn").onclick = exportApprovedSlotGfx;
 
 function san(n){return String(n||"").replace(/[.#$\/\[\]]/g,"_");}
 function normName(n){return String(n||"").trim().toUpperCase().replace(/\s+/g," ");}
+function sameTeamIdentity(a,b){
+  var an=normName(a&&a.name),bn=normName(b&&b.name),at=normName(a&&a.tag),bt=normName(b&&b.tag);
+  return (!!an&&an===bn) || (!!at&&!!bt&&at===bt);
+}
+function mergeTeamLists(list){
+  var out=[];
+  (Array.isArray(list)?list:Object.values(list||{})).forEach(function(t){
+    if(!t||!t.name) return;
+    var found=out.find(function(x){return sameTeamIdentity(x,t);});
+    if(found){
+      if(!found.tag&&t.tag) found.tag=t.tag;
+      if(!found.logo&&t.logo) found.logo=t.logo;
+    }else{
+      out.push(Object.assign({},t));
+    }
+  });
+  return out;
+}
 function rowsList(v){
   if(Array.isArray(v)) return v;
   if(!v || typeof v!=="object") return [];
@@ -416,7 +459,7 @@ function scoreRowsForTeam(team){
 }
 
 function getStandings(){
-  return teams.map(function(t){
+  return mergeTeamLists(teams).map(function(t){
     var md=scoreRowsForTeam(t),tk=0,tp=0,plc=0,wins=0,best=0;
     for(var i=0;i<Math.max(10,md.length);i++){
       var m=md[i]||{rank:null,kills:null};
@@ -864,6 +907,7 @@ function loadImage(url){
 }
 
 function build(){
+  if(obsDisabled){ setObsDisabledState(true); return; }
   saveGfxSetup();
   var buildId = ++gfxBuildSerial;
   if(!gfxFontsReady){

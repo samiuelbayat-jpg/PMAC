@@ -341,6 +341,7 @@ body.staff-admin .staff-event-bar #event-path-label{display:none!important;}
     <div class="teams-mgmt">
       <div class="mgmt-title">OBS Overlay Settings</div>
       <div class="ov-grid">
+        <div class="inp-wrap"><div class="inp-lbl">OBS Links</div><select class="text-inp" id="ov-obs-enabled" onchange="saveOverlaySettingsSoon()"><option value="yes">Enabled</option><option value="no">Disabled After Event</option></select></div>
         <div class="inp-wrap"><div class="inp-lbl">Design</div><select class="text-inp" id="ov-design" onchange="applyOverlayDesignPreset(this.value); saveOverlaySettingsSoon()"><option value="classic">Classic Side Panel</option><option value="neon">Neon Edge</option><option value="minimal">Minimal Clean</option><option value="broadcast">Broadcast Bold</option><option value="pmgc">PMGC Gold</option><option value="pgs">PGS Blue</option><option value="worldcup">World Cup Red</option><option value="tactical">Tactical Green</option><option value="glass">Glass Broadcast</option><option value="compact">Compact Lower</option><option value="split">Split Panel</option><option value="arena">Arena Purple</option><option value="redlive">Red Live Standing</option><option value="pmgo">PMGO Live Points</option><option value="pmgo-teal">PMGO Teal Live Points</option></select></div>
         <div class="inp-wrap"><div class="inp-lbl">Shared Overlay Color</div><input class="text-inp" type="color" id="ov-accent" value="#d85a10" oninput="saveOverlaySettingsSoon()" onchange="saveOverlaySettingsSoon()" style="min-width:90px;height:42px;padding:4px;"></div>
         <div class="inp-wrap"><div class="inp-lbl">Side Panel Background</div><input class="text-inp" type="color" id="ov-bg" value="#0a0b0d" onchange="saveOverlaySettingsSoon()" style="min-width:90px;height:42px;padding:4px;"></div>
@@ -359,7 +360,7 @@ body.staff-admin .staff-event-bar #event-path-label{display:none!important;}
         <div class="inp-wrap"><div class="inp-lbl">Streamer Logo</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><input type="file" id="ov-streamer-logo-file" accept="image/*" style="display:none" onchange="ovPreviewLogo(this)"><button class="logo-inp-btn" type="button" onclick="document.getElementById('ov-streamer-logo-file').click()">Upload Logo</button><img id="ov-logo-preview" class="ov-preview-logo"></div></div>
         <div class="inp-wrap"><div class="inp-lbl">Top 4 Helmet</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><input type="file" id="ov-top4-helmet-file" accept="image/*" style="display:none" onchange="ovPreviewTop4Helmet(this)"><button class="logo-inp-btn" type="button" onclick="document.getElementById('ov-top4-helmet-file').click()">Upload Helmet</button><img id="ov-top4-helmet-preview" class="ov-preview-logo"></div></div>
       </div>
-      <div class="ov-actions"><button class="btn btn-primary" onclick="saveOverlaySettings()">💾 Save / Send To OBS</button><button class="btn" onclick="clearOverlayLogo()">Clear Logo</button><button class="btn" onclick="clearTop4Helmet()">Clear Helmet</button><button class="btn" onclick="openStandalone('overlay.html')">Open Overlay</button><button class="btn" onclick="copyStandaloneLink('overlay.html','OBS overlay')">Copy OBS Link</button><button class="btn" onclick="copyDefaultStandaloneLink('team-match-points-overlay-v2.html?mode=overall&limit=16','Team match overlay')">Copy Team Match Link</button><button class="btn" onclick="copyDefaultStandaloneLink('highlights-roadmap-overlay.html','OBS highlights')">Copy Highlights Link</button></div>
+      <div class="ov-actions"><button class="btn btn-primary" onclick="saveOverlaySettings()">💾 Save / Send To OBS</button><button class="btn" onclick="setObsLinksEnabled(true)">Enable OBS Links</button><button class="btn btn-danger" onclick="setObsLinksEnabled(false)">Disable OBS Links</button><button class="btn" onclick="clearOverlayLogo()">Clear Logo</button><button class="btn" onclick="clearTop4Helmet()">Clear Helmet</button><button class="btn" onclick="openStandalone('overlay.html')">Open Overlay</button><button class="btn" onclick="copyStandaloneLink('overlay.html','OBS overlay')">Copy OBS Link</button><button class="btn" onclick="copyDefaultStandaloneLink('team-match-points-overlay-v2.html?mode=overall&limit=16','Team match overlay')">Copy Team Match Link</button><button class="btn" onclick="copyDefaultStandaloneLink('highlights-roadmap-overlay.html','OBS highlights')">Copy Highlights Link</button></div>
       <div class="ov-hint">Color and design changes auto-save to Firebase and update overlay.html live. OBS should use overlay.html as the browser source.</div>
     </div>
   </div>
@@ -691,8 +692,8 @@ function loadFirebaseData(){
   stopActiveRefs();
   dbTeamsRef.off();
   dbScoresRef.off();
-  dbTeamsRef.on("value",(s)=>{ teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : []; teams = teams.map(t => { if (!t.playerUIDs) t.playerUIDs = []; return t; }); seedTeamLogoLibrary(teams); seedCountryFlagLibrary(teams); renderTeamsMgmt(); queueScoreGridRender(); document.getElementById("fb-status").className="fb-badge fb-ok"; document.getElementById("fb-status").textContent="● Single Day Mode"; });
-  dbScoresRef.on("value",(s)=>{ scores = s.val() || {}; applyActiveMatchFromScoreMap(scores); queueScoreGridRender(); });
+  dbTeamsRef.on("value",(s)=>{ teams = s.val() ? (Array.isArray(s.val()) ? s.val() : Object.values(s.val())) : []; teams = teams.map(t => { if (!t.playerUIDs) t.playerUIDs = []; return t; }); seedTeamLogoLibrary(teams); seedCountryFlagLibrary(teams); renderTeamsMgmt(); queueScoreGridRender(); publishLiveOverlaySnapshotSoon(); document.getElementById("fb-status").className="fb-badge fb-ok"; document.getElementById("fb-status").textContent="● Single Day Mode"; });
+  dbScoresRef.on("value",(s)=>{ scores = s.val() || {}; applyActiveMatchFromScoreMap(scores); queueScoreGridRender(); publishLiveOverlaySnapshotSoon(); });
 }
 function egSessionsFromActive(active){
   if(!active) return [];
@@ -1172,6 +1173,39 @@ function publishActiveMatch(){
   }
   return dbScoresRef.child("_activeMatch").set(scores._activeMatch).catch(()=>{});
 }
+let liveOverlaySnapshotTimer=null;
+function scoreRowsForTeam(scoreMap,t){
+  const keys=[t.name,t.tag,sanitizeKey(t.name||""),t.tag?sanitizeKey(t.tag):""].filter(Boolean);
+  for(const key of keys){ if(scoreMap && scoreMap[key]) return scoreMap[key]; }
+  return emptyScoreRows();
+}
+function buildLiveOverlaySnapshot(){
+  const idx=Math.max(0,Math.min(9,parseInt(currentMatch)||0));
+  const compactTeams=(teams||[]).filter(t=>t&&t.name).map((t,i)=>{
+    const rows=scoreRowsForTeam(scores,t);
+    const row=(rows&&rows[idx])||emptyScoreRow();
+    const compactRows=Array(10).fill(null).map((_,mi)=>{
+      const r=(rows&&rows[mi])||emptyScoreRow();
+      const isMissed=r.missed===true;
+      return {rank:(r.rank!==null&&r.rank!==undefined&&r.rank!=="")?parseInt(r.rank):null,kills:isMissed?0:(parseInt(r.kills)||0),players:isMissed?0:playerCount(r.players),missed:isMissed};
+    });
+    const missed=row.missed===true;
+    const rank=(row.rank!==null&&row.rank!==undefined&&row.rank!=="")?parseInt(row.rank):null;
+    const kills=missed?0:(parseInt(row.kills)||0);
+    const players=missed?0:playerCount(row.players);
+    const rankPts=rank&&!missed?placementPts(rank):0;
+    return {name:t.name||"",tag:t.tag||compactTeamTag(t.name||""),country:t.country||"",flag:t.flag||t.countryFlag||"",logo:t.logo||"",rows:compactRows,rank:rank,kills:kills,rankPts:rankPts,total:rankPts+kills,players:players,missed:missed,sortOrder:i};
+  });
+  return {eventId:activeEventId,activeMatchIndex:idx,activeMatchNumber:idx+1,activeSessions:egSessionsFromActive(egActiveSession),teams:compactTeams,updatedAt:Date.now()};
+}
+function publishLiveOverlaySnapshot(){
+  if(!db || !activeEventId) return Promise.resolve();
+  return db.ref(eventPath("liveOverlaySnapshot")).set(buildLiveOverlaySnapshot()).catch(()=>{});
+}
+function publishLiveOverlaySnapshotSoon(){
+  clearTimeout(liveOverlaySnapshotTimer);
+  liveOverlaySnapshotTimer=setTimeout(()=>publishLiveOverlaySnapshot(),350);
+}
 function queueScoreGridRender(){
   clearTimeout(scoreGridRenderTimer);
   scoreGridRenderTimer=setTimeout(()=>renderScoreGrid(),120);
@@ -1208,7 +1242,7 @@ function updateScoreCardPreview(team,row){
   if(wrap) wrap.classList.toggle("has-data", missed || rankVal !== null || killsVal > 0 || playersVal !== 4);
 }
 function scoreDomKey(team){ return sanitizeKey(String(team||"")).replace(/[^A-Za-z0-9_-]/g,"_"); }
-function switchMatch(idx){ saveAll({quiet:true}).then(()=>{ currentMatch=Math.max(0,Math.min(9,parseInt(idx)||0)); saveLocalScoreMatch(); return publishActiveMatch(); }).then(()=>{ renderScoreGrid(); }).catch(e=>showToast((e&&e.message)||"Match switch failed",false)); }
+function switchMatch(idx){ saveAll({quiet:true}).then(()=>{ currentMatch=Math.max(0,Math.min(9,parseInt(idx)||0)); saveLocalScoreMatch(); return publishActiveMatch(); }).then(()=>{ renderScoreGrid(); publishLiveOverlaySnapshotSoon(); }).catch(e=>showToast((e&&e.message)||"Match switch failed",false)); }
 function getUsedRanks(excludeTeam){ let used={}; teams.forEach(t=>{ if(t.name===excludeTeam) return; const m=scores[sanitizeKey(t.name)]?.[currentMatch]; if(m?.rank) used[m.rank]=t.name; }); return used; }
 function renderScoreGrid(){ 
     if(!teams.length){ document.getElementById("team-grid").innerHTML='<div class="no-teams">Add teams first.</div>'; return; } 
@@ -1321,8 +1355,8 @@ function savePlayersNow(team,el){
   clearTimeout(playersSaveTimers[team]);
   playersSaveTimers[team]=setTimeout(()=>autoSave(team),450);
 }
-function autoSave(team,opts){ const row=scoreRowFromInputs(team); if(!row) return Promise.resolve(); const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; updateScoreCardPreview(team,row); return saveOneTeamScore(safe).then(()=>{ document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); const savedDiv=document.getElementById(`saved_${scoreDomKey(team)}`); if(savedDiv){ savedDiv.classList.add("show"); setTimeout(()=>savedDiv.classList.remove("show"),1200); } }); }
-function clearTeamMatch(team){ const safe=sanitizeKey(team); if(scores[safe]) scores[safe][currentMatch]=emptyScoreRow(); else scores[safe]=emptyScoreRows(); saveOneTeamScore(safe); renderScoreGrid(); }
+function autoSave(team,opts){ const row=scoreRowFromInputs(team); if(!row) return Promise.resolve(); const safe=sanitizeKey(team); if(!scores[safe]) scores[safe]=emptyScoreRows(); scores[safe][currentMatch]=row; updateScoreCardPreview(team,row); return saveOneTeamScore(safe).then(()=>{ publishLiveOverlaySnapshotSoon(); document.getElementById("last-saved").innerText=new Date().toLocaleTimeString(); const savedDiv=document.getElementById(`saved_${scoreDomKey(team)}`); if(savedDiv){ savedDiv.classList.add("show"); setTimeout(()=>savedDiv.classList.remove("show"),1200); } }); }
+function clearTeamMatch(team){ const safe=sanitizeKey(team); if(scores[safe]) scores[safe][currentMatch]=emptyScoreRow(); else scores[safe]=emptyScoreRows(); saveOneTeamScore(safe).then(()=>publishLiveOverlaySnapshotSoon()); renderScoreGrid(); }
 function saveAll(opts){
   opts=opts||{};
   const updates={};
@@ -1341,6 +1375,7 @@ function saveAll(opts){
   });
   const write=Object.keys(updates).length ? db.ref().update(updates) : Promise.resolve();
   return write.then(()=>opts.quiet?null:publishActiveMatch()).then(()=>{
+    publishLiveOverlaySnapshotSoon();
     document.getElementById("last-saved").innerText=new Date().toLocaleTimeString();
     if(!opts.quiet) showToast("All saved",true);
   });
@@ -1911,7 +1946,7 @@ function combineActiveBuckets(teamBuckets, scoreBuckets, sessions){
   teams = combinedTeams;
   scores = combinedScores;
   applyActiveMatchFromScoreMap(scores);
-  renderTeamsMgmt(); queueScoreGridRender();
+  renderTeamsMgmt(); queueScoreGridRender(); publishLiveOverlaySnapshotSoon();
   document.getElementById("fb-status").className="fb-badge fb-ok";
   document.getElementById("fb-status").textContent = sessions.length>1 ? `● ${sessions.length} Groups Active` : `● Group ${sessions[0].group} · ${sessions[0].date}`;
 }
@@ -2295,7 +2330,7 @@ function egClearGroup(gid, date){
 // The key bridge: when a session is active, _teamsRef() and _scoresRef() point to session paths
 
 // ========== OVERLAY SETTINGS ==========
-let overlaySettings = { design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"", top4HelmetUrl:"", matchEventInfo:"", aliveStyle:"bars", aliveColor:"#00d26a", deadColor:"#252a31", top4Mode:"auto", top4Color:"#d85a10", elimStyle:"compact", elimBgColor:"#b00000", elimTextColor:"#ffffff", elimAccentColor:"#ff3434", elimShowLogo:"yes" };
+let overlaySettings = { obsLinksEnabled:true, design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"", top4HelmetUrl:"", matchEventInfo:"", aliveStyle:"bars", aliveColor:"#00d26a", deadColor:"#252a31", top4Mode:"auto", top4Color:"#d85a10", elimStyle:"compact", elimBgColor:"#b00000", elimTextColor:"#ffffff", elimAccentColor:"#ff3434", elimShowLogo:"yes" };
 let overlayLogoDraft = null;
 let overlayLogoDraftFile = null;
 let top4HelmetDraft = null;
@@ -2306,7 +2341,7 @@ function fillOverlaySettingsForm(){
   const set=(id,val)=>{ const el=document.getElementById(id); if(el && document.activeElement!==el) el.value=val||""; };
   const linkedDesign = overlaySettings.design==="pmgo" || overlaySettings.design==="pmgo-teal";
   const sharedColor = (linkedDesign ? (overlaySettings.accent || overlaySettings.top4Color || "#d85a10") : overlaySettings.accent) || "#d85a10";
-  set("ov-design", overlaySettings.design || "classic"); set("ov-accent", sharedColor); set("ov-bg", overlaySettings.bg || "#0a0b0d"); set("ov-text", overlaySettings.text || "#eef0f5"); set("ov-alive-style", overlaySettings.aliveStyle || "bars"); set("ov-alive-color", overlaySettings.aliveColor || "#00d26a"); set("ov-dead-color", overlaySettings.deadColor || "#252a31"); set("ov-top4", overlaySettings.top4Mode || "auto"); set("ov-elim-style", overlaySettings.elimStyle || "compact"); set("ov-elim-bg", overlaySettings.elimBgColor || "#b00000"); set("ov-elim-text", overlaySettings.elimTextColor || "#ffffff"); set("ov-elim-accent", linkedDesign ? sharedColor : (overlaySettings.elimAccentColor || "#ff3434")); set("ov-elim-logo", overlaySettings.elimShowLogo || "yes"); set("ov-match-event-info", overlaySettings.matchEventInfo || ""); set("ov-streamer-name", overlaySettings.streamerName || "");
+  set("ov-obs-enabled", overlaySettings.obsLinksEnabled === false ? "no" : "yes"); set("ov-design", overlaySettings.design || "classic"); set("ov-accent", sharedColor); set("ov-bg", overlaySettings.bg || "#0a0b0d"); set("ov-text", overlaySettings.text || "#eef0f5"); set("ov-alive-style", overlaySettings.aliveStyle || "bars"); set("ov-alive-color", overlaySettings.aliveColor || "#00d26a"); set("ov-dead-color", overlaySettings.deadColor || "#252a31"); set("ov-top4", overlaySettings.top4Mode || "auto"); set("ov-elim-style", overlaySettings.elimStyle || "compact"); set("ov-elim-bg", overlaySettings.elimBgColor || "#b00000"); set("ov-elim-text", overlaySettings.elimTextColor || "#ffffff"); set("ov-elim-accent", linkedDesign ? sharedColor : (overlaySettings.elimAccentColor || "#ff3434")); set("ov-elim-logo", overlaySettings.elimShowLogo || "yes"); set("ov-match-event-info", overlaySettings.matchEventInfo || ""); set("ov-streamer-name", overlaySettings.streamerName || "");
   const prev=document.getElementById("ov-logo-preview"); if(prev){ const src=overlayLogoDraft || overlaySettings.streamerLogo || ""; prev.src=src; prev.style.display=src?"inline-block":"none"; }
   const helmetPrev=document.getElementById("ov-top4-helmet-preview"); if(helmetPrev){ const src=top4HelmetDraft || overlaySettings.top4HelmetUrl || ""; helmetPrev.src=src; helmetPrev.style.display=src?"inline-block":"none"; }
 }
@@ -2335,6 +2370,14 @@ function applyOverlayDesignPreset(design){
   set("ov-elim-logo","yes");
   showToast((isTeal?"PMGO Teal":"PMGO")+" colors loaded and will be sent to OBS.", true);
 }
+function setObsLinksEnabled(enabled){
+  const data={obsLinksEnabled:!!enabled,updatedAt:Date.now()};
+  const sel=document.getElementById("ov-obs-enabled");
+  if(sel) sel.value=enabled?"yes":"no";
+  const writes=[overlaySettingsRef.update(data)];
+  if(activeEventId!=="default") writes.push(db.ref("pmac/overlaySettings").update(data).catch(()=>null));
+  Promise.all(writes).then(()=>showToast(enabled?"OBS links enabled":"OBS links disabled",true)).catch(e=>showToast("OBS switch failed: "+(e&&e.message?e.message:e),false));
+}
 function saveOverlaySettings(opts){
   opts = opts || {};
   const autoOnly = !!opts.auto;
@@ -2348,7 +2391,7 @@ function saveOverlaySettings(opts){
     const matchEventInfo=autoOnly ? rawMatchEventInfo : rawMatchEventInfo.trim();
     const selectedDesign=document.getElementById("ov-design").value;
     const linkedDesign = selectedDesign==="pmgo" || selectedDesign==="pmgo-teal";
-    const data={ design:selectedDesign, accent:sharedColor, bg:document.getElementById("ov-bg").value, text:document.getElementById("ov-text").value, aliveStyle:document.getElementById("ov-alive-style").value, aliveColor:document.getElementById("ov-alive-color").value, deadColor:document.getElementById("ov-dead-color").value, top4Mode:document.getElementById("ov-top4").value, top4Color:sharedColor, elimStyle:document.getElementById("ov-elim-style").value, elimBgColor:document.getElementById("ov-elim-bg").value, elimTextColor:document.getElementById("ov-elim-text").value, elimAccentColor:linkedDesign ? sharedColor : document.getElementById("ov-elim-accent").value, elimShowLogo:document.getElementById("ov-elim-logo").value, matchEventInfo, streamerName:document.getElementById("ov-streamer-name").value.trim(), streamerLogo:nextStreamerLogo, top4HelmetUrl:nextTop4Helmet, updatedAt:Date.now() };
+    const data={ obsLinksEnabled:document.getElementById("ov-obs-enabled").value!=="no", design:selectedDesign, accent:sharedColor, bg:document.getElementById("ov-bg").value, text:document.getElementById("ov-text").value, aliveStyle:document.getElementById("ov-alive-style").value, aliveColor:document.getElementById("ov-alive-color").value, deadColor:document.getElementById("ov-dead-color").value, top4Mode:document.getElementById("ov-top4").value, top4Color:sharedColor, elimStyle:document.getElementById("ov-elim-style").value, elimBgColor:document.getElementById("ov-elim-bg").value, elimTextColor:document.getElementById("ov-elim-text").value, elimAccentColor:linkedDesign ? sharedColor : document.getElementById("ov-elim-accent").value, elimShowLogo:document.getElementById("ov-elim-logo").value, matchEventInfo, streamerName:document.getElementById("ov-streamer-name").value.trim(), streamerLogo:nextStreamerLogo, top4HelmetUrl:nextTop4Helmet, updatedAt:Date.now() };
     const writes=[overlaySettingsRef.update(data)];
     if(activeEventId!=="default") writes.push(db.ref("pmac/overlaySettings").update(data).catch(()=>null));
     localStorage.setItem("pmac_overlay_settings_latest", JSON.stringify(data));

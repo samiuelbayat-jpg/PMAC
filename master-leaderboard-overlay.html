@@ -99,7 +99,7 @@ var TITLE=qs.get("title")||"MASTER LEADERBOARD";
 var SUBTITLE=qs.get("subtitle")||"GROUP STAGE";
 var MODE=qs.get("mode")||qs.get("scope")||"event";
 var OVERALL_MODE=/^(overall|all|history)$/i.test(MODE);
-var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},overlayInfo={},countryFlagLibrary={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,overlayInfoRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null,countryFlagsRef=null,activeTeamRefs=[],activeScoreRefs=[],lastRenderSignature="",currentTheme=null;
+var teams=[],scoreTeams=[],regTeams=[],scores={},eventInfo={},overlayInfo={},countryFlagLibrary={},teamsRef=null,regsRef=null,scoresRef=null,activeRef=null,themeRef=null,overlayInfoRef=null,eventInfoRef=null,eventGroupsRef=null,mainTeamsRef=null,mainScoresRef=null,countryFlagsRef=null,activeTeamRefs=[],activeScoreRefs=[],lastRenderSignature="",currentTheme=null,obsDisabled=false;
 var masterConfig={title:TITLE,eventInfo:SUBTITLE,pageSeconds:30,selectedArchives:{}},archiveCache={},masterConfigRef=null,masterArchiveRef=null,pageIndex=0,pageTimer=null,currentPageSeconds=30,masterRotationStartedAt=Date.now();
 var THEME_KEY="pmac_match_points_theme_"+EVENT_ID;
 var THEME_DEFAULTS={titleColor:"#f4eadc",team:"#d95b06",accent:"#f47a19",text:"#080808",total1:"#f2eee6",total2:"#ddd8cf",total3:"#c9c2b7"};
@@ -217,6 +217,9 @@ function watchOverlayInfo(){
   overlayInfoRef=db.ref(eventPath("overlaySettings"));
   overlayInfoRef.on("value",function(s){
     overlayInfo=s.val()||{};
+    var wasDisabled=obsDisabled, disabled=overlayInfo.obsLinksEnabled===false;
+    setObsDisabledState(disabled);
+    if(wasDisabled && !disabled) startDataRefs();
     applySharedOverlayColor();
     renderHead();
   });
@@ -246,6 +249,34 @@ function watchCountryFlags(){
     countryFlagLibrary=next;
     render();
   },function(){});
+}
+function stopAllDataRefs(){
+  if(teamsRef)teamsRef.off(); teamsRef=null;
+  if(regsRef)regsRef.off(); regsRef=null;
+  if(scoresRef)scoresRef.off(); scoresRef=null;
+  if(activeRef)activeRef.off(); activeRef=null;
+  if(eventInfoRef)eventInfoRef.off(); eventInfoRef=null;
+  if(eventGroupsRef)eventGroupsRef.off(); eventGroupsRef=null;
+  if(mainTeamsRef)mainTeamsRef.off(); mainTeamsRef=null;
+  if(mainScoresRef)mainScoresRef.off(); mainScoresRef=null;
+  if(countryFlagsRef)countryFlagsRef.off(); countryFlagsRef=null;
+  if(masterConfigRef)masterConfigRef.off(); masterConfigRef=null;
+  if(masterArchiveRef)masterArchiveRef.off(); masterArchiveRef=null;
+  activeTeamRefs.forEach(function(r){r.off();});
+  activeScoreRefs.forEach(function(r){r.off();});
+  activeTeamRefs=[]; activeScoreRefs=[];
+}
+function setObsDisabledState(disabled){
+  obsDisabled=!!disabled;
+  if(!obsDisabled) return;
+  stopAllDataRefs();
+  teams=[]; scoreTeams=[]; regTeams=[]; scores={};
+  lastRenderSignature="";
+  if(pageTimer) clearTimeout(pageTimer);
+  var rows=document.getElementById("rows"),empty=document.getElementById("empty");
+  if(rows) rows.innerHTML="";
+  if(empty){ empty.textContent="OBS LINKS DISABLED FROM ADMIN"; empty.style.display="flex"; }
+  setStatus("OBS links disabled");
 }
 function initials(n){return String(n||"?").trim().split(/\s+/).slice(0,2).map(function(s){return s[0]||"";}).join("").toUpperCase()||"?";}
 function placePoints(rank){
@@ -754,6 +785,7 @@ function renderSignature(list){
   }).join("~")+"|"+TITLE+"|"+SUBTITLE;
 }
 function render(){
+  if(obsDisabled){ setObsDisabledState(true); return; }
   renderHead();
   var all=(teams||[]).filter(function(t){return t&&t.name;}).map(function(t){var stats=teamStats(t);return Object.assign({},t,{total:stats.total,rankPts:stats.rankPts,kills:stats.kills,bestSingleMatch:stats.best});});
   all.sort(function(a,b){return b.total-a.total||b.rankPts-a.rankPts||b.kills-a.kills||b.bestSingleMatch-a.bestSingleMatch||norm(a.name).localeCompare(norm(b.name));});
@@ -790,10 +822,14 @@ function render(){
   scheduleMasterRotation();
 }
 
+function startDataRefs(){
+  if(obsDisabled) return;
+  watchCountryFlags();
+  watchMaster();
+}
 watchTheme();
 watchOverlayInfo();
-watchCountryFlags();
-watchMaster();
+startDataRefs();
 </script>
 </body>
 </html>

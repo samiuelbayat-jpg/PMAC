@@ -275,9 +275,13 @@ body.design-pmgo .ticker-label{background:var(--top4-color);color:#fff;}
 .wwcd-logo-triangle:after{content:"";position:absolute;left:0;right:0;bottom:0;height:42%;background:linear-gradient(0deg,color-mix(in srgb,var(--wwcd-color) 42%,transparent),transparent);z-index:1;}
 .wwcd-winner-logo{position:absolute;left:50%;top:62%;z-index:2;width:116px;height:116px;object-fit:contain;background:transparent;transform:translate(-50%,-50%);filter:drop-shadow(0 6px 8px rgba(0,0,0,.72));}
 .wwcd-winner-logo-fallback{position:absolute;left:50%;top:62%;z-index:2;width:116px;height:116px;display:flex;align-items:center;justify-content:center;background:transparent;color:#fff;font-size:42px;transform:translate(-50%,-50%);filter:drop-shadow(0 6px 8px rgba(0,0,0,.72));}
+.obs-disabled-screen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#05070a;color:#f5f7fb;font-family:'Barlow Condensed',Impact,sans-serif;font-size:64px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;z-index:9999;text-align:center;}
+.obs-links-disabled .panel,.obs-links-disabled .ticker,.obs-links-disabled .top4-win-panel,.obs-links-disabled .wwcd-video-layer,.obs-links-disabled .elim-alert{display:none!important;}
+.obs-links-disabled .obs-disabled-screen{display:flex;}
 </style>
 </head>
 <body class="design-classic">
+<div class="obs-disabled-screen" id="obs-disabled-screen">OBS Links Disabled</div>
 <div class="streamer-card" id="streamer-card"><img class="streamer-logo" id="streamer-logo" alt=""><div class="streamer-name" id="streamer-name"></div></div>
 <div class="elim-alert" id="elim-alert"><div class="elim-content"><div class="elim-logo-wrap" id="elim-logo-wrap"><img class="elim-logo" id="elim-logo" alt=""><div class="elim-logo-fallback" id="elim-logo-fallback">PUBG</div></div><div class="elim-copy"><div class="elim-kicker">Team Eliminated</div><div class="elim-team" id="elim-team"></div><div class="elim-meta" id="elim-meta"></div></div></div></div>
 <div class="top4-win-panel" id="top4-win-panel"></div>
@@ -354,7 +358,7 @@ let lastStandingSnapshot = null;
 let renderCount = 0;
 let overlayMessage = "Connecting...";
 let countryFlagLibrary = {};
-let overlaySettings = { design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"", top4HelmetUrl:"", aliveStyle:"bars", aliveColor:"#00d26a", deadColor:"#252a31", top4Mode:"auto", top4Color:"#d85a10", elimStyle:"compact", elimBgColor:"#b00000", elimTextColor:"#ffffff", elimAccentColor:"#ff3434", elimShowLogo:"yes" };
+let overlaySettings = { obsLinksEnabled:true, design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"", top4HelmetUrl:"", aliveStyle:"bars", aliveColor:"#00d26a", deadColor:"#252a31", top4Mode:"auto", top4Color:"#d85a10", elimStyle:"compact", elimBgColor:"#b00000", elimTextColor:"#ffffff", elimAccentColor:"#ff3434", elimShowLogo:"yes" };
 function countryCode(value){ return String(value||"").trim().toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4); }
 function teamCountryFlag(team){
   if(!team) return "";
@@ -416,11 +420,12 @@ function applyOverlaySettings(){
   if(s.streamerLogo){ panelLogo.src=s.streamerLogo; panelLogo.style.display="block"; }
   panelTitle.textContent=(activeDesign==="redlive"?(s.streamerName||"LIVE STANDING"):(sharedDesign?(s.streamerName||"PMGO LIVE POINTS"):(s.streamerName||"Standings")));
 }
-function applySettingsPayload(val){ overlaySettings=Object.assign({},overlaySettings,val||{}); applyOverlaySettings(); render(); }
+function applySettingsPayload(val){ overlaySettings=Object.assign({},overlaySettings,val||{}); applyOverlaySettings(); setObsDataEnabled(overlaySettings.obsLinksEnabled!==false); render(); }
 const overlaySettingsLiveRef=db.ref(eventPath("overlaySettings"));
 overlaySettingsLiveRef.on("value",snap=>applySettingsPayload(snap.val()||{}));
 let lastEliminationTs=0, eliminationTimer=null;
 function showEliminationAlert(a){
+  if(overlaySettings.obsLinksEnabled===false) return;
   if(!a||!a.ts||a.ts===lastEliminationTs) return;
   if(Date.now()-a.ts>45000){ lastEliminationTs=a.ts; return; }
   lastEliminationTs=a.ts;
@@ -1012,25 +1017,60 @@ function escapeHtml(str) {
   });
 }
 
-let liveTeamsRef=null, liveScoresRef=null, fallbackTeamsRef=null, fallbackScoresRef=null;
-db.ref(eventPath("countryFlags")).on("value", snap=>{
-  const data=snap.val()||{};
-  const next={};
-  Object.keys(data).forEach(k=>{
-    const item=data[k]||{};
-    const code=countryCode(item.code||k);
-    if(code && item.flag) next[code]={code,flag:item.flag};
-  });
-  countryFlagLibrary=next;
-  render();
-}, ()=>{});
+let liveTeamsRef=null, liveScoresRef=null, fallbackTeamsRef=null, fallbackScoresRef=null, countryFlagsRef=null, liveSnapshotRef=null, activeSessionRef=null;
+function stopCountryFlagsRef(){ if(countryFlagsRef) countryFlagsRef.off(); countryFlagsRef=null; }
+function watchCountryFlagsRef(){
+  if(countryFlagsRef) return;
+  countryFlagsRef=db.ref(eventPath("countryFlags"));
+  countryFlagsRef.on("value", snap=>{
+    const data=snap.val()||{};
+    const next={};
+    Object.keys(data).forEach(k=>{
+      const item=data[k]||{};
+      const code=countryCode(item.code||k);
+      if(code && item.flag) next[code]={code,flag:item.flag};
+    });
+    countryFlagLibrary=next;
+    render();
+  }, ()=>{});
+}
 function stopFallbackRefs(){ if(fallbackTeamsRef) fallbackTeamsRef.off(); if(fallbackScoresRef) fallbackScoresRef.off(); fallbackTeamsRef=null; fallbackScoresRef=null; }
+function stopLiveRefs(){ if(liveTeamsRef) liveTeamsRef.off(); if(liveScoresRef) liveScoresRef.off(); liveTeamsRef=null; liveScoresRef=null; stopFallbackRefs(); }
 function loadMainFallback(){
   if(fallbackTeamsRef || fallbackScoresRef) return;
   fallbackTeamsRef=db.ref(eventPath("teams")); fallbackScoresRef=db.ref(eventPath("matches"));
   fallbackTeamsRef.on("value", snap=>{ const val=snap.val(); currentTeams=val?(Array.isArray(val)?val:Object.values(val)):[]; if(!currentTeams.length)setOverlayMessage("No teams found for event: "+EVENT_ID); render(); }, err=>{ setOverlayMessage("Firebase teams blocked: "+err.message); render(); });
   fallbackScoresRef.on("value", snap=>{ currentScores=snap.val()||{}; render(); }, err=>{ setOverlayMessage("Firebase scores blocked: "+err.message); render(); });
 }
+function rowsFromSnapshotTeams(list,idx){
+  const out={_activeMatch:{index:idx,number:idx+1,updatedAt:Date.now()}};
+  (list||[]).forEach(t=>{
+    const rows=Array.isArray(t.rows) ? t.rows.map(r=>({rank:r&&r.rank!==undefined?r.rank:null,kills:r&&r.kills!==undefined?r.kills:null,players:r&&r.players!==undefined?r.players:4,missed:r&&r.missed===true})) : Array(10).fill(null).map(()=>({rank:null,kills:null,players:4}));
+    if(!Array.isArray(t.rows)) rows[idx]={rank:t.rank??null,kills:t.kills??0,players:t.players??4,missed:t.missed===true};
+    out[t.name]=rows;
+    out[sanitizeKey(t.name)]=rows;
+  });
+  return out;
+}
+function applyLiveSnapshot(data){
+  const list=Array.isArray(data&&data.teams)?data.teams:[];
+  if(!list.length) return false;
+  if(activeSessionRef){ activeSessionRef.off(); activeSessionRef=null; }
+  stopLiveRefs();
+  const idx=Math.max(0,Math.min(9,parseInt(data.activeMatchIndex)||0));
+  activeMatchIndex=idx;
+  currentTeams=list.map(t=>({name:t.name||"",tag:t.tag||"",country:t.country||"",flag:t.flag||"",countryFlag:t.countryFlag||"",logo:t.logo||""}));
+  currentScores=rowsFromSnapshotTeams(list,idx);
+  setOverlayMessage("");
+  render();
+  return true;
+}
+function startActiveSessionFallback(){
+  if(activeSessionRef) return;
+  activeSessionRef=db.ref(eventPath("activeSession"));
+  activeSessionRef.on("value", snap => bindLiveSession(snap.val()), err=>{ setOverlayMessage("Firebase active session blocked: "+err.message); loadMainFallback(); });
+}
+function stopActiveSessionFallback(){ if(activeSessionRef) activeSessionRef.off(); activeSessionRef=null; stopLiveRefs(); }
 function activeSessions(session){
   if(!session) return [];
   if(Array.isArray(session.sessions)) return session.sessions.filter(s=>s&&s.group&&s.date);
@@ -1083,7 +1123,28 @@ function bindMultiLiveSession(sessions){
   liveScoresRef={off:function(){scoreRefs.forEach(r=>r.off());}};
   const status=document.getElementById("fb-status"); if(status) status.textContent=`● ${sessions.length} Groups Active`;
 }
-db.ref(eventPath("activeSession")).on("value", snap => bindLiveSession(snap.val()), err=>{ setOverlayMessage("Firebase active session blocked: "+err.message); loadMainFallback(); });
+function startLiveSnapshotRef(){
+  if(liveSnapshotRef) return;
+  liveSnapshotRef=db.ref(eventPath("liveOverlaySnapshot"));
+  liveSnapshotRef.on("value", snap=>{
+    if(!applyLiveSnapshot(snap.val())) startActiveSessionFallback();
+  }, ()=>startActiveSessionFallback());
+}
+function stopLiveSnapshotRef(){ if(liveSnapshotRef) liveSnapshotRef.off(); liveSnapshotRef=null; }
+function setObsDataEnabled(enabled){
+  document.body.classList.toggle("obs-links-disabled", !enabled);
+  if(!enabled){
+    stopLiveSnapshotRef();
+    stopActiveSessionFallback();
+    stopCountryFlagsRef();
+    currentTeams=[];
+    currentScores={};
+    return;
+  }
+  watchCountryFlagsRef();
+  startLiveSnapshotRef();
+}
+setObsDataEnabled(overlaySettings.obsLinksEnabled!==false);
 </script>
 </body>
 </html>
