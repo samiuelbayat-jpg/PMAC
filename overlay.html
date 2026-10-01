@@ -147,6 +147,79 @@ body.design-pmgo .ticker-label{background:var(--top4-color);color:#fff;}
 .design-pmgo-teal .ticker-label{background:var(--ov-accent);color:#051213;letter-spacing:.08em;}
 .design-pmgo-teal .ti-name,.design-pmgo-teal .ti-pts,.design-pmgo-teal .ti-pos{color:#fff;}
 .design-pmgo-teal .ti-val{color:#d7ded5;}
+body.design-pmgo-eliminated .panel{top:auto;right:0;bottom:0;width:392px;background:color-mix(in srgb,var(--ov-accent) 14%,rgba(6,12,10,.94));border:0;box-shadow:-8px 0 24px rgba(0,0,0,.42);padding-bottom:30px;}
+body.design-pmgo-eliminated .panel:before{content:"";position:absolute;inset:0;border-left:3px solid var(--ov-accent);border-bottom:3px solid var(--ov-accent);pointer-events:none;}
+body.design-pmgo-eliminated .panel:after{display:none;}
+body.design-pmgo-eliminated .panel-top{display:flex;height:52px;align-items:center;background:#070707;border:0;padding:0 8px;}
+body.design-pmgo-eliminated .panel-logo,body.design-pmgo-eliminated .panel-right{display:none!important;}
+body.design-pmgo-eliminated .panel-title-text{font-size:28px;line-height:1;color:#fff;letter-spacing:.025em;text-align:left;text-shadow:0 2px 0 #000;}
+body.design-pmgo-eliminated .col-headers{grid-template-columns:38px minmax(0,1fr) 72px 45px 42px;background:#0b0b0b;border:0;border-bottom:2px solid rgba(255,255,255,.18);padding:5px 8px;min-height:30px;}
+body.design-pmgo-eliminated .col-h{color:color-mix(in srgb,var(--ov-accent) 55%,#ffffff);font-size:13px;font-weight:900;text-align:center;letter-spacing:.02em;font-family:'Barlow Condensed',sans-serif;}
+body.design-pmgo-eliminated .col-h:nth-child(2){text-align:left;padding-left:16px;}
+body.design-pmgo-eliminated .team-row{grid-template-columns:38px minmax(0,1fr) 72px 45px 42px;align-items:center;margin:0;padding:0 8px;min-height:40px;background:linear-gradient(90deg,color-mix(in srgb,var(--ov-accent) 76%,#111) 0%,color-mix(in srgb,var(--ov-accent) 44%,#07110d) 100%);border:0;border-bottom:2px solid color-mix(in srgb,var(--ov-accent) 34%,rgba(255,255,255,.12));clip-path:none;}
+body.design-pmgo-eliminated .team-row:nth-child(even){background:linear-gradient(90deg,color-mix(in srgb,var(--ov-accent) 64%,#101010) 0%,color-mix(in srgb,var(--ov-accent) 34%,#07110d) 100%);}
+body.design-pmgo-eliminated .team-row.eliminated-team,body.design-pmgo-eliminated .team-row.missed-current{background:linear-gradient(90deg,#a01f2a,#74161f)!important;filter:none;opacity:1;}
+body.design-pmgo-eliminated .team-row.eliminated-team .pmgo-alive,body.design-pmgo-eliminated .team-row.missed-current .pmgo-alive{position:relative;}
+body.design-pmgo-eliminated .team-row.eliminated-team .pmgo-alive > *,body.design-pmgo-eliminated .team-row.missed-current .pmgo-alive > *{display:none!important;}
+body.design-pmgo-eliminated .team-row.eliminated-team .pmgo-alive:before,body.design-pmgo-eliminated .team-row.missed-current .pmgo-alive:before{content:"ELIMINATED";position:absolute;left:-95px;right:-90px;top:50%;transform:translateY(-50%);font-size:22px;font-weight:900;color:#fff;text-align:center;letter-spacing:.03em;text-shadow:0 2px 0 rgba(0,0,0,.45);}
+body.design-pmgo-eliminated .team-row.eliminated-team .t-pts,body.design-pmgo-eliminated .team-row.eliminated-team .t-kills,body.design-pmgo-eliminated .team-row.missed-current .t-pts,body.design-pmgo-eliminated .team-row.missed-current .t-kills{visibility:hidden;}
+body.design-pmgo-eliminated .pos{font-size:24px;color:#eef9f0!important;text-shadow:0 2px 0 rgba(0,0,0,.45);min-height:34px;line-height:1;font-weight:900;}
+body.design-pmgo-eliminated .rank-move{display:none;}
+body.design-pmgo-eliminated .pmgo-team-cell{display:flex;align-items:center;gap:7px;min-width:0;padding-left:4px;}
+body.design-pmgo-eliminated .t-logo{width:35px;height:35px;border-radius:0;border:0;background:transparent;object-fit:contain;flex:0 0 35px;box-shadow:none;}
+body.design-pmgo-eliminated .t-logo-wrap{width:58px;height:36px;flex:0 0 58px;border-radius:0;background:#fff;clip-path:polygon(0 0,100% 0,85% 100%,0 100%);display:flex;align-items:center;justify-content:center;overflow:hidden;padding-right:7px;}
+body.design-pmgo-eliminated .t-logo-wrap .t-logo{width:52px!important;height:52px!important;max-width:none;max-height:none;border-radius:0;object-fit:contain;transform:scale(var(--logo-scale,1));transform-origin:center center;}
+body.design-pmgo-eliminated .t-logo-wrap .t-logo.logo-normalized{width:35px!important;height:35px!important;max-width:35px!important;max-height:35px!important;transform:none!important;}
+body.design-pmgo-eliminated .country-flag-wrap,body.design-pmgo-eliminated .country-flag{width:35px;height:35px;flex-basis:35px;display:flex;}
+body.design-pmgo-eliminated .country-flag{object-fit:contain;display:block;background:transparent;}
+body.design-pmgo-eliminated .country-flag-wrap{align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+body.design-pmgo-eliminated .team-row.eliminated-team .country-flag,body.design-pmgo-eliminated .team-row.missed-current .country-flag{filter:grayscale(.45) opacity(.9);}
+body.design-pmgo-eliminated .t-name{font-size:20px;color:#fff;letter-spacing:.02em;font-weight:900;line-height:1;text-transform:uppercase;text-overflow:clip;text-shadow:0 1px 0 #000;}
+body.design-pmgo-eliminated .pmgo-alive{display:flex;justify-content:center;align-items:center;}
+body.design-pmgo-eliminated .player-strips{width:55px;margin:0;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;align-self:center;}
+body.design-pmgo-eliminated .pstrip{height:27px;border-radius:0;background:var(--alive-color);box-shadow:none;}
+body.design-pmgo-eliminated .pstrip.dead{background:var(--dead-color);border:0;opacity:1;}
+body.design-pmgo-eliminated .player-pipes,.design-pmgo-eliminated .player-dots{width:55px;transform:none;justify-content:center;}
+body.design-pmgo-eliminated .player-pipes .pmark{font-size:24px;color:var(--alive-color);}
+body.design-pmgo-eliminated .player-pipes .pmark.dead{color:var(--dead-color);}
+body.design-pmgo-eliminated .player-dots .pmark{width:11px;height:24px;border-radius:0;background:var(--alive-color);}
+body.design-pmgo-eliminated .player-dots .pmark.dead{background:var(--dead-color);border:0;}
+body.design-pmgo-eliminated .t-pts,body.design-pmgo-eliminated .t-kills{display:flex;align-items:center;justify-content:center;color:#fff;background:transparent;border-radius:0;font-size:21px;font-weight:900;text-align:center;padding:0;line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.45);}
+body.design-pmgo-eliminated .t-kills{position:relative;min-height:32px;}
+body.design-pmgo-eliminated .t-kills.has-plus{justify-content:center;padding:0;}
+body.design-pmgo-eliminated .pmgo-prev-points{display:block;min-width:22px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:18px;font-weight:900;color:#fff;letter-spacing:-.04em;}
+body.design-pmgo-eliminated .pmgo-elim-plus{position:absolute;right:-11px;top:-2px;display:block;font-family:'Share Tech Mono',monospace;font-size:17px;font-weight:900;color:color-mix(in srgb,var(--ov-accent) 45%,#fff45a);letter-spacing:-.06em;text-shadow:0 1px 0 rgba(0,0,0,.45);}
+body.design-pmgo-eliminated .pmgo-legend{position:absolute;left:8px;right:8px;bottom:5px;height:24px;background:#08100d;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:18px;border-top:2px solid var(--ov-accent);}
+body.design-pmgo-eliminated .pmgo-legend-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+body.design-pmgo-eliminated .pmgo-legend-mark{width:9px;height:9px;display:inline-block;background:#777;}
+body.design-pmgo-eliminated .pmgo-legend-mark.alive{background:var(--alive-color);}
+body.design-pmgo-eliminated .pmgo-legend-mark.knocked{background:#f0001f;}
+body.design-pmgo-eliminated .pmgo-legend-mark.eliminated{background:var(--dead-color);}
+body.design-pmgo-eliminated .ticker{right:392px;height:38px;background:#08100d;border-top:3px solid var(--ov-accent);}
+body.design-pmgo-eliminated .ticker-label{background:var(--ov-accent);color:#051213;letter-spacing:.08em;}
+body.design-pmgo-eliminated .ti-name,body.design-pmgo-eliminated .ti-pts,body.design-pmgo-eliminated .ti-pos{color:#fff;}
+body.design-pmgo-eliminated .ti-val{color:#d7ded5;}
+.elim-alert[data-style="pmgo-eliminated"]{left:58px;top:28px;transform:none;padding:0;width:420px;max-width:420px;height:188px;background:transparent;border:0;border-radius:0;clip-path:none;box-shadow:none;text-align:left;overflow:visible;}
+.elim-alert[data-style="pmgo-eliminated"].show{transform:none;}
+.elim-alert[data-style="pmgo-eliminated"]:before,.elim-alert[data-style="pmgo-eliminated"]:after{display:none;}
+.elim-alert[data-style="pmgo-eliminated"] .elim-content{height:100%;justify-content:flex-start;align-items:stretch;gap:0;position:relative;}
+.elim-alert[data-style="pmgo-eliminated"] .elim-logo-wrap{position:absolute;right:16px;top:8px;width:104px;height:104px;flex:0 0 104px;border:0;border-radius:0;box-shadow:0 8px 18px rgba(0,0,0,.34);background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:5;}
+.elim-alert[data-style="pmgo-eliminated"] .elim-logo{width:94px;height:94px;object-fit:contain;background:transparent;border:0;border-radius:0;}
+.elim-alert[data-style="pmgo-eliminated"] .elim-logo-fallback{width:94px;height:94px;background:#fff;color:#08120d;border:0;font-size:22px;}
+.elim-alert[data-style="pmgo-eliminated"] .elim-copy{position:absolute;left:0;top:0;width:396px;height:184px;display:block;background:linear-gradient(90deg,color-mix(in srgb,var(--elim-accent) 14%,rgba(3,18,12,.98)),color-mix(in srgb,var(--elim-accent) 22%,rgba(5,31,21,.88)) 72%,rgba(2,10,8,.92));border:0;text-align:left;box-shadow:0 12px 24px rgba(0,0,0,.36),inset 0 0 0 3px color-mix(in srgb,var(--elim-accent) 42%,transparent);}
+.elim-alert[data-style="pmgo-eliminated"] .elim-copy:after{content:"";position:absolute;left:0;right:0;bottom:0;height:10px;background:rgba(0,0,0,.48);border-top:2px solid color-mix(in srgb,var(--elim-accent) 58%,transparent);}
+.elim-alert[data-style="pmgo-eliminated"] .elim-kicker{position:absolute;left:0;top:0;display:block;width:238px;height:114px;color:#fff;font-size:55px;font-weight:900;line-height:.84;letter-spacing:.01em;text-transform:uppercase;padding:15px 0 0 9px;text-shadow:0 3px 0 rgba(0,0,0,.66),0 0 8px color-mix(in srgb,var(--elim-accent) 36%,transparent);}
+.elim-alert[data-style="pmgo-eliminated"] .elim-kicker:before{content:"";position:absolute;left:158px;top:13px;width:66px;height:66px;border:3px solid rgba(255,255,255,.94);border-radius:50%;background:linear-gradient(90deg,transparent 0 45%,rgba(255,255,255,.95) 45% 48%,transparent 48% 52%,rgba(255,255,255,.95) 52% 55%,transparent 55% 100%),linear-gradient(180deg,transparent 0 45%,rgba(255,255,255,.95) 45% 48%,transparent 48% 52%,rgba(255,255,255,.95) 52% 55%,transparent 55% 100%),radial-gradient(circle at center,rgba(255,255,255,.98) 0 4px,transparent 5px 100%);box-shadow:0 0 0 1px rgba(0,0,0,.50),0 0 12px rgba(255,255,255,.20);}
+.elim-alert[data-style="pmgo-eliminated"] .elim-kicker:after{content:"";position:absolute;left:150px;top:45px;width:82px;height:3px;background:rgba(255,255,255,.92);box-shadow:41px -40px 0 rgba(255,255,255,.92),41px 40px 0 rgba(255,255,255,.92);transform:rotate(0deg);}
+.elim-alert[data-style="pmgo-eliminated"] .elim-team{display:block;position:absolute;left:0;bottom:12px;width:232px;height:58px;background:var(--elim-accent);color:#06120d;text-shadow:none;letter-spacing:.02em;max-width:none;white-space:nowrap;overflow:hidden;z-index:3;}
+.elim-alert[data-style="pmgo-eliminated"] .elim-team:before,.elim-alert[data-style="pmgo-eliminated"] .elim-team:after{display:none;content:"";}
+.elim-alert[data-style="pmgo-eliminated"] .elim-pmgo-name{position:absolute;left:76px;top:7px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:45px;font-weight:900;line-height:.9;color:#06120d!important;text-transform:uppercase;letter-spacing:.02em;text-shadow:none;text-align:left;}
+.elim-alert[data-style="pmgo-eliminated"] .elim-pmgo-score{display:none;}
+.elim-alert[data-style="pmgo-eliminated"] .elim-meta{position:absolute;left:8px;bottom:22px;margin:0;font-family:'Barlow Condensed',sans-serif;font-size:45px;font-weight:900;line-height:.9;color:#06120d;letter-spacing:.02em;text-shadow:none;z-index:6;}
+.elim-alert[data-style="pmgo-eliminated"] .elim-meta:after{content:"MATCH";position:absolute;left:238px;bottom:4px;color:#ffd84d;font-size:20px;font-weight:900;letter-spacing:.04em;text-shadow:0 2px 0 rgba(0,0,0,.55);}
+.elim-alert[data-style="pmgo-eliminated"] .elim-meta:before{content:"";position:absolute;left:221px;bottom:10px;width:20px;height:20px;background:#ffd84d;box-shadow:0 2px 0 rgba(0,0,0,.38);}
+.elim-alert[data-style="pmgo-eliminated"][data-logo="no"] .elim-logo-wrap{display:flex;}
+.elim-alert[data-style="pmgo-eliminated"][data-logo="no"] .elim-logo,.elim-alert[data-style="pmgo-eliminated"][data-logo="no"] .elim-logo-fallback{display:none!important;}
 .team-row.missed-current{filter:grayscale(.55);box-shadow:inset 0 0 18px rgba(120,126,132,.30),0 0 9px rgba(120,126,132,.22);opacity:.84;}.team-row.missed-current .t-name,.team-row.missed-current .t-kills,.team-row.missed-current .t-place,.team-row.missed-current .t-pts,.team-row.missed-current .pos{color:#8f969c!important;text-shadow:none;}.missed-label{font-family:'Share Tech Mono',monospace;font-size:8px;font-weight:900;letter-spacing:.12em;color:#8f969c;text-transform:uppercase;margin-top:2px;}body.design-pmgo .team-row.missed-current{background:#5f625d!important;filter:grayscale(.65);opacity:.9;}body.design-pmgo .team-row.missed-current .t-name,body.design-pmgo .team-row.missed-current .t-kills,body.design-pmgo .team-row.missed-current .t-pts{color:#d3d6d2!important;}body.design-pmgo .team-row.missed-current .pos{background:var(--top4-color)!important;color:#fff!important;text-shadow:0 2px 0 rgba(0,0,0,.38)!important;}body.design-pmgo .missed-label{font-size:12px;color:#d3d6d2;margin:0;text-align:center;}
 .elim-alert[data-style="pmgo"]{top:135px;padding:0;width:620px;max-width:620px;height:132px;background:#070809;border:1px solid rgba(255,190,55,.38);border-radius:0;clip-path:none;box-shadow:0 0 0 1px rgba(0,0,0,.78) inset,0 16px 35px rgba(0,0,0,.38);text-align:left;overflow:hidden;}
 .elim-alert[data-style="pmgo"]:before{opacity:.48;background:linear-gradient(103deg,transparent 0 66%,rgba(255,255,255,.08) 68%,transparent 75%),radial-gradient(circle at 18% 14%,rgba(255,255,255,.17),transparent 28%);}
@@ -358,13 +431,47 @@ let lastStandingSnapshot = null;
 let renderCount = 0;
 let overlayMessage = "Connecting...";
 let countryFlagLibrary = {};
+let teamMetaByName = {};
+let teamMetaByTag = {};
 let overlaySettings = { obsLinksEnabled:true, design:"classic", accent:"#e8b800", bg:"#0a0b0d", text:"#eef0f5", streamerName:"", streamerLogo:"", top4HelmetUrl:"", aliveStyle:"bars", aliveColor:"#00d26a", deadColor:"#252a31", top4Mode:"auto", top4Color:"#d85a10", elimStyle:"compact", elimBgColor:"#b00000", elimTextColor:"#ffffff", elimAccentColor:"#ff3434", elimShowLogo:"yes" };
 function countryCode(value){ return String(value||"").trim().toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,4); }
+function teamLookupKey(value){ return String(value||"").trim().toUpperCase(); }
+function teamMetaFor(team){
+  if(!team) return null;
+  return teamMetaByName[teamLookupKey(team.name)] || teamMetaByTag[teamLookupKey(team.tag)] || teamMetaByTag[teamLookupKey(teamTag(team))] || null;
+}
+function countryFlagFallbackUrl(code){
+  const map={
+    AFG:"af",AF:"af",IR:"ir",IRI:"ir",IRN:"ir",PK:"pk",PAK:"pk",IN:"in",IND:"in",
+    BD:"bd",BAN:"bd",BGD:"bd",NP:"np",NEP:"np",LK:"lk",SRI:"lk",TH:"th",THA:"th",
+    MY:"my",MAS:"my",MYS:"my",ID:"id",INA:"id",IDN:"id",PH:"ph",PHI:"ph",PHL:"ph",
+    VN:"vn",VIE:"vn",VNM:"vn",MM:"mm",MYA:"mm",MMR:"mm",CN:"cn",CHN:"cn",JP:"jp",
+    JPN:"jp",KR:"kr",KOR:"kr",TR:"tr",TUR:"tr",AE:"ae",UAE:"ae",SA:"sa",KSA:"sa",
+    IQ:"iq",IRQ:"iq",SY:"sy",SYR:"sy",KZ:"kz",KAZ:"kz",UZ:"uz",UZB:"uz",TJ:"tj",
+    TJK:"tj",TM:"tm",TKM:"tm",KG:"kg",KGZ:"kg",RU:"ru",RUS:"ru",US:"us",USA:"us",
+    GB:"gb",UK:"gb",DE:"de",GER:"de",NL:"nl",NED:"nl",BE:"be",BEL:"be",FR:"fr"
+  };
+  const iso=map[countryCode(code)];
+  return iso ? "https://flagcdn.com/w80/"+iso+".png" : "";
+}
 function teamCountryFlag(team){
   if(!team) return "";
   if(team.flag || team.countryFlag) return team.flag || team.countryFlag || "";
-  const code=countryCode(team.country);
-  return code && countryFlagLibrary[code] ? (countryFlagLibrary[code].flag||"") : "";
+  const meta=teamMetaFor(team);
+  if(meta && (meta.flag || meta.countryFlag)) return meta.flag || meta.countryFlag || "";
+  const code=countryCode(team.country || (meta&&meta.country) || "");
+  return code && countryFlagLibrary[code] ? (countryFlagLibrary[code].flag||"") : countryFlagFallbackUrl(code);
+}
+function showCountryFlagFallback(img){
+  const wrap=img&&img.parentElement;
+  if(!wrap) return;
+  const code=countryCode(img.getAttribute("data-country-code")||"");
+  const fallback=countryFlagFallbackUrl(code);
+  if(fallback && img.src!==fallback){
+    img.src=fallback;
+    return;
+  }
+  wrap.remove();
 }
 function hexToRgba(hex,a){
   const v=(hex||"#0a0b0d").replace("#","");
@@ -375,7 +482,7 @@ function currentOverlayDesign(){
   return FORCE_DESIGN || (overlaySettings && overlaySettings.design) || "classic";
 }
 function isSharedColorDesign(design){
-  return design==="pmgo" || design==="pmgo-teal";
+  return design==="pmgo" || design==="pmgo-teal" || design==="pmgo-eliminated";
 }
 function pmgoSharedColor(s){
   return (s && (s.accent || s.top4Color)) || "#d85a10";
@@ -383,7 +490,7 @@ function pmgoSharedColor(s){
 function applyColumnHeaders(){
   const headers=document.querySelector(".col-headers");
   if(!headers) return;
-  if(currentOverlayDesign()==="pmgo-teal"){
+  if(currentOverlayDesign()==="pmgo-teal" || currentOverlayDesign()==="pmgo-eliminated"){
     headers.innerHTML='<div class="col-h">#</div><div class="col-h L">TEAMS</div><div class="col-h">STATUS</div><div class="col-h">PTS.</div><div class="col-h acc">ELIMS</div>';
   }else if(currentOverlayDesign()==="pmgo"){
     headers.innerHTML='<div class="col-h">RANK</div><div class="col-h L">TEAM</div><div class="col-h">ALIVE</div><div class="col-h">ELIMS</div><div class="col-h acc">TOTAL</div>';
@@ -418,7 +525,7 @@ function applyOverlaySettings(){
   const card=document.getElementById("streamer-card"), panelLogo=document.getElementById("panel-logo"), panelTitle=document.getElementById("panel-title-text");
   if(card) card.style.display="none";
   if(s.streamerLogo){ panelLogo.src=s.streamerLogo; panelLogo.style.display="block"; }
-  panelTitle.textContent=(activeDesign==="redlive"?(s.streamerName||"LIVE STANDING"):(sharedDesign?(s.streamerName||"PMGO LIVE POINTS"):(s.streamerName||"Standings")));
+  panelTitle.textContent=(activeDesign==="redlive"?(s.streamerName||"LIVE STANDING"):(activeDesign==="pmgo-eliminated"?(s.streamerName||"OVERALL RANKING"):(sharedDesign?(s.streamerName||"PMGO LIVE POINTS"):(s.streamerName||"Standings"))));
 }
 function applySettingsPayload(val){ overlaySettings=Object.assign({},overlaySettings,val||{}); applyOverlaySettings(); setObsDataEnabled(overlaySettings.obsLinksEnabled!==false); render(); }
 const overlaySettingsLiveRef=db.ref(eventPath("overlaySettings"));
@@ -446,13 +553,13 @@ function showEliminationAlert(a){
   const elimInfo=getEliminationInfo(matched,team,tag);
   const alertRank = a.rank!==null && a.rank!==undefined && a.rank!=="" ? a.rank : elimInfo.rank;
   const alertKills = a.kills!==null && a.kills!==undefined && a.kills!=="" ? a.kills : elimInfo.kills;
-  if(activeElimStyle==="pmgo" || activeElimStyle==="pmgo-teal"){
+  if(activeElimStyle==="pmgo" || activeElimStyle==="pmgo-teal" || activeElimStyle==="pmgo-eliminated"){
     teamEl.innerHTML="<span class=\"elim-pmgo-name\">"+escapeHtml(display)+"</span><span class=\"elim-pmgo-score\"><span class=\"elim-pmgo-count\">"+escapeHtml(alertKills)+"</span><span class=\"elim-pmgo-word\">ELIMS</span></span>";
     metaEl.innerHTML="<span class=\"elim-pmgo-rank\">#"+escapeHtml(alertRank)+"</span>";
     const kicker=box.querySelector(".elim-kicker");
     if(kicker){
       kicker.setAttribute("data-rank","#"+String(alertRank||"-"));
-      kicker.textContent=activeElimStyle==="pmgo-teal" ? "ELIMINATED" : "Team Eliminated";
+      kicker.innerHTML=activeElimStyle==="pmgo-eliminated" ? "TEAM<br>ELIMINATED" : (activeElimStyle==="pmgo-teal" ? "ELIMINATED" : "Team Eliminated");
     }
   }else if(["official","bluecard"].includes(activeElimStyle)){
     teamEl.innerHTML="<span class=\"elim-name\">"+escapeHtml(display)+"</span><span class=\"elim-word\">ELIMINATED · "+escapeHtml(alertKills)+" ELIMS</span>";
@@ -961,9 +1068,10 @@ function render() {
       '<span class="t-logo-wrap"><img class="' + logoClass + '" src="' + renderLogoSrc + '" alt="" data-logo-src="' + logoSrc + '" onload="fitOverlayLogo(this)" onerror="retryOverlayLogoProxy(this)"></span>' : 
       '<span class="t-logo-wrap"><div class="t-logo t-logo-fallback logo-normalized">?</div></span>';
     const rawFlagSrc = teamCountryFlag(team);
-    const flagHtml = rawFlagSrc ? '<span class="country-flag-wrap"><img class="country-flag" src="' + escapeAttr(rawFlagSrc) + '" alt="" onerror="this.parentElement.remove()"></span>' : '';
+    const flagCode = countryCode(team.country || ((teamMetaFor(team)||{}).country) || "");
+    const flagHtml = rawFlagSrc ? '<span class="country-flag-wrap"><img class="country-flag" src="' + escapeAttr(rawFlagSrc) + '" alt="" data-country-code="' + escapeAttr(flagCode) + '" onerror="showCountryFlagFallback(this)"></span>' : '';
     
-    if(activeDesign==="pmgo" || activeDesign==="pmgo-teal"){
+    if(activeDesign==="pmgo" || activeDesign==="pmgo-teal" || activeDesign==="pmgo-eliminated"){
       const activeElimPoints = Math.max(0, parseInt(team.activeKills,10) || 0);
       const prevElims = Math.max(0, parseInt(team.previousKills,10) || 0);
       const baseElims = activeMatchIndex > 0 ? prevElims : activeElimPoints;
@@ -971,7 +1079,7 @@ function render() {
       const elimCell = team.missed
         ? '<span class="pmgo-prev-points">0</span>'
         : '<span class="pmgo-prev-points">' + escapeHtml(baseElims) + '</span>' + (showActiveElimPlus ? '<span class="pmgo-elim-plus">+' + escapeHtml(activeElimPoints) + '</span>' : '');
-      if(activeDesign==="pmgo-teal"){
+      if(activeDesign==="pmgo-teal" || activeDesign==="pmgo-eliminated"){
         row.innerHTML =
           '<div class="pos ' + posColorClass + '">' + position + '</div>' +
           '<div class="pmgo-team-cell">' + flagHtml + logoHtml + '<div class="t-name">' + escapeHtml(teamTag(team)) + '</div></div>' +
@@ -1017,7 +1125,7 @@ function escapeHtml(str) {
   });
 }
 
-let liveTeamsRef=null, liveScoresRef=null, fallbackTeamsRef=null, fallbackScoresRef=null, countryFlagsRef=null, liveSnapshotRef=null, activeSessionRef=null;
+let liveTeamsRef=null, liveScoresRef=null, fallbackTeamsRef=null, fallbackScoresRef=null, countryFlagsRef=null, mainTeamMetaRef=null, liveSnapshotRef=null, activeSessionRef=null;
 function stopCountryFlagsRef(){ if(countryFlagsRef) countryFlagsRef.off(); countryFlagsRef=null; }
 function watchCountryFlagsRef(){
   if(countryFlagsRef) return;
@@ -1028,9 +1136,33 @@ function watchCountryFlagsRef(){
     Object.keys(data).forEach(k=>{
       const item=data[k]||{};
       const code=countryCode(item.code||k);
-      if(code && item.flag) next[code]={code,flag:item.flag};
+      const flag=typeof item==="string" ? item : (item.flag||item.countryFlag||item.url||item.logo||item.image||item.src||"");
+      if(code && flag) next[code]={code,flag};
     });
     countryFlagLibrary=next;
+    render();
+  }, ()=>{});
+}
+function stopMainTeamMetaRef(){ if(mainTeamMetaRef) mainTeamMetaRef.off(); mainTeamMetaRef=null; teamMetaByName={}; teamMetaByTag={}; }
+function watchMainTeamMetaRef(){
+  if(mainTeamMetaRef) return;
+  mainTeamMetaRef=db.ref(eventPath("teams"));
+  mainTeamMetaRef.on("value", snap=>{
+    const val=snap.val();
+    const list=val?(Array.isArray(val)?val:Object.values(val)):[];
+    const byName={}, byTag={};
+    list.forEach(t=>{
+      if(!t) return;
+      const nameKey=teamLookupKey(t.name);
+      const tagKey=teamLookupKey(t.tag || teamTag(t));
+      if(nameKey) byName[nameKey]=t;
+      if(tagKey) byTag[tagKey]=t;
+      const code=countryCode(t.country);
+      const flag=t.flag||t.countryFlag||"";
+      if(code && flag && !countryFlagLibrary[code]) countryFlagLibrary[code]={code,flag};
+    });
+    teamMetaByName=byName;
+    teamMetaByTag=byTag;
     render();
   }, ()=>{});
 }
@@ -1137,11 +1269,13 @@ function setObsDataEnabled(enabled){
     stopLiveSnapshotRef();
     stopActiveSessionFallback();
     stopCountryFlagsRef();
+    stopMainTeamMetaRef();
     currentTeams=[];
     currentScores={};
     return;
   }
   watchCountryFlagsRef();
+  watchMainTeamMetaRef();
   startLiveSnapshotRef();
 }
 setObsDataEnabled(overlaySettings.obsLinksEnabled!==false);
