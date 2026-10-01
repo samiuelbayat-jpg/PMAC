@@ -389,6 +389,14 @@ body.staff-admin .staff-event-bar #event-path-label{display:none!important;}
         <button class="roadmap-mode active" id="roadmap-mode-event" onclick="setRoadmapMode('event')">PMAF Event</button>
         <button class="roadmap-mode" id="roadmap-mode-scrim" onclick="setRoadmapMode('scrim')">Daily Scrim</button>
       </div>
+      <div class="roadmap-card" style="margin-bottom:1rem;border-color:rgba(0,201,122,.45);">
+        <h4>Highlights Layout Color</h4>
+        <div class="roadmap-field" style="margin-bottom:0;">
+          <label>Color Bar</label>
+          <input id="roadmap-accent-color" type="color" value="#28bd54" style="width:100%;height:46px;padding:3px;cursor:pointer;">
+        </div>
+        <div class="roadmap-sub" style="margin-top:8px;">This changes the green bars, borders, team label color, and match roadmap color in the OBS highlights page. Press Save Roadmap after changing.</div>
+      </div>
       <div class="roadmap-grid">
         <div class="roadmap-card">
           <h4>Overlay Text</h4>
@@ -2450,7 +2458,7 @@ let roadmapMode = "event";
 let roadmapData = null;
 let roadmapMapLibrary = {};
 const ROADMAP_DEFAULTS = {
-  eventTitle:"Grand Finals", eventCount:"1/12", ticker:"From the drop to the last one standing show!", countdownText:"04:00", nextLabel:"Next Match", sideImageUrl:"",
+  eventTitle:"Grand Finals", eventCount:"1/12", ticker:"From the drop to the last one standing show!", accentColor:"#28bd54", countdownText:"04:00", nextLabel:"Next Match", sideImageUrl:"",
   highlightUrl:"", highlightType:"auto", highlightTitle:"MATCH HIGHLIGHTS", highlightSub:"PMAF live highlights and daily roadmap",
   maps:[
     {name:"RONDO", sub:"MATCH 1", matchIndex:0, bg:"linear-gradient(135deg,#325331,#c9d7a6)", imageUrl:""},
@@ -2483,7 +2491,7 @@ function loadRoadmapAdmin(){
 function fillRoadmapForm(){
   const d=roadmapData || ROADMAP_DEFAULTS;
   function val(id,v){ const el=document.getElementById(id); if(el) el.value=v||""; }
-  val("roadmap-event-title",d.eventTitle); val("roadmap-event-count",d.eventCount); val("roadmap-ticker",d.ticker); val("roadmap-countdown",d.countdownText); val("roadmap-next-label",d.nextLabel); val("roadmap-side-url",d.sideImageUrl);
+  val("roadmap-event-title",d.eventTitle); val("roadmap-event-count",d.eventCount); val("roadmap-ticker",d.ticker); val("roadmap-accent-color",d.accentColor||"#28bd54"); val("roadmap-countdown",d.countdownText); val("roadmap-next-label",d.nextLabel); val("roadmap-side-url",d.sideImageUrl);
   const sp=document.getElementById("roadmap-side-prev"); if(sp) sp.style.backgroundImage=cssRoadmapBg(d.sideImageUrl||"");
   val("roadmap-highlight-url",d.highlightUrl); val("roadmap-highlight-title",d.highlightTitle); val("roadmap-highlight-sub",d.highlightSub);
   renderRoadmapMapEditor(d.maps||[]);
@@ -2533,7 +2541,7 @@ function buildRoadmapMapLibraryUpdates(d){
   return updates;
 }
 function collectRoadmapData(){
-  const d={ eventTitle:document.getElementById("roadmap-event-title").value.trim(), eventCount:document.getElementById("roadmap-event-count").value.trim(), ticker:document.getElementById("roadmap-ticker").value.trim(), countdownText:document.getElementById("roadmap-countdown").value.trim(), nextLabel:document.getElementById("roadmap-next-label").value.trim(), sideImageUrl:(document.getElementById("roadmap-side-url")||{}).value.trim(), highlightUrl:document.getElementById("roadmap-highlight-url").value.trim(), highlightType:"auto", highlightTitle:document.getElementById("roadmap-highlight-title").value.trim(), highlightSub:document.getElementById("roadmap-highlight-sub").value.trim(), updatedAt:firebase.database.ServerValue.TIMESTAMP, maps:[] };
+  const d={ eventTitle:document.getElementById("roadmap-event-title").value.trim(), eventCount:document.getElementById("roadmap-event-count").value.trim(), ticker:document.getElementById("roadmap-ticker").value.trim(), accentColor:(document.getElementById("roadmap-accent-color")||{}).value||"#28bd54", countdownText:document.getElementById("roadmap-countdown").value.trim(), nextLabel:document.getElementById("roadmap-next-label").value.trim(), sideImageUrl:(document.getElementById("roadmap-side-url")||{}).value.trim(), highlightUrl:document.getElementById("roadmap-highlight-url").value.trim(), highlightType:"auto", highlightTitle:document.getElementById("roadmap-highlight-title").value.trim(), highlightSub:document.getElementById("roadmap-highlight-sub").value.trim(), updatedAt:firebase.database.ServerValue.TIMESTAMP, maps:[] };
   const count=document.querySelectorAll(".roadmap-map-card").length;
   for(let i=0;i<count;i++){
     applyRoadmapMapLibrary(i); rememberRoadmapImageFromField(i);
